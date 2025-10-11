@@ -1,5 +1,6 @@
 import { createRouter, createWebHashHistory } from "vue-router";
 import Layout from "../views/Layout.vue";
+import { getQueryParam } from "../utils/params";
 
 const routes = [
   {
@@ -49,5 +50,14 @@ const router = createRouter({
   history: createWebHashHistory(),
   routes,
 });
+
+router.beforeEach((to, from) => {
+  const maasUser = getQueryParam("certifiedName");
+  console.log("maasUser", maasUser);
+  if (maasUser) {
+    localStorage.setItem("maasUser", maasUser);
+  }
+  return true;
+})
 
 export default router;
