@@ -44,10 +44,12 @@
                 <div class="data-charts">
                     <!-- 用户分布柱状图 -->
                     <el-card class="chart">
+                        <h4 class="h4">用户分布</h4>
                         <div ref="userChart" style="width: 100%; height: 300px;"></div>
                     </el-card>
                     <!-- 访问趋势折线图 -->
                     <el-card class="chart">
+                        <h4 class="h4">访问趋势</h4>
                         <!-- 日期选择-->
                         <div class="date-pick">
                             <el-date-picker class="date-picker" v-model="dateRange" type="daterange" range-separator="至"
@@ -58,13 +60,18 @@
                     </el-card>
                     <!-- 文档类型饼图 -->
                     <el-card class="chart">
+                        <h4 class="h4">文档类型分布</h4>
                         <div ref="documentChart" style="width: 100%; height: 300px;"></div>
                     </el-card>
                     <!-- 知识库调用排名 -->
                     <el-card class="chart">
-                        <div>
-                            <h4 class="h4">知识库调用排名</h4>
-                        </div>
+                        <h4 class="h4">知识库调用排名</h4>
+                        <el-table class="table" :data="topDocsSorted" style="width: 100%" :border="false" stripe>
+                            <el-table-column prop="name" label="知识文档" min-width="180" />
+                            <el-table-column prop="dept" label="所属部门" min-width="100" />
+                            <el-table-column prop="calls" label="调用次数" min-width="100" sortable />
+                            <el-table-column prop="tokens" label="调用token数" min-width="120" sortable />
+                        </el-table>
                     </el-card>
 
                 </div>
@@ -80,8 +87,7 @@ import { ref, onMounted, onUnmounted, computed } from 'vue';
 import * as echarts from 'echarts';
 import type { ECharts } from 'echarts';
 import { ElDatePicker } from 'element-plus';
-import { Plus, Minus } from '@element-plus/icons-vue';
-import { useCardData } from '../../composables/useCardData';
+import { Plus, Minus, View, UserFilled, Document } from '@element-plus/icons-vue';
 
 
 
@@ -92,7 +98,42 @@ import { useCardData } from '../../composables/useCardData';
 // }).then(res=>{
 //     cardData.value = res.data;//后端返回数据赋值给cardData
 // })
-const { cardData } = useCardData();
+
+// 统计卡片数据（本地定义，替代 useCardData）
+interface StatCard {
+    title: string;
+    value: string | number;
+    icon: any;
+    iconClass: string;
+    trend: number;
+}
+const cardData = ref<StatCard[]>([
+    { 
+        title: '访问次数', 
+        value: '128,930', 
+        icon: View, trend: 12.5, 
+        iconClass: 'icon-blue' 
+    },
+    { 
+        title: '访问人数', 
+        value: '45,281', 
+        icon: UserFilled, 
+        iconClass: 'icon-purple', 
+        trend: 8.2 },
+    { 
+        title: '文档总数', 
+        value: '3,829', 
+        icon: Document, 
+        iconClass: 'icon-green', 
+        trend: 8.3 },
+    { 
+        title: '活跃用户', 
+        value: '5,237', 
+        icon: UserFilled, 
+        trend: 6.8, 
+        iconClass: 'icon-red' 
+    }
+]);
 
 // 定义图表容器ref
 const userChart = ref<HTMLDivElement | null>(null);
@@ -103,6 +144,7 @@ const documentChart = ref<HTMLDivElement | null>(null);
 var userChartInstance: ECharts | null = null;
 var trendChartInstance: ECharts | null = null;
 var documentChartInstance: ECharts | null = null;
+let resizeTimer: number | undefined;
 
 // 日期选择相关
 const dateRange = ref<[Date, Date]>([
@@ -188,6 +230,20 @@ const documentTypeData = [
     { value: 200, name: '其他' }
 ];
 
+// 知识库调用排名 - 模拟数据
+type TopDocRow = { name: string; dept: string; calls: number; tokens: string };
+const topDocs: TopDocRow[] = [
+    { name: '金融法规.pdf', dept: '合规部', calls: 570, tokens: '38.1w' },
+    { name: '风控指南.xlsx', dept: '风控部', calls: 468, tokens: '29.7w' },
+    { name: '客户服务手册.pdf', dept: '客服部', calls: 442, tokens: '27.3w' },
+    { name: '线上运营规范.doc', dept: '运营部', calls: 401, tokens: '25.6w' },
+    { name: '数据报表规范.xlsx', dept: '数据部', calls: 356, tokens: '22.9w' },
+    { name: '信息安全手册.pdf', dept: '信息安全部', calls: 318, tokens: '20.2w' },
+];
+const topDocsSorted = computed(() =>
+    [...topDocs].sort((a, b) => b.calls - a.calls)
+);
+
 //初始化图表
 const initUserChart = () => {
     //确保容器存在
@@ -201,20 +257,14 @@ const initUserChart = () => {
     //创建新用户图表实例
     userChartInstance = echarts.init(userChart.value);
 
-    // 设置图表配置
+    //图表配置
     const options = {
-        title: {
-            text: '用户分布',
-            left: 'left'
-        },
-        // 图表网格配置
         grid: {
             left: '3%',
             right: '4%',
             bottom: '10%',
             containLabel: true
         },
-        // X轴配置
         xAxis: {
             type: 'category',
             data: userChartData.categories,
@@ -222,11 +272,11 @@ const initUserChart = () => {
                 interval: 0   // 强制显示所有标签
             }
         },
-        // Y轴配置
+        
         yAxis: {
             type: 'value'
         },
-        // 系列数据配置（柱状图核心数据）
+        //柱状图核心数据
         series: [
             {
                 data: userChartData.values,
@@ -240,34 +290,27 @@ const initUserChart = () => {
     userChartInstance.setOption(options);
 }
 const initTrendChart = (startDate?: Date, endDate?: Date) => {
-    //确保容器存在
     if (!trendChart.value) return
 
-    //销毁已存在
     if (trendChartInstance) {
         (trendChartInstance as ECharts).dispose();
     }
 
-    // 确定日期范围
+    //确定日期范围
     const [sDate, eDate] = startDate && endDate
         ? [startDate, endDate]
         : defaultDateRange.value;
 
-    // 设置日期选择器值
+    //设置日期选择器值
     dateRange.value = [sDate, eDate];
 
-    // 生成数据
+    //生成数据
     const trendData = trendChartData(sDate, eDate);
 
-    //创建新实例
+    //新实例
     trendChartInstance = echarts.init(trendChart.value);
 
-    // 设置图表配置
     const options = {
-        title: {
-            text: '访问趋势',
-            left: 'left'
-        },
         tooltip: {
             trigger: 'axis'
         },
@@ -308,9 +351,9 @@ const initTrendChart = (startDate?: Date, endDate?: Date) => {
         ]
     };
 
-    //应用配置到图表
     trendChartInstance.setOption(options);
 }
+
 const initDocumentChart = () => {
     if (!documentChart.value) return
 
@@ -321,10 +364,6 @@ const initDocumentChart = () => {
     documentChartInstance = echarts.init(documentChart.value);
 
     const options = {
-        title: {
-            text: '文档类型分布',
-            left: 'left'
-        },
         tooltip: {
             trigger: 'item',
             formatter: '{b}: {c} ({d}%)'
@@ -338,8 +377,7 @@ const initDocumentChart = () => {
                 name: '文档类型',
                 type: 'pie',
                 radius: ['40%', '70%'],
-                center:['40%','60%'],
-                // avoidLabelOverlap: false,
+                center: ['40%', '60%'],
                 itemStyle: {
                     borderColor: '#fff',
                     borderWidth: 1
@@ -370,33 +408,38 @@ const initDocumentChart = () => {
     documentChartInstance.setOption(options);
 }
 
-// 处理日期变化
+//日期变化
 const handleDateChange = (newDateRange: [Date, Date]) => {
     dateRange.value = newDateRange;//同步更新
     initTrendChart(newDateRange[0], newDateRange[1]);
 };
 
-// 处理窗口大小变化
+//窗口大小变化（防抖）
 const handleResize = () => {
-    userChartInstance?.resize();
-    trendChartInstance?.resize();
-    documentChartInstance?.resize();
+    if (resizeTimer) {
+        clearTimeout(resizeTimer);
+    }
+    resizeTimer = window.setTimeout(() => {
+        userChartInstance?.resize();
+        trendChartInstance?.resize();
+        documentChartInstance?.resize();
+    }, 150);
 };
 
-// 组件挂载时初始化图表
+//挂载
 onMounted(() => {
     initUserChart();
     initTrendChart();
     initDocumentChart();
-    // 监听窗口大小变化
+    
     window.addEventListener('resize', handleResize);
 });
 
-// 组件卸载时清理资源
+//卸载 清理资源
 onUnmounted(() => {
-    // 移除事件监听
+    //移除监听
     window.removeEventListener('resize', handleResize);
-    // 销毁图表实例
+    //销毁图表实例
     if (userChartInstance) {
         userChartInstance.dispose();
         userChartInstance = null;
@@ -414,10 +457,8 @@ onUnmounted(() => {
 
 <style scoped lang="less">
 .stat-page {
-    // margin: 0 auto;
     width: 1200px;
     height: 100%;
-    // overflow: hidden;
 
     .page-header {
         width: 100%;
@@ -454,7 +495,6 @@ onUnmounted(() => {
                 align-items: flex-start; //标题图标顶部对齐
 
                 .text-container {
-
                     .num {
                         padding-top: 10px;
                         font-size: 26px;
@@ -462,9 +502,6 @@ onUnmounted(() => {
                     }
 
                 }
-
-
-
                 .icon {
                     height: 50px;
                     width: 50px;
@@ -524,7 +561,7 @@ onUnmounted(() => {
     .data-charts {
         display: flex;
         flex-wrap: wrap;
-        margin-top: 20px;
+        margin: 20px 0 20px;
         gap: 20px;
         width: 100%;
         box-sizing: border-box;
@@ -537,6 +574,11 @@ onUnmounted(() => {
             max-width: calc(50% - 10px);
             height: 400px;
 
+            .h4 {
+                font-size: 24px;
+                font-weight: 700;
+            }
+
             .date-pick {
                 position: relative;
 
@@ -546,6 +588,10 @@ onUnmounted(() => {
                     width: 300px;
                     z-index: 1; //日期选择在图表上方
                 }
+            }
+
+            .table {
+                margin-top: 20px;
             }
         }
     }
