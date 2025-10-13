@@ -1,4 +1,2 @@
-import { ref, onMounted } from 'vue';
-import echarts from 'echarts'
-
-
+import { ref, onMounted, reactive, Ref } from 'vue';
+import * as echarts from 'echarts';
