@@ -4,14 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vue-tsc -b && vite build",
+    "dev": "vite --mode development",
+    "build": "vue-tsc -b && vite build --mode production",
     "preview": "vite preview"
   },
   "dependencies": {
-    "echarts": "^6.0.0",
     "element-plus": "^2.11.4",
-    "mockjs": "^1.1.0",
     "vue": "^3.5.12",
     "vue-router": "^4.5.1"
   },
