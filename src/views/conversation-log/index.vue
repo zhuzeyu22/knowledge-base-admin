@@ -22,7 +22,7 @@
                                 start-placeholder="开始日期" end-placeholder="结束日期" clearable />
                         </el-form-item>
                         <el-form-item>
-                            <el-button type="primary" @click="onQuery">查询</el-button>
+                            <el-button type="primary" @click="onQuery" :loading="queryLoading">查询</el-button>
                             <el-button @click="onReset">重置</el-button>
                         </el-form-item>
                     </el-form>
@@ -37,9 +37,11 @@
                         <el-table-column prop="date" label="开始时间" min-width="130" />
                         <el-table-column prop="rounds" label="对话轮数" min-width="100" />
                         <el-table-column label="操作" min-width="100">
-                            <el-button link type="primary" @click="onDetail">
-                                查看
-                            </el-button>
+                            <template #default="scope">
+                                <el-button link type="primary" @click="onDetail(scope.row)">
+                                    查看
+                                </el-button>
+                            </template>
                         </el-table-column>
                     </el-table>
                 </div>
@@ -49,7 +51,8 @@
     </div>
 </template>
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
+import { ElMessage } from 'element-plus'
 
 const formInline = reactive({
     log: '',
@@ -57,45 +60,138 @@ const formInline = reactive({
     date: [],
 })
 
-const logList = [
+const originalLogList = [
     {
         id: '1',
-        log: 'log1',
-        user: 'user1',
+        log: 'log001',
+        user: 'user001',
         dataset: '法律知识库',
-        date: '2025-10-14 18:00',
+        date: '2024-12-01 09:30',
         rounds: '3'
     },
     {
         id: '2',
-        log: 'log2',
-        user: 'user3',
-        dataset: '法律知识库',
-        date: '2025-10-14 18:00',
-        rounds: '3'
+        log: 'log002',
+        user: 'user002',
+        dataset: '医疗知识库',
+        date: '2024-12-02 14:15',
+        rounds: '5'
     },
     {
         id: '3',
-        log: 'log3',
-        user: 'user3',
+        log: 'log003',
+        user: 'user001',
         dataset: '法律知识库',
-        date: '2025-10-14 18:00',
-        rounds: '3'
+        date: '2024-12-03 16:45',
+        rounds: '2'
     },
-
+    {
+        id: '4',
+        log: 'log004',
+        user: 'user003',
+        dataset: '技术知识库',
+        date: '2024-12-04 10:20',
+        rounds: '7'
+    },
+    {
+        id: '5',
+        log: 'log005',
+        user: 'user002',
+        dataset: '医疗知识库',
+        date: '2024-12-05 13:10',
+        rounds: '4'
+    },
+    {
+        id: '6',
+        log: 'log006',
+        user: 'user004',
+        dataset: '教育知识库',
+        date: '2024-12-06 15:30',
+        rounds: '6'
+    }
 ]
-const onQuery = () => {
-    alert('Query!')
+
+//当前显示的日志列表
+const logList = ref([...originalLogList])
+
+//查询加载状态
+const queryLoading = ref(false)
+
+//格式化日期为可比较的格式
+const formatDate = (dateStr: string) => {
+    return new Date(dateStr.replace(' ', 'T'))
 }
 
+//检查日期是否在范围内
+const isDateInRange = (dateStr: string, startDate: Date, endDate: Date) => {
+    const date = formatDate(dateStr)
+    return date >= startDate && date <= endDate
+}
+
+//查询
+const onQuery = async () => {
+    // 检查是否所有输入框都为空
+    if (!formInline.log.trim() && !formInline.user.trim() && (!formInline.date || formInline.date.length === 0)) {
+        ElMessage.warning('请输入查询条件')
+        return
+    }
+    
+    queryLoading.value = true
+
+    try {
+        //模拟API调用延迟
+        await new Promise(resolve => setTimeout(resolve, 500))
+        
+        let filteredList = [...originalLogList]
+        
+        //会话标识
+        if (formInline.log.trim()) {
+            filteredList = filteredList.filter(item => 
+                item.log.toLowerCase().includes(formInline.log.trim().toLowerCase())
+            )
+        }
+        
+        //用户标识
+        if (formInline.user.trim()) {
+            filteredList = filteredList.filter(item => 
+                item.user.toLowerCase().includes(formInline.user.trim().toLowerCase())
+            )
+        }
+        
+        //时间范围
+        if (formInline.date && formInline.date.length === 2) {
+            const [startDate, endDate] = formInline.date
+            filteredList = filteredList.filter(item => 
+                isDateInRange(item.date, startDate, endDate)
+            )
+        }
+        
+        logList.value = filteredList
+        
+        ElMessage.success(`查询完成，共找到 ${filteredList.length} 条记录`)
+        
+    } catch (error) {
+        ElMessage.error('查询失败，请重试')
+        console.error('查询错误:', error)
+    } finally {
+        queryLoading.value = false
+    }
+}
+
+//重置
 const onReset = () => {
     formInline.log = ''
     formInline.user = ''
     formInline.date = []
+    logList.value = [...originalLogList]
+    ElMessage.info('已重置查询条件')
 }
 
-const onDetail = () => {
-    alert('detail')
+//详情
+const onDetail = (row: any) => {
+    ElMessage.info(`查看会话 ${row.log} 的详细信息`)
+    //跳转到详情页面或打开详情弹窗
+    
 }
 </script>
 <style scoped lang="less">
