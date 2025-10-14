@@ -108,30 +108,32 @@ interface StatCard {
     trend: number;
 }
 const cardData = ref<StatCard[]>([
-    { 
-        title: '访问次数', 
-        value: '128,930', 
-        icon: View, trend: 12.5, 
-        iconClass: 'icon-blue' 
+    {
+        title: '访问次数',
+        value: '128,930',
+        icon: View, trend: 12.5,
+        iconClass: 'icon-blue'
     },
-    { 
-        title: '访问人数', 
-        value: '45,281', 
-        icon: UserFilled, 
-        iconClass: 'icon-purple', 
-        trend: 8.2 },
-    { 
-        title: '文档总数', 
-        value: '3,829', 
-        icon: Document, 
-        iconClass: 'icon-green', 
-        trend: 8.3 },
-    { 
-        title: '活跃用户', 
-        value: '5,237', 
-        icon: UserFilled, 
-        trend: 6.8, 
-        iconClass: 'icon-red' 
+    {
+        title: '访问人数',
+        value: '45,281',
+        icon: UserFilled,
+        iconClass: 'icon-purple',
+        trend: 8.2
+    },
+    {
+        title: '文档总数',
+        value: '3,829',
+        icon: Document,
+        iconClass: 'icon-green',
+        trend: 8.3
+    },
+    {
+        title: '活跃用户',
+        value: '5,237',
+        icon: UserFilled,
+        trend: 6.8,
+        iconClass: 'icon-red'
     }
 ]);
 
@@ -233,12 +235,42 @@ const documentTypeData = [
 // 知识库调用排名 - 模拟数据
 type TopDocRow = { name: string; dept: string; calls: number; tokens: string };
 const topDocs: TopDocRow[] = [
-    { name: '金融法规.pdf', dept: '合规部', calls: 570, tokens: '38.1w' },
-    { name: '风控指南.xlsx', dept: '风控部', calls: 468, tokens: '29.7w' },
-    { name: '客户服务手册.pdf', dept: '客服部', calls: 442, tokens: '27.3w' },
-    { name: '线上运营规范.doc', dept: '运营部', calls: 401, tokens: '25.6w' },
-    { name: '数据报表规范.xlsx', dept: '数据部', calls: 356, tokens: '22.9w' },
-    { name: '信息安全手册.pdf', dept: '信息安全部', calls: 318, tokens: '20.2w' },
+    {
+        name: '金融法规.pdf',
+        dept: '合规部',
+        calls: 570,
+        tokens: '38.1w'
+    },
+    { 
+        name: '风控指南.xlsx', 
+        dept: '风控部', 
+        calls: 468, 
+        tokens: '29.7w' 
+    },
+    { 
+        name: '客户服务手册.pdf', 
+        dept: '客服部', 
+        calls: 442, 
+        tokens: '27.3w' 
+    },
+    { 
+        name: '线上运营规范.doc', 
+        dept: '运营部', 
+        calls: 401, 
+        tokens: '25.6w' 
+    },
+    { 
+        name: '数据报表规范.xlsx', 
+        dept: '数据部', 
+        calls: 356, 
+        tokens: '22.9w' 
+    },
+    { 
+        name: '信息安全手册.pdf', 
+        dept: '信息安全部', 
+        calls: 318, 
+        tokens: '20.2w' 
+    },
 ];
 const topDocsSorted = computed(() =>
     [...topDocs].sort((a, b) => b.calls - a.calls)
@@ -272,7 +304,7 @@ const initUserChart = () => {
                 interval: 0   // 强制显示所有标签
             }
         },
-        
+
         yAxis: {
             type: 'value'
         },
@@ -431,7 +463,7 @@ onMounted(() => {
     initUserChart();
     initTrendChart();
     initDocumentChart();
-    
+
     window.addEventListener('resize', handleResize);
 });
 
@@ -502,6 +534,7 @@ onUnmounted(() => {
                     }
 
                 }
+
                 .icon {
                     height: 50px;
                     width: 50px;
@@ -584,6 +617,7 @@ onUnmounted(() => {
 
                 ::v-deep .date-picker {
                     position: absolute;
+                    top: -20px;
                     right: 20px;
                     width: 300px;
                     z-index: 1; //日期选择在图表上方
