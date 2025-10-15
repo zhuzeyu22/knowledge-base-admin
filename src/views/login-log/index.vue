@@ -154,8 +154,8 @@ const onReset = () => {
 </script>
 <style scoped lang="less">
 .login-log-page {
-    width: 1200px;
-    height: 100%;
+    width: 100%;
+    height: 100vh;
 
     .page-style {
         width: 100%;

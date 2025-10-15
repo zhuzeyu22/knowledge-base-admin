@@ -20,6 +20,7 @@
                         <el-form-item label="关联知识库">
                             <el-input class="input" v-model="formInline.dataset" clearable />
                         </el-form-item>
+                        <br>
                         <el-form-item label="授权人">
                             <el-input class="input" v-model="formInline.authorizer" clearable />
                         </el-form-item>
@@ -222,8 +223,8 @@ const onDetail = (row: any) => {
 </script>
 <style scoped lang="less">
 .auth-log-page {
-    width: 1200px;
-    height: 100%;
+    width: 100%;
+    height: 100vh;
 
     .page-style {
         width: 100%;

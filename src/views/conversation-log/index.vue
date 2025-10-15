@@ -135,41 +135,41 @@ const onQuery = async () => {
         ElMessage.warning('请输入查询条件')
         return
     }
-    
+
     queryLoading.value = true
 
     try {
         //模拟API调用延迟
         await new Promise(resolve => setTimeout(resolve, 500))
-        
+
         let filteredList = [...originalLogList]
-        
+
         //会话标识
         if (formInline.log.trim()) {
-            filteredList = filteredList.filter(item => 
+            filteredList = filteredList.filter(item =>
                 item.log.toLowerCase().includes(formInline.log.trim().toLowerCase())
             )
         }
-        
+
         //用户标识
         if (formInline.user.trim()) {
-            filteredList = filteredList.filter(item => 
+            filteredList = filteredList.filter(item =>
                 item.user.toLowerCase().includes(formInline.user.trim().toLowerCase())
             )
         }
-        
+
         //时间范围
         if (formInline.date && formInline.date.length === 2) {
             const [startDate, endDate] = formInline.date
-            filteredList = filteredList.filter(item => 
+            filteredList = filteredList.filter(item =>
                 isDateInRange(item.date, startDate, endDate)
             )
         }
-        
+
         logList.value = filteredList
-        
+
         ElMessage.success(`查询完成，共找到 ${filteredList.length} 条记录`)
-        
+
     } catch (error) {
         ElMessage.error('查询失败，请重试')
         console.error('查询错误:', error)
@@ -191,13 +191,14 @@ const onReset = () => {
 const onDetail = (row: any) => {
     ElMessage.info(`查看会话 ${row.log} 的详细信息`)
     //跳转到详情页面或打开详情弹窗
-    
+
 }
 </script>
 <style scoped lang="less">
 .conversation-log-page {
-    width: 1200px;
-    height: 100%;
+    width: 100%;
+    min-height: (100vh - 73px);
+    box-sizing: border-box;
 
     .page-style {
         width: 100%;
@@ -214,12 +215,17 @@ const onDetail = (row: any) => {
 
     .page-main {
         margin: 20px 0;
-        height: 700px;
+        min-height: 700px;
 
         ::v-deep .input {
             width: 300px;
         }
 
+        .log-table {
+            margin-top: 20px;
+            max-height: calc(100% - 120px);
+            overflow-y: auto;
+        }
     }
 
 }

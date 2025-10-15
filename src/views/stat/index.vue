@@ -489,9 +489,8 @@ onUnmounted(() => {
 
 <style scoped lang="less">
 .stat-page {
-    width: 1200px;
-    height: 100%;
-
+    width: 100%;
+    height: 100vh;
     .page-header {
         width: 100%;
         height: 73px;
@@ -516,7 +515,6 @@ onUnmounted(() => {
         .card {
             box-sizing: border-box;
             padding: 10px 0px;
-            min-width: 280px;
             height: 130px;
             flex: 1;
             max-width: calc(25% - 15px);
