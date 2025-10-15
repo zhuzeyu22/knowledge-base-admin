@@ -222,7 +222,6 @@ const onDetail = (row: any) => {
         }
 
         .log-table {
-            margin-top: 20px;
             max-height: calc(100% - 120px);
             overflow-y: auto;
         }
