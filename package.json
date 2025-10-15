@@ -18,10 +18,16 @@
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.1.4",
     "axios": "^1.12.2",
+    "cz-conventional-changelog": "^3.3.0",
     "less": "^4.4.2",
     "pinia": "^3.0.3",
     "typescript": "~5.6.2",
     "vite": "^5.4.10",
     "vue-tsc": "^2.1.8"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
   }
 }
