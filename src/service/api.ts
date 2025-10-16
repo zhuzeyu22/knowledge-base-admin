@@ -22,13 +22,36 @@ export interface ConversationListResponse {
     total: number
 }
 
+//登录日志
+export interface LoginLog {
+    id:number
+    user:string
+    type:string
+    date:string
+    operation:string
+}
+
+export interface LoginQueryParams {
+    user?:string
+    startDate?:string
+    endDate?:string
+}
+
+export interface LoginListResponse {
+    data:LoginLog[]
+    total:number
+}
 
 //接口定义
 export const apiService = {
     //对话记录
     async getConversationLogs(params: ConversationQueryParams = {}): Promise<ConversationListResponse> {
         return request.get('api/', { params })
-    }
+    },
+    //login
+    async getLoginLogs(params:LoginQueryParams = {}):Promise<LoginListResponse> {
+        return request.get('api/', { params })
+    },
 }
 
 export default apiService

@@ -89,7 +89,7 @@ import type { ECharts } from 'echarts';
 import { ElDatePicker } from 'element-plus';
 import { Plus, Minus, View, UserFilled, Document } from '@element-plus/icons-vue';
 
-// 统计卡片数据（本地定义，替代 useCardData）
+//卡片数据
 interface StatCard {
     title: string;
     value: string | number;

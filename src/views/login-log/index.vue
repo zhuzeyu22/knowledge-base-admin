@@ -39,15 +39,16 @@
     </div>
 </template>
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import apiService, { LoginQueryParams } from '../../service/api'
 
 const formInline = reactive({
     user: '',
     date: [],
 })
 
-const originalLoginList = [
+const getMockData = [
     {
         id: '1',
         user: 'user001',
@@ -85,70 +86,61 @@ const originalLoginList = [
     }
 ]
 //当前显示的登录列表
-const loginList = ref([...originalLoginList])
+const loginList = ref<any[]>([])
 
 //查询加载状态
 const queryLoading = ref(false)
 
-//格式化日期为可比较的格式
-const formatDate = (dateStr: string) => {
-    return new Date(dateStr.replace(' ', 'T'))
+const loadLoginLogs = async (params: LoginQueryParams = {}) => {
+    try {
+        queryLoading.value = true;
+        const queryParams = {
+            ...params
+        }
+        const reponse = await apiService.getLoginLogs(queryParams)
+        loginList.value = reponse.data
+        ElMessage.success(`加载完成，共${reponse.total}条记录`)
+    } catch (error: any) {
+        ElMessage.error(error.message || '后端加载数据失败')
+        loginList.value = getMockData
+    } finally {
+        queryLoading.value = false;
+    }
 }
 
-//检查日期是否在范围内
-const isDateInRange = (dateStr: string, startDate: Date, endDate: Date) => {
-    const date = formatDate(dateStr)
-    return date >= startDate && date <= endDate
-}
+onMounted(() =>{
+    loadLoginLogs()
+})
 
 //查询
 const onQuery = async () => {
     // 检查是否所有输入框都为空
-    if ( !formInline.user.trim() && (!formInline.date || formInline.date.length === 0)) {
+    if (!formInline.user.trim() && (!formInline.date || formInline.date.length === 0)) {
         ElMessage.warning('请输入查询条件')
         return
     }
+    
+    const queryParams:LoginQueryParams = {}
 
-    queryLoading.value = true
-
-    try {
-        //模拟API调用延迟
-        await new Promise(resolve => setTimeout(resolve, 500))
-        
-        let filteredList = [...originalLoginList]
-        
-        //用户标识
-        if (formInline.user.trim()) {
-            filteredList = filteredList.filter(item => 
-                item.user.toLowerCase().includes(formInline.user.trim().toLowerCase())
-            )
-        }
-        
-        //时间范围
-        if (formInline.date && formInline.date.length === 2) {
-            const [startDate, endDate] = formInline.date
-            filteredList = filteredList.filter(item => 
-                isDateInRange(item.date, startDate, endDate)
-            )
-        }
-        
-        loginList.value = filteredList
-        
-        ElMessage.success(`查询完成，共找到 ${filteredList.length} 条记录`)
-        
-    } catch (error) {
-        ElMessage.error('查询失败，请重试')
-        console.error('查询错误:', error)
-    } finally {
-        queryLoading.value = false
+    //用户
+    if(formInline.user.trim()){
+        queryParams.user = formInline.user.trim()
     }
+    //date
+    if(formInline.date && formInline.date.length === 2){
+        const [startDate, endDate] = formInline.date
+        queryParams.startDate = startDate
+        queryParams.endDate = endDate
+    }
+
+    await loadLoginLogs(queryParams)
 }
 
 //重置
 const onReset = () => {
     formInline.user = ''
     formInline.date = []
-    loginList.value = [...originalLoginList]
+    loadLoginLogs()
     ElMessage.info('已重置查询条件')
 }
 </script>
@@ -161,6 +153,7 @@ const onReset = () => {
         flex-direction: column;
         height: calc(100vh - 40px)
     }
+
     .page-style {
         width: 100%;
         border: 1px solid #e4e7ed;
