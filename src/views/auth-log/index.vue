@@ -1,6 +1,6 @@
 <template>
     <div class="auth-log-page">
-        <el-container>
+        <el-container class="container">
             <!-- 标题 -->
             <el-header class="page-header page-style">
                 <h2 style="font-size: 20px;">授权记录</h2>
@@ -224,8 +224,12 @@ const onDetail = (row: any) => {
 <style scoped lang="less">
 .auth-log-page {
     width: 100%;
-    height: 100vh;
 
+    .container {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 40px)
+    }
     .page-style {
         width: 100%;
         border: 1px solid #e4e7ed;

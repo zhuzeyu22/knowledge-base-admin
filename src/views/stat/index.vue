@@ -1,6 +1,6 @@
 <template>
     <div class="stat-page">
-        <el-container>
+        <el-container class="container">
             <!-- 标题 -->
             <el-header class="page-header">
                 <h2 style="font-size: 20px;">数据统计</h2>
@@ -88,16 +88,6 @@ import * as echarts from 'echarts';
 import type { ECharts } from 'echarts';
 import { ElDatePicker } from 'element-plus';
 import { Plus, Minus, View, UserFilled, Document } from '@element-plus/icons-vue';
-
-
-
-// 调用真实数据使用
-// axios({
-//     url:'/api/',//假设后端接口地址
-//     method:'get'
-// }).then(res=>{
-//     cardData.value = res.data;//后端返回数据赋值给cardData
-// })
 
 // 统计卡片数据（本地定义，替代 useCardData）
 interface StatCard {
@@ -190,22 +180,20 @@ const trendChartData = (startDate: Date, endDate: Date) => {
     for (let i = 0; i < days; i++) {
         const date = new Date(startDate);
         date.setDate(startDate.getDate() + i);
-        //格式化日期为MM-DD格式
         dates.push(`${date.getMonth() + 1}-${date.getDate()}`);
     }
 
-    // 先生成访问人数，再基于访问人数生成更大的访问次数
     const visitorCount: number[] = [];
     const visitCount: number[] = [];
 
     for (let i = 0; i < days; i++) {
-        // 访问人数：10-60之间的随机数
+        //访问人数
         const visitor = Math.floor(Math.random() * 50) + 10;
         visitorCount.push(visitor);
 
-        // 访问次数：比访问人数多5-40之间的随机数（确保访问次数 > 访问人数）
-        const minVisit = visitor + 5; // 至少比访问人数多5次
-        const maxVisit = visitor + 40; // 最多比访问人数多40次
+        //访问次数
+        const minVisit = visitor + 5;
+        const maxVisit = visitor + 40;
         const visit = Math.floor(Math.random() * (maxVisit - minVisit + 1)) + minVisit;
         visitCount.push(visit);
     }
@@ -232,7 +220,7 @@ const documentTypeData = [
     { value: 200, name: '其他' }
 ];
 
-// 知识库调用排名 - 模拟数据
+//知识库调用排名模拟数据
 type TopDocRow = { name: string; dept: string; calls: number; tokens: string };
 const topDocs: TopDocRow[] = [
     {
@@ -241,35 +229,35 @@ const topDocs: TopDocRow[] = [
         calls: 570,
         tokens: '38.1w'
     },
-    { 
-        name: '风控指南.xlsx', 
-        dept: '风控部', 
-        calls: 468, 
-        tokens: '29.7w' 
+    {
+        name: '风控指南.xlsx',
+        dept: '风控部',
+        calls: 468,
+        tokens: '29.7w'
     },
-    { 
-        name: '客户服务手册.pdf', 
-        dept: '客服部', 
-        calls: 442, 
-        tokens: '27.3w' 
+    {
+        name: '客户服务手册.pdf',
+        dept: '客服部',
+        calls: 442,
+        tokens: '27.3w'
     },
-    { 
-        name: '线上运营规范.doc', 
-        dept: '运营部', 
-        calls: 401, 
-        tokens: '25.6w' 
+    {
+        name: '线上运营规范.doc',
+        dept: '运营部',
+        calls: 401,
+        tokens: '25.6w'
     },
-    { 
-        name: '数据报表规范.xlsx', 
-        dept: '数据部', 
-        calls: 356, 
-        tokens: '22.9w' 
+    {
+        name: '数据报表规范.xlsx',
+        dept: '数据部',
+        calls: 356,
+        tokens: '22.9w'
     },
-    { 
-        name: '信息安全手册.pdf', 
-        dept: '信息安全部', 
-        calls: 318, 
-        tokens: '20.2w' 
+    {
+        name: '信息安全手册.pdf',
+        dept: '信息安全部',
+        calls: 318,
+        tokens: '20.2w'
     },
 ];
 const topDocsSorted = computed(() =>
@@ -490,7 +478,8 @@ onUnmounted(() => {
 <style scoped lang="less">
 .stat-page {
     width: 100%;
-    height: 100vh;
+    height: calc(100vh - 40px);
+
     .page-header {
         width: 100%;
         height: 73px;
@@ -515,8 +504,8 @@ onUnmounted(() => {
         .card {
             box-sizing: border-box;
             padding: 10px 0px;
-            height: 130px;
             flex: 1;
+            min-width: 230px;
             max-width: calc(25% - 15px);
 
             .card-header {
@@ -601,8 +590,8 @@ onUnmounted(() => {
             box-sizing: border-box;
             padding: 10px 0px;
             flex: 1 0 auto;
-            min-width: 580px;
-            max-width: calc(50% - 10px);
+            min-width: 480px;
+            width: calc(50% - 10px);
             height: 400px;
 
             .h4 {
@@ -617,7 +606,7 @@ onUnmounted(() => {
                     position: absolute;
                     top: -20px;
                     right: 20px;
-                    width: 300px;
+                    width: 240px;
                     z-index: 1; //日期选择在图表上方
                 }
             }

@@ -1,6 +1,6 @@
 <template>
     <div class="conversation-log-page">
-        <el-container>
+        <el-container class="container">
             <!-- 标题 -->
             <el-header class="page-header page-style">
                 <h2 style="font-size: 20px;">对话记录</h2>
@@ -51,8 +51,9 @@
     </div>
 </template>
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import apiService, { ConversationQueryParams } from '../../service/api'
 
 const formInline = reactive({
     log: '',
@@ -60,7 +61,9 @@ const formInline = reactive({
     date: [],
 })
 
-const originalLogList = [
+
+//模拟数据，调用api失败显示
+const getMockData = [
     {
         id: '1',
         log: 'log001',
@@ -112,70 +115,68 @@ const originalLogList = [
 ]
 
 //当前显示的日志列表
-const logList = ref([...originalLogList])
+const logList = ref<any[]>([])
 
 //查询加载状态
 const queryLoading = ref(false)
 
-//格式化日期为可比较的格式
-const formatDate = (dateStr: string) => {
-    return new Date(dateStr.replace(' ', 'T'))
+//加载对话记录
+const loadConversationLogs = async (params: ConversationQueryParams = {}) => {
+    try {
+        queryLoading.value = true;
+
+        const queryParams = {
+            ...params
+        }
+
+        const response = await apiService.getConversationLogs(queryParams)
+
+        logList.value = response.data
+
+        ElMessage.success(`加载完成，共${response.total}条记录`)
+    } catch (error: any) {
+        ElMessage.error(error.message || '后端加载数据失败')
+        //api调用失败，模拟数据后备
+        logList.value = getMockData
+    } finally {
+        queryLoading.value = false;
+    }
 }
 
-//检查日期是否在范围内
-const isDateInRange = (dateStr: string, startDate: Date, endDate: Date) => {
-    const date = formatDate(dateStr)
-    return date >= startDate && date <= endDate
-}
+//页面加载时获得数据
+onMounted(() => {
+    loadConversationLogs()
+})
 
 //查询
 const onQuery = async () => {
-    // 检查是否所有输入框都为空
     if (!formInline.log.trim() && !formInline.user.trim() && (!formInline.date || formInline.date.length === 0)) {
         ElMessage.warning('请输入查询条件')
         return
     }
 
-    queryLoading.value = true
+    //查询参数
+    const queryParams: ConversationQueryParams = {}
 
-    try {
-        //模拟API调用延迟
-        await new Promise(resolve => setTimeout(resolve, 500))
-
-        let filteredList = [...originalLogList]
-
-        //会话标识
-        if (formInline.log.trim()) {
-            filteredList = filteredList.filter(item =>
-                item.log.toLowerCase().includes(formInline.log.trim().toLowerCase())
-            )
-        }
-
-        //用户标识
-        if (formInline.user.trim()) {
-            filteredList = filteredList.filter(item =>
-                item.user.toLowerCase().includes(formInline.user.trim().toLowerCase())
-            )
-        }
-
-        //时间范围
-        if (formInline.date && formInline.date.length === 2) {
-            const [startDate, endDate] = formInline.date
-            filteredList = filteredList.filter(item =>
-                isDateInRange(item.date, startDate, endDate)
-            )
-        }
-
-        logList.value = filteredList
-
-        ElMessage.success(`查询完成，共找到 ${filteredList.length} 条记录`)
-
-    } catch (error) {
-        ElMessage.error('查询失败，请重试')
-        console.error('查询错误:', error)
-    } finally {
-        queryLoading.value = false
+    //会话标识
+    if (formInline.log.trim()) {
+        queryParams.log = formInline.log.trim()
     }
+
+    //用户标识
+    if (formInline.user.trim()) {
+        queryParams.user = formInline.user.trim()
+    }
+
+    //时间范围
+    if (formInline.date && formInline.date.length === 2) {
+        const [startDate, endDate] = formInline.date
+        queryParams.startDate = startDate
+        queryParams.endDate = endDate
+    }
+
+    //调用api查询
+    await loadConversationLogs(queryParams)
 }
 
 //重置
@@ -183,7 +184,7 @@ const onReset = () => {
     formInline.log = ''
     formInline.user = ''
     formInline.date = []
-    logList.value = [...originalLogList]
+    loadConversationLogs()
     ElMessage.info('已重置查询条件')
 }
 
@@ -197,8 +198,12 @@ const onDetail = (row: any) => {
 <style scoped lang="less">
 .conversation-log-page {
     width: 100%;
-    min-height: (100vh - 73px);
-    box-sizing: border-box;
+
+    .container {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 40px)
+    }
 
     .page-style {
         width: 100%;
