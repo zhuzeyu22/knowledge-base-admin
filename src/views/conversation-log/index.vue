@@ -137,7 +137,7 @@ const loadConversationLogs = async (params: ConversationQueryParams = {}) => {
     } catch (error: any) {
         ElMessage.error(error.message || '后端加载数据失败')
         //api调用失败，模拟数据后备
-        logList.value = getMockData
+        logList.value = getMockData;
     } finally {
         queryLoading.value = false;
     }
