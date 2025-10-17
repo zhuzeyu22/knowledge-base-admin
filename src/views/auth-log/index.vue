@@ -59,8 +59,9 @@
     </div>
 </template>
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import apiService, { AuthQueryParams } from '../../service/api'
 
 const formInline = reactive({
     authorizationId:'',
@@ -70,7 +71,7 @@ const formInline = reactive({
     authorizedUser:''
 })
 
-const originalAuthList = [
+const getMockData = [
     {
         id: '1',
         authorizationId:'01',
@@ -123,85 +124,74 @@ const originalAuthList = [
     }
 ]
 //当前显示的登录列表
-const authList = ref([...originalAuthList])
+const authList = ref<any[]>([])
 
 //查询加载状态
 const queryLoading = ref(false)
 
-//格式化日期为可比较的格式
-const formatDate = (dateStr: string) => {
-    return new Date(dateStr.replace(' ', 'T'))
+//加载列表
+const loadAuthLogs = async(params:AuthQueryParams = {}) =>{
+    try{
+        queryLoading.value = true;
+        const queryParams = {
+            ...params
+        }
+        const response = await apiService.getAuthLogs(queryParams)
+
+        authList.value = response.data
+        ElMessage.success(`加载完成，共${response.total}条记录`)
+    } catch(error:any) {
+        ElMessage.error(error.message || '后端加载数据失败')
+        authList.value = getMockData
+    } finally {
+        queryLoading.value = false
+    }
 }
 
-//检查日期是否在范围内
-const isDateInRange = (dateStr: string, startDate: Date, endDate: Date) => {
-    const date = formatDate(dateStr)
-    return date >= startDate && date <= endDate
-}
+onMounted(() => {
+    loadAuthLogs()
+})
 
 //查询
 const onQuery = async () => {
-    // 检查是否所有输入框都为空
     if (!formInline.authorizationId.trim() && (!formInline.date || formInline.date.length === 0)
      && !formInline.dataset.trim() && !formInline.authorizer.trim() && !formInline.authorizedUser.trim()) {
         ElMessage.warning('请输入查询条件')
         return
     }
 
-    queryLoading.value = true
+    const queryParams:AuthQueryParams = {}
 
-    try {
-        //模拟API调用延迟
-        await new Promise(resolve => setTimeout(resolve, 500))
+    
         
-        let filteredList = [...originalAuthList]
-        
-        //授权ID
-        if (formInline.authorizationId.trim()) {
-            filteredList = filteredList.filter(item => 
-                item.authorizationId.toLowerCase().includes(formInline.authorizationId.trim().toLowerCase())
-            )
-        }
-
-        //时间范围
-        if (formInline.date && formInline.date.length === 2) {
-            const [startDate, endDate] = formInline.date
-            filteredList = filteredList.filter(item => 
-                isDateInRange(item.date, startDate, endDate)
-            )
-        }
-        
-        //知识库
-        if (formInline.dataset.trim()) {
-            filteredList = filteredList.filter(item => 
-                item.dataset.toLowerCase().includes(formInline.dataset.trim().toLowerCase())
-            )
-        }
-
-        //授权人
-        if (formInline.authorizer.trim()) {
-            filteredList = filteredList.filter(item => 
-                item.authorizor.toLowerCase().includes(formInline.authorizer.trim().toLowerCase())
-            )
-        }
-
-        //被授权人
-        if (formInline.authorizedUser.trim()) {
-            filteredList = filteredList.filter(item => 
-                item.authorizedUser.toLowerCase().includes(formInline.authorizedUser.trim().toLowerCase())
-            )
-        }
-        
-        authList.value = filteredList
-        
-        ElMessage.success(`查询完成，共找到 ${filteredList.length} 条记录`)
-        
-    } catch (error) {
-        ElMessage.error('查询失败，请重试')
-        console.error('查询错误:', error)
-    } finally {
-        queryLoading.value = false
+    //授权ID
+    if (formInline.authorizationId.trim()) {
+        queryParams.authorizationId = Number(formInline.authorizationId.trim())
     }
+
+    //时间范围
+    if (formInline.date && formInline.date.length === 2) {
+        const [startDate, endDate] = formInline.date
+        queryParams.startDate = startDate
+        queryParams.endDate = endDate
+    }
+    
+    //知识库
+    if (formInline.dataset.trim()) {
+        queryParams.dataset = formInline.dataset
+    }
+
+    //授权人
+    if (formInline.authorizer.trim()) {
+        queryParams.authorizer = formInline.authorizer
+    }
+
+    //被授权人
+    if (formInline.authorizedUser.trim()) {
+        queryParams.authorizedUser = formInline.authorizer
+    }
+
+    await loadAuthLogs(queryParams)
 }
 
 //重置
@@ -211,7 +201,7 @@ const onReset = () => {
     formInline.dataset = ''
     formInline.authorizer = ''
     formInline.authorizedUser = ''
-    authList.value = [...originalAuthList]
+    loadAuthLogs()
     ElMessage.info('已重置查询条件')
 }
 //详情
