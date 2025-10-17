@@ -63,6 +63,8 @@ export interface ConversationQueryParams {
     user?: string
     startDate?: string
     endDate?: string
+    page?: number
+    pageSize?: number
 }
 
 export interface ConversationListResponse {

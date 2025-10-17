@@ -45,6 +45,19 @@
                         </el-table-column>
                     </el-table>
                 </div>
+                <div class="pagination-block">
+                    <el-pagination 
+                        :v-model:current-page="currentPage" 
+                        :v-model:page-size="pageSize"
+                        :page-sizes="[10, 20, 50, 100]"
+                        :background="true"
+                        layout="sizes, prev, pager, next" 
+                        :total="total"
+                        @size-change="handleSizeChange" 
+                        @current-change="handleCurrentChange"
+                        prev-text="< 上一页"
+                        next-text="下一页 >" />
+                </div>
             </el-main>
         </el-container>
 
@@ -64,54 +77,31 @@ const formInline = reactive({
 
 //模拟数据，调用api失败显示
 const getMockData = [
-    {
-        id: '1',
-        log: 'log001',
-        user: 'user001',
-        dataset: '法律知识库',
-        date: '2024-12-01 09:30',
-        rounds: '3'
-    },
-    {
-        id: '2',
-        log: 'log002',
-        user: 'user002',
-        dataset: '医疗知识库',
-        date: '2024-12-02 14:15',
-        rounds: '5'
-    },
-    {
-        id: '3',
-        log: 'log003',
-        user: 'user001',
-        dataset: '法律知识库',
-        date: '2024-12-03 16:45',
-        rounds: '2'
-    },
-    {
-        id: '4',
-        log: 'log004',
-        user: 'user003',
-        dataset: '技术知识库',
-        date: '2024-12-04 10:20',
-        rounds: '7'
-    },
-    {
-        id: '5',
-        log: 'log005',
-        user: 'user002',
-        dataset: '医疗知识库',
-        date: '2024-12-05 13:10',
-        rounds: '4'
-    },
-    {
-        id: '6',
-        log: 'log006',
-        user: 'user004',
-        dataset: '教育知识库',
-        date: '2024-12-06 15:30',
-        rounds: '6'
-    }
+    { id: '1', log: 'log001', user: 'user001', dataset: '法律知识库', date: '2024-12-01 09:30', rounds: '3' },
+    { id: '2', log: 'log002', user: 'user002', dataset: '医疗知识库', date: '2024-12-02 14:15', rounds: '5' },
+    { id: '3', log: 'log003', user: 'user001', dataset: '法律知识库', date: '2024-12-03 16:45', rounds: '2' },
+    { id: '4', log: 'log004', user: 'user003', dataset: '技术知识库', date: '2024-12-04 10:20', rounds: '7' },
+    { id: '5', log: 'log005', user: 'user002', dataset: '医疗知识库', date: '2024-12-05 13:10', rounds: '4' },
+    { id: '6', log: 'log006', user: 'user004', dataset: '教育知识库', date: '2024-12-06 15:30', rounds: '6' },
+    { id: '7', log: 'log007', user: 'user005', dataset: '金融知识库', date: '2024-12-07 10:00', rounds: '8' },
+    { id: '8', log: 'log008', user: 'user006', dataset: '法律知识库', date: '2024-12-08 11:20', rounds: '3' },
+    { id: '9', log: 'log009', user: 'user007', dataset: '医疗知识库', date: '2024-12-09 13:45', rounds: '5' },
+    { id: '10', log: 'log010', user: 'user008', dataset: '技术知识库', date: '2024-12-10 15:30', rounds: '4' },
+    { id: '11', log: 'log011', user: 'user009', dataset: '教育知识库', date: '2024-12-11 09:15', rounds: '6' },
+    { id: '12', log: 'log012', user: 'user010', dataset: '金融知识库', date: '2024-12-12 10:40', rounds: '7' },
+    { id: '13', log: 'log013', user: 'user001', dataset: '法律知识库', date: '2024-12-13 14:20', rounds: '2' },
+    { id: '14', log: 'log014', user: 'user002', dataset: '医疗知识库', date: '2024-12-14 16:00', rounds: '5' },
+    { id: '15', log: 'log015', user: 'user003', dataset: '技术知识库', date: '2024-12-15 09:50', rounds: '8' },
+    { id: '16', log: 'log016', user: 'user004', dataset: '教育知识库', date: '2024-12-16 11:30', rounds: '3' },
+    { id: '17', log: 'log017', user: 'user005', dataset: '金融知识库', date: '2024-12-17 13:10', rounds: '6' },
+    { id: '18', log: 'log018', user: 'user006', dataset: '法律知识库', date: '2024-12-18 15:45', rounds: '4' },
+    { id: '19', log: 'log019', user: 'user007', dataset: '医疗知识库', date: '2024-12-19 10:25', rounds: '7' },
+    { id: '20', log: 'log020', user: 'user008', dataset: '技术知识库', date: '2024-12-20 12:00', rounds: '5' },
+    { id: '21', log: 'log021', user: 'user009', dataset: '教育知识库', date: '2024-12-21 14:35', rounds: '3' },
+    { id: '22', log: 'log022', user: 'user010', dataset: '金融知识库', date: '2024-12-22 16:20', rounds: '6' },
+    { id: '23', log: 'log023', user: 'user001', dataset: '法律知识库', date: '2024-12-23 09:40', rounds: '8' },
+    { id: '24', log: 'log024', user: 'user002', dataset: '医疗知识库', date: '2024-12-24 11:15', rounds: '4' },
+    { id: '25', log: 'log025', user: 'user003', dataset: '技术知识库', date: '2024-12-25 13:50', rounds: '7' }
 ]
 
 //当前显示的日志列表
@@ -120,24 +110,36 @@ const logList = ref<any[]>([])
 //查询加载状态
 const queryLoading = ref(false)
 
+//分页相关
+const currentPage = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
+
 //加载对话记录
 const loadConversationLogs = async (params: ConversationQueryParams = {}) => {
     try {
         queryLoading.value = true;
 
         const queryParams = {
-            ...params
+            ...params,
+            page: currentPage.value,
+            pageSize: pageSize.value
         }
 
         const response = await apiService.getConversationLogs(queryParams)
 
         logList.value = response.data
+        total.value = response.total
 
         ElMessage.success(`加载完成，共${response.total}条记录`)
     } catch (error: any) {
-        ElMessage.error(error.message || '后端加载数据失败')
-        //api调用失败，模拟数据后备
-        logList.value = getMockData;
+        ElMessage.error(error.message || '后端加载数据失败，使用模拟数据')
+        
+        //api调用失败，使用模拟数据并模拟分页
+        const start = (currentPage.value - 1) * pageSize.value
+        const end = start + pageSize.value
+        logList.value = getMockData.slice(start, end);
+        total.value = getMockData.length;
     } finally {
         queryLoading.value = false;
     }
@@ -175,6 +177,9 @@ const onQuery = async () => {
         queryParams.endDate = endDate
     }
 
+    //重置到第一页
+    currentPage.value = 1
+
     //调用api查询
     await loadConversationLogs(queryParams)
 }
@@ -184,6 +189,11 @@ const onReset = () => {
     formInline.log = ''
     formInline.user = ''
     formInline.date = []
+    
+    //重置分页
+    currentPage.value = 1
+    pageSize.value = 10
+    
     loadConversationLogs()
     ElMessage.info('已重置查询条件')
 }
@@ -192,7 +202,19 @@ const onReset = () => {
 const onDetail = (row: any) => {
     ElMessage.info(`查看会话 ${row.log} 的详细信息`)
     //跳转到详情页面或打开详情弹窗
+}
 
+//分页大小改变
+const handleSizeChange = (val: number) => {
+    pageSize.value = val
+    currentPage.value = 1 // 改变每页条数时，重置到第一页
+    loadConversationLogs()
+}
+
+//当前页改变
+const handleCurrentChange = (val: number) => {
+    currentPage.value = val
+    loadConversationLogs()
 }
 </script>
 <style scoped lang="less">
@@ -219,6 +241,7 @@ const onDetail = (row: any) => {
     }
 
     .page-main {
+        position: relative;
         margin: 20px 0;
         min-height: 700px;
 
@@ -227,8 +250,15 @@ const onDetail = (row: any) => {
         }
 
         .log-table {
-            max-height: calc(100% - 120px);
+            max-height: calc(100% - 160px);
             overflow-y: auto;
+        }
+
+        .pagination-block {
+            position: absolute;
+            right: 20px;
+            bottom: 20px;
+            padding: 10px;
         }
     }
 
