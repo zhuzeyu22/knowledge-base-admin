@@ -53,8 +53,7 @@
                         <!-- 日期选择-->
                         <div class="date-pick">
                             <el-date-picker class="date-picker" v-model="dateRange" type="daterange" range-separator="至"
-                                start-placeholder="开始日期" end-placeholder="结束日期" @change="handleDateChange"
-                                :shortcuts="dateShortcuts" />
+                                start-placeholder="开始日期" end-placeholder="结束日期" @change="handleDateChange"/>
                         </div>
                         <div ref="trendChart" style="width: 100%; height: 350px;"></div>
                     </el-card>
@@ -82,12 +81,12 @@
 </template>
 
 <script setup lang="ts">
-// import axios from 'axios';
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import * as echarts from 'echarts';
 import type { ECharts } from 'echarts';
-import { ElDatePicker } from 'element-plus';
+import { ElDatePicker, ElMessage } from 'element-plus';
 import { Plus, Minus, View, UserFilled, Document } from '@element-plus/icons-vue';
+import apiService, { TrendQueryParams } from '../../service/api';
 
 //卡片数据
 interface StatCard {
@@ -97,12 +96,15 @@ interface StatCard {
     iconClass: string;
     trend: number;
 }
-const cardData = ref<StatCard[]>([
+
+//模拟卡片数据
+const getMockCardData = (): StatCard[] => [
     {
         title: '访问次数',
         value: '128,930',
-        icon: View, trend: 12.5,
-        iconClass: 'icon-blue'
+        icon: View, 
+        iconClass: 'icon-blue',
+        trend: 12.5,
     },
     {
         title: '访问人数',
@@ -125,9 +127,10 @@ const cardData = ref<StatCard[]>([
         trend: 6.8,
         iconClass: 'icon-red'
     }
-]);
+];
+const cardData = ref<StatCard[]>(getMockCardData());
 
-// 定义图表容器ref
+// 图表
 const userChart = ref<HTMLDivElement | null>(null);
 const trendChart = ref<HTMLDivElement | null>(null);
 const documentChart = ref<HTMLDivElement | null>(null);
@@ -143,61 +146,44 @@ const dateRange = ref<[Date, Date]>([
     new Date(new Date().getTime() - 3600 * 1000 * 24 * 6),
     new Date()
 ]);
-const dateShortcuts = [
-    {
-        text: '最近7天',
-        value: () => {
-            const end = new Date();
-            const start = new Date();
-            start.setTime(start.getTime() - 3600 * 1000 * 24 * 6);
-            return [start, end];
-        },
-    },
-    {
-        text: '最近30天',
-        value: () => {
-            const end = new Date();
-            const start = new Date();
-            start.setTime(start.getTime() - 3600 * 1000 * 24 * 29);
-            return [start, end];
-        },
-    },
-];
 
 //用户分布模拟数据
-const userChartData = {
+const getMockUserData = () => ({
     categories: ['北京银行总部', '科技部', '南京分行', '苏州分行', '南昌分行', '其他分行'],
     values: [20, 50, 25, 30, 25, 60],
-};
+});
 
-//访问趋势模拟数据 - 改为根据日期范围生成
-const trendChartData = (startDate: Date, endDate: Date) => {
-    //日期范围天数
+const userChartData = ref(getMockUserData());
+
+//访问趋势模拟数据 - 根据日期范围生成
+const getMockTrendData = (startDate: Date, endDate: Date) => {
+    //计算日期范围天数
     const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)) + 1;
-
-    //日期数组
+    
+    //生成日期数组
     const dates = [];
     for (let i = 0; i < days; i++) {
         const date = new Date(startDate);
         date.setDate(startDate.getDate() + i);
         dates.push(`${date.getMonth() + 1}-${date.getDate()}`);
     }
-
-    const visitorCount: number[] = [];
-    const visitCount: number[] = [];
-
+    
+    //生成固定模式的模拟数据（不使用随机数）
+    const visitCount = [];
+    const visitorCount = [];
+    const baseVisitor = 30;
+    const baseVisit = 45;
+    
     for (let i = 0; i < days; i++) {
-        //访问人数
-        const visitor = Math.floor(Math.random() * 50) + 10;
-        visitorCount.push(visitor);
-
-        //访问次数
-        const minVisit = visitor + 5;
-        const maxVisit = visitor + 40;
-        const visit = Math.floor(Math.random() * (maxVisit - minVisit + 1)) + minVisit;
-        visitCount.push(visit);
+        //访问人数：基于正弦波动生成
+        const visitorValue = Math.round(baseVisitor + Math.sin(i * 0.5) * 10 + (i % 3) * 3);
+        visitorCount.push(visitorValue);
+        
+        //访问次数：比访问人数多一些
+        const visitValue = Math.round(baseVisit + Math.sin(i * 0.5) * 15 + (i % 3) * 5);
+        visitCount.push(visitValue);
     }
-
+    
     return { dates, visitCount, visitorCount };
 };
 
@@ -210,7 +196,7 @@ const defaultDateRange = computed(() => {
 });
 
 //文档类型分布模拟数据
-const documentTypeData = [
+const getMockDocumentTypeData = () => [
     { value: 335, name: 'pdf' },
     { value: 310, name: 'doc' },
     { value: 274, name: 'docx' },
@@ -220,9 +206,17 @@ const documentTypeData = [
     { value: 200, name: '其他' }
 ];
 
+const documentTypeData = ref(getMockDocumentTypeData());
+
 //知识库调用排名模拟数据
-type TopDocRow = { name: string; dept: string; calls: number; tokens: string };
-const topDocs: TopDocRow[] = [
+type TopDocRow = { 
+    name: string; 
+    dept: string; 
+    calls: number; 
+    tokens: string 
+};
+
+const getMockTopDocs = (): TopDocRow[] => [
     {
         name: '金融法规.pdf',
         dept: '合规部',
@@ -260,9 +254,128 @@ const topDocs: TopDocRow[] = [
         tokens: '20.2w'
     },
 ];
+
+const topDocs = ref<TopDocRow[]>(getMockTopDocs());
+
 const topDocsSorted = computed(() =>
-    [...topDocs].sort((a, b) => b.calls - a.calls)
+    [...topDocs.value].sort((a, b) => b.calls - a.calls)
 );
+
+//加载
+const loadStatData = async () => {
+    try {
+        const response = await apiService.getStatData();
+
+        //更新卡片数据，映射图标
+        const iconMap: { [key: string]: any } = {
+            'View': View,
+            'UserFilled': UserFilled,
+            'Document': Document
+        };
+
+        cardData.value = response.cardData.map(card => ({
+            ...card,
+            icon: iconMap[card.icon] || View
+        }));
+
+        userChartData.value = response.userDistribution;
+
+        documentTypeData.value = response.documentTypes;
+
+        topDocs.value = response.topDocuments;
+
+        initUserChart();
+        initDocumentChart();
+
+        ElMessage.success('数据加载成功');
+    } catch (error: any) {
+        ElMessage.error(error.message || '后端加载数据失败，使用模拟数据');
+        //API调用失败，使用模拟数据
+        cardData.value = getMockCardData();
+        userChartData.value = getMockUserData();
+        documentTypeData.value = getMockDocumentTypeData();
+        topDocs.value = getMockTopDocs();
+        initUserChart();
+        initDocumentChart();
+    }
+};
+
+//访问趋势数据
+const loadTrendData = async (startDate?: Date, endDate?: Date) => {
+    try {
+        //确定日期范围
+        const [sDate, eDate] = startDate && endDate
+            ? [startDate, endDate]
+            : defaultDateRange.value;
+
+        //格式化日期为字符串
+        const params: TrendQueryParams = {
+            startDate: sDate.toISOString().split('T')[0],
+            endDate: eDate.toISOString().split('T')[0]
+        };
+
+        const response = await apiService.getTrendData(params);
+
+        //更新日期选择器值
+        dateRange.value = [sDate, eDate];
+
+        //使用API返回的数据初始化图表
+        if (trendChart.value) {
+            if (trendChartInstance) {
+                (trendChartInstance as ECharts).dispose();
+            }
+
+            trendChartInstance = echarts.init(trendChart.value);
+
+            const options = {
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: ['访问次数', '访问人数']
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '10%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: response.dates
+                },
+                yAxis: {
+                    type: 'value',
+                    min: 0,
+                    max: 100
+                },
+                series: [
+                    {
+                        name: '访问次数',
+                        type: 'line',
+                        data: response.visitCount,
+                        smooth: true
+                    },
+                    {
+                        name: '访问人数',
+                        type: 'line',
+                        data: response.visitorCount,
+                        smooth: true
+                    }
+                ]
+            };
+
+            trendChartInstance.setOption(options);
+        }
+
+        ElMessage.success('趋势数据加载成功');
+    } catch (error: any) {
+        ElMessage.error(error.message || '后端加载趋势数据失败，使用模拟数据');
+        //API调用失败，使用模拟数据
+        initTrendChart(startDate, endDate);
+    }
+};
 
 //初始化图表
 const initUserChart = () => {
@@ -287,7 +400,7 @@ const initUserChart = () => {
         },
         xAxis: {
             type: 'category',
-            data: userChartData.categories,
+            data: userChartData.value.categories,
             axisLabel: {
                 interval: 0   // 强制显示所有标签
             }
@@ -299,7 +412,7 @@ const initUserChart = () => {
         //柱状图核心数据
         series: [
             {
-                data: userChartData.values,
+                data: userChartData.value.values,
                 type: 'bar',
                 barWidth: '30%'
             }
@@ -324,8 +437,8 @@ const initTrendChart = (startDate?: Date, endDate?: Date) => {
     //设置日期选择器值
     dateRange.value = [sDate, eDate];
 
-    //生成数据
-    const trendData = trendChartData(sDate, eDate);
+    //使用模拟数据（传入日期范围）
+    const trendData = getMockTrendData(sDate, eDate);
 
     //新实例
     trendChartInstance = echarts.init(trendChart.value);
@@ -354,7 +467,6 @@ const initTrendChart = (startDate?: Date, endDate?: Date) => {
             max: 100
         },
         series: [
-
             {
                 name: '访问次数',
                 type: 'line',
@@ -366,14 +478,12 @@ const initTrendChart = (startDate?: Date, endDate?: Date) => {
                 type: 'line',
                 data: trendData.visitorCount,
                 smooth: true
-            },
-
+            }
         ]
     };
 
     trendChartInstance.setOption(options);
 }
-
 const initDocumentChart = () => {
     if (!documentChart.value) return
 
@@ -420,7 +530,7 @@ const initDocumentChart = () => {
                 labelLine: {
                     show: false
                 },
-                data: documentTypeData
+                data: documentTypeData.value
             }
         ]
     };
@@ -431,7 +541,7 @@ const initDocumentChart = () => {
 //日期变化
 const handleDateChange = (newDateRange: [Date, Date]) => {
     dateRange.value = newDateRange;//同步更新
-    initTrendChart(newDateRange[0], newDateRange[1]);
+    loadTrendData(newDateRange[0], newDateRange[1]);
 };
 
 //窗口大小变化（防抖）
@@ -448,10 +558,9 @@ const handleResize = () => {
 
 //挂载
 onMounted(() => {
-    initUserChart();
-    initTrendChart();
-    initDocumentChart();
-
+    loadStatData();
+    loadTrendData();
+    //监听窗口
     window.addEventListener('resize', handleResize);
 });
 
@@ -459,7 +568,7 @@ onMounted(() => {
 onUnmounted(() => {
     //移除监听
     window.removeEventListener('resize', handleResize);
-    //销毁图表实例
+    //销毁实例
     if (userChartInstance) {
         userChartInstance.dispose();
         userChartInstance = null;
