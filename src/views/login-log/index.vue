@@ -33,6 +33,19 @@
                         <el-table-column prop="operation" label="操作描述" min-width="100" />
                     </el-table>
                 </div>
+                <div class="pagination-block">
+                    <el-pagination 
+                        :v-model:current-page="currentPage" 
+                        :v-model:page-size="pageSize"
+                        :page-sizes="[10, 20, 50, 100]"
+                        :background="true"
+                        layout="sizes, prev, pager, next" 
+                        :total="total"
+                        @size-change="handleSizeChange" 
+                        @current-change="handleCurrentChange"
+                        prev-text="< 上一页"
+                        next-text="下一页 >" />
+                </div>
             </el-main>
         </el-container>
 
@@ -83,7 +96,119 @@ const getMockData = [
         type: '注册',
         date: '2024-12-01 09:30',
         operation: '注册成功'
-    }
+    },
+    {
+        id: '6',
+        user: 'user001',
+        type: '登录',
+        date: '2024-12-01 09:30',
+        operation: '登录成功'
+    },
+    {
+        id: '7',
+        user: 'user002',
+        type: '登录',
+        date: '2024-12-01 09:30',
+        operation: '登录失败'
+    },
+    {
+        id: '8',
+        user: 'user003',
+        type: '登录',
+        date: '2024-12-01 09:30',
+        operation: '登录成功'
+    },
+    {
+        id: '9',
+        user: 'user004',
+        type: '登录',
+        date: '2024-12-01 09:30',
+        operation: '登录失败'
+    },
+    {
+        id: '10',
+        user: 'user001',
+        type: '注册',
+        date: '2024-12-01 09:30',
+        operation: '注册成功'
+    },
+    {
+        id: '11',
+        user: 'user001',
+        type: '登录',
+        date: '2024-12-01 09:30',
+        operation: '登录成功'
+    },
+    {
+        id: '12',
+        user: 'user002',
+        type: '登录',
+        date: '2024-12-01 09:30',
+        operation: '登录失败'
+    },
+    {
+        id: '13',
+        user: 'user003',
+        type: '登录',
+        date: '2024-12-01 09:30',
+        operation: '登录成功'
+    },
+    {
+        id: '14',
+        user: 'user004',
+        type: '登录',
+        date: '2024-12-01 09:30',
+        operation: '登录失败'
+    },
+    {
+        id: '15',
+        user: 'user001',
+        type: '注册',
+        date: '2024-12-01 09:30',
+        operation: '注册成功'
+    },
+    {
+        id: '16',
+        user: 'user001',
+        type: '登录',
+        date: '2024-12-01 09:30',
+        operation: '登录成功'
+    },
+    {
+        id: '17',
+        user: 'user002',
+        type: '登录',
+        date: '2024-12-01 09:30',
+        operation: '登录失败'
+    },
+    {
+        id: '18',
+        user: 'user003',
+        type: '登录',
+        date: '2024-12-01 09:30',
+        operation: '登录成功'
+    },
+    {
+        id: '19',
+        user: 'user004',
+        type: '登录',
+        date: '2024-12-01 09:30',
+        operation: '登录失败'
+    },
+    {
+        id: '20',
+        user: 'user001',
+        type: '注册',
+        date: '2024-12-01 09:30',
+        operation: '注册成功'
+    },
+    {
+        id: '21',
+        user: 'user001',
+        type: '注册',
+        date: '2024-12-01 09:30',
+        operation: '注册成功'
+    },
 ]
 //当前显示的登录列表
 const loginList = ref<any[]>([])
@@ -91,18 +216,31 @@ const loginList = ref<any[]>([])
 //查询加载状态
 const queryLoading = ref(false)
 
+//分页相关
+const currentPage = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
+
 const loadLoginLogs = async (params: LoginQueryParams = {}) => {
     try {
         queryLoading.value = true;
         const queryParams = {
-            ...params
+            ...params,
+            page: currentPage.value,
+            pageSize: pageSize.value
         }
-        const reponse = await apiService.getLoginLogs(queryParams)
-        loginList.value = reponse.data
-        ElMessage.success(`加载完成，共${reponse.total}条记录`)
+        const response = await apiService.getLoginLogs(queryParams)
+
+        loginList.value = response.data
+        total.value = response.total
+
+        ElMessage.success(`加载完成，共${response.total}条记录`)
     } catch (error: any) {
         ElMessage.error(error.message || '后端加载数据失败')
-        loginList.value = getMockData
+        const start = (currentPage.value - 1) * pageSize.value
+        const end = start + pageSize.value
+        loginList.value = getMockData.slice(start, end);
+        total.value = getMockData.length;
     } finally {
         queryLoading.value = false;
     }
@@ -133,6 +271,9 @@ const onQuery = async () => {
         queryParams.endDate = endDate
     }
 
+    //重置到第一页
+    currentPage.value = 1
+
     await loadLoginLogs(queryParams)
 }
 
@@ -140,8 +281,23 @@ const onQuery = async () => {
 const onReset = () => {
     formInline.user = ''
     formInline.date = []
+    currentPage.value = 1
+    pageSize.value = 10
     loadLoginLogs()
     ElMessage.info('已重置查询条件')
+}
+
+//分页大小改变
+const handleSizeChange = (val: number) => {
+    pageSize.value = val
+    currentPage.value = 1 // 改变每页条数时，重置到第一页
+    loadLoginLogs()
+}
+
+//当前页改变
+const handleCurrentChange = (val: number) => {
+    currentPage.value = val
+    loadLoginLogs()
 }
 </script>
 <style scoped lang="less">
@@ -168,11 +324,23 @@ const onReset = () => {
     }
 
     .page-main {
+        position: relative;
         margin: 20px 0;
         height: 700px;
 
         ::v-deep .input {
             width: 300px;
+        }
+
+        .login-table{
+            max-height: calc(100% - 160px);
+            overflow-y: auto;
+        }
+        .pagination-block {
+            position: absolute;
+            right: 20px;
+            bottom: 20px;
+            padding: 10px;
         }
 
     }
