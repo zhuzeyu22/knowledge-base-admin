@@ -326,7 +326,6 @@ const handleCurrentChange = (val: number) => {
     .page-main {
         position: relative;
         margin: 20px 0;
-        height: 700px;
 
         ::v-deep .input {
             width: 300px;

@@ -243,14 +243,13 @@ const handleCurrentChange = (val: number) => {
     .page-main {
         position: relative;
         margin: 20px 0;
-        min-height: 700px;
 
         ::v-deep .input {
             width: 300px;
         }
 
         .log-table {
-            max-height: calc(100% - 160px);
+            max-height: calc(100% - 210px);
             overflow-y: auto;
         }
 

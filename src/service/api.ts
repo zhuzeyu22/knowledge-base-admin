@@ -48,6 +48,7 @@ export interface TrendQueryParams {
     startDate?: string
     endDate?: string
 }
+
 //对话记录
 export interface ConversationLog {
     id: number
@@ -70,6 +71,8 @@ export interface ConversationQueryParams {
 export interface ConversationListResponse {
     data: ConversationLog[]
     total: number
+    page: number
+    pageSize: number
 }
 
 //登录日志
@@ -92,6 +95,8 @@ export interface LoginQueryParams {
 export interface LoginListResponse {
     data: LoginLog[]
     total: number
+    page: number
+    pageSize: number
 }
 
 //授权记录
@@ -113,11 +118,15 @@ export interface AuthQueryParams {
     dataset?: string
     authorizer?: string
     authorizedUser?: string
+    page?: number
+    pageSize?: number
 }
 
 export interface AuthListResponse {
     data: AuthLog[]
     total: number
+    page: number
+    pageSize: number
 }
 
 //接口定义
@@ -144,7 +153,7 @@ export const apiService = {
     async getAuthLogs(params: AuthQueryParams = {}): Promise<AuthListResponse> {
         return request.get('api/auth-logs', { params })
     },
-    async getAuthDetaim(id: number): Promise<AuthLog> {
+    async getAuthDetail(id: number): Promise<AuthLog> {
         return request.get(`api/auth-logs/${id}`)
     }
 }

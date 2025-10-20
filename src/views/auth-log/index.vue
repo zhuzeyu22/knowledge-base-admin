@@ -37,7 +37,7 @@
                 <div class="log-table">
                     <el-table class="table" :data="authList" style="width: 100%" :border="false" stripe>
                         <el-table-column prop="id" label="序号" min-width="100" />
-                        <el-table-column prop="authorizationId" label="授权ID" min-width="100" />
+                        <el-table-column prop="authorizationId" label="授权ID" min-width="10" />
                         <el-table-column prop="authorizedUser" label="被授权对象" min-width="100" />
                         <el-table-column prop="dataset" label="关联知识库" min-width="130" />
                         <el-table-column prop="datasetId" label="知识库ID" min-width="130" />
@@ -52,6 +52,19 @@
                             </template>
                         </el-table-column>
                     </el-table>
+                </div>
+                <div class="pagination-block">
+                    <el-pagination 
+                        :v-model:current-page="currentPage" 
+                        :v-model:page-size="pageSize"
+                        :page-sizes="[10, 20, 50, 100]"
+                        :background="true"
+                        layout="sizes, prev, pager, next" 
+                        :total="total"
+                        @size-change="handleSizeChange" 
+                        @current-change="handleCurrentChange"
+                        prev-text="< 上一页"
+                        next-text="下一页 >" />
                 </div>
             </el-main>
         </el-container>
@@ -121,6 +134,206 @@ const getMockData = [
         authorizor:'admin21',
         type:'可查看',
         date:'2024-12-01 09:30'
+    },
+    {
+        id: '6',
+        authorizationId:'01',
+        authorizedUser:'user10',
+        dataset:'共享知识库A',
+        datasetId:'001',
+        authorizor:'admin21',
+        type:'可管理',
+        date:'2024-12-01 09:30'
+    },
+    {
+        id: '7',
+        authorizationId:'02',
+        authorizedUser:'user20',
+        dataset:'共享知识库A',
+        datasetId:'001',
+        authorizor:'admin21',
+        type:'可编辑',
+        date:'2024-12-01 09:30'
+    },
+    {
+        id: '8',
+        authorizationId:'03',
+        authorizedUser:'user20',
+        dataset:'共享知识库B',
+        datasetId:'002',
+        authorizor:'admin21',
+        type:'可查看',
+        date:'2024-12-01 09:30'
+    },
+    {
+        id: '9',
+        authorizationId:'04',
+        authorizedUser:'user25',
+        dataset:'共享知识库C',
+        datasetId:'003',
+        authorizor:'admin21',
+        type:'可管理',
+        date:'2024-12-01 09:30'
+    },
+    {
+        id: '10',
+        authorizationId:'05',
+        authorizedUser:'user25',
+        dataset:'共享知识库A',
+        datasetId:'001',
+        authorizor:'admin21',
+        type:'可查看',
+        date:'2024-12-01 09:30'
+    },
+    {
+        id: '11',
+        authorizationId:'01',
+        authorizedUser:'user10',
+        dataset:'共享知识库A',
+        datasetId:'001',
+        authorizor:'admin21',
+        type:'可管理',
+        date:'2024-12-01 09:30'
+    },
+    {
+        id: '12',
+        authorizationId:'02',
+        authorizedUser:'user20',
+        dataset:'共享知识库A',
+        datasetId:'001',
+        authorizor:'admin21',
+        type:'可编辑',
+        date:'2024-12-01 09:30'
+    },
+    {
+        id: '13',
+        authorizationId:'03',
+        authorizedUser:'user20',
+        dataset:'共享知识库B',
+        datasetId:'002',
+        authorizor:'admin21',
+        type:'可查看',
+        date:'2024-12-01 09:30'
+    },
+    {
+        id: '14',
+        authorizationId:'04',
+        authorizedUser:'user25',
+        dataset:'共享知识库C',
+        datasetId:'003',
+        authorizor:'admin21',
+        type:'可管理',
+        date:'2024-12-01 09:30'
+    },
+    {
+        id: '15',
+        authorizationId:'05',
+        authorizedUser:'user25',
+        dataset:'共享知识库A',
+        datasetId:'001',
+        authorizor:'admin21',
+        type:'可查看',
+        date:'2024-12-01 09:30'
+    },
+    {
+        id: '16',
+        authorizationId:'01',
+        authorizedUser:'user10',
+        dataset:'共享知识库A',
+        datasetId:'001',
+        authorizor:'admin21',
+        type:'可管理',
+        date:'2024-12-01 09:30'
+    },
+    {
+        id: '17',
+        authorizationId:'02',
+        authorizedUser:'user20',
+        dataset:'共享知识库A',
+        datasetId:'001',
+        authorizor:'admin21',
+        type:'可编辑',
+        date:'2024-12-01 09:30'
+    },
+    {
+        id: '18',
+        authorizationId:'03',
+        authorizedUser:'user20',
+        dataset:'共享知识库B',
+        datasetId:'002',
+        authorizor:'admin21',
+        type:'可查看',
+        date:'2024-12-01 09:30'
+    },
+    {
+        id: '19',
+        authorizationId:'04',
+        authorizedUser:'user25',
+        dataset:'共享知识库C',
+        datasetId:'003',
+        authorizor:'admin21',
+        type:'可管理',
+        date:'2024-12-01 09:30'
+    },
+    {
+        id: '20',
+        authorizationId:'05',
+        authorizedUser:'user25',
+        dataset:'共享知识库A',
+        datasetId:'001',
+        authorizor:'admin21',
+        type:'可查看',
+        date:'2024-12-01 09:30'
+    },
+    {
+        id: '21',
+        authorizationId:'01',
+        authorizedUser:'user10',
+        dataset:'共享知识库A',
+        datasetId:'001',
+        authorizor:'admin21',
+        type:'可管理',
+        date:'2024-12-01 09:30'
+    },
+    {
+        id: '22',
+        authorizationId:'02',
+        authorizedUser:'user20',
+        dataset:'共享知识库A',
+        datasetId:'001',
+        authorizor:'admin21',
+        type:'可编辑',
+        date:'2024-12-01 09:30'
+    },
+    {
+        id: '23',
+        authorizationId:'03',
+        authorizedUser:'user20',
+        dataset:'共享知识库B',
+        datasetId:'002',
+        authorizor:'admin21',
+        type:'可查看',
+        date:'2024-12-01 09:30'
+    },
+    {
+        id: '24',
+        authorizationId:'04',
+        authorizedUser:'user25',
+        dataset:'共享知识库C',
+        datasetId:'003',
+        authorizor:'admin21',
+        type:'可管理',
+        date:'2024-12-01 09:30'
+    },
+    {
+        id: '25',
+        authorizationId:'05',
+        authorizedUser:'user25',
+        dataset:'共享知识库A',
+        datasetId:'001',
+        authorizor:'admin21',
+        type:'可查看',
+        date:'2024-12-01 09:30'
     }
 ]
 //当前显示的登录列表
@@ -129,20 +342,30 @@ const authList = ref<any[]>([])
 //查询加载状态
 const queryLoading = ref(false)
 
+const currentPage = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
+
 //加载列表
 const loadAuthLogs = async(params:AuthQueryParams = {}) =>{
     try{
         queryLoading.value = true;
         const queryParams = {
-            ...params
+            ...params,
+            page:currentPage.value,
+            pageSize:pageSize.value
         }
         const response = await apiService.getAuthLogs(queryParams)
 
         authList.value = response.data
+        total.value = response.total
         ElMessage.success(`加载完成，共${response.total}条记录`)
     } catch(error:any) {
         ElMessage.error(error.message || '后端加载数据失败')
-        authList.value = getMockData
+        const start = (currentPage.value - 1) * pageSize.value
+        const end = start + pageSize.value
+        authList.value = getMockData.slice(start,end)
+        total.value = getMockData.length
     } finally {
         queryLoading.value = false
     }
@@ -162,8 +385,6 @@ const onQuery = async () => {
 
     const queryParams:AuthQueryParams = {}
 
-    
-        
     //授权ID
     if (formInline.authorizationId.trim()) {
         queryParams.authorizationId = Number(formInline.authorizationId.trim())
@@ -191,6 +412,7 @@ const onQuery = async () => {
         queryParams.authorizedUser = formInline.authorizer
     }
 
+    currentPage.value = 1
     await loadAuthLogs(queryParams)
 }
 
@@ -201,14 +423,25 @@ const onReset = () => {
     formInline.dataset = ''
     formInline.authorizer = ''
     formInline.authorizedUser = ''
+    currentPage.value = 1
+    pageSize.value = 10
     loadAuthLogs()
     ElMessage.info('已重置查询条件')
+}
+const handleSizeChange = (val:number) => {
+    pageSize.value = val
+    currentPage.value = 1
+    loadAuthLogs()
+}
+const handleCurrentChange =(val:number) => {
+    currentPage.value = val
+    loadAuthLogs()
 }
 //详情
 const onDetail = (row: any) => {
     ElMessage.info(`查看授权 ${row.authorizationId} 的详细信息`)
-    //跳转到详情页面或打开详情弹窗
-    
+    //打开详情弹窗
+
 }
 </script>
 <style scoped lang="less">
@@ -234,13 +467,23 @@ const onDetail = (row: any) => {
     }
 
     .page-main {
+        position: relative;
         margin: 20px 0;
-        height: 700px;
 
         ::v-deep .input {
             width: 280px;
         }
 
+        .log-table{
+            max-height: calc(100% - 300px);
+            overflow-y: auto;
+        }
+        .pagination-block{
+            position: absolute;
+            right: 20px;
+            bottom: 20px;
+            padding: 10px;
+        }
     }
 
 }
