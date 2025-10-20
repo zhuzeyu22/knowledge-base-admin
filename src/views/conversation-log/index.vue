@@ -66,7 +66,7 @@
 <script setup lang="ts">
 import { reactive, ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import apiService, { ConversationQueryParams } from '../../service/api'
+import apiService, { ConversationQueryParams } from '@/service/api'
 
 const formInline = reactive({
     log: '',

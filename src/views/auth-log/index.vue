@@ -37,20 +37,13 @@
                 <div class="log-table">
                     <el-table class="table" :data="authList" style="width: 100%" :border="false" stripe>
                         <el-table-column prop="id" label="序号" min-width="100" />
-                        <el-table-column prop="authorizationId" label="授权ID" min-width="10" />
+                        <el-table-column prop="authorizationId" label="授权ID" min-width="100" />
                         <el-table-column prop="authorizedUser" label="被授权对象" min-width="100" />
                         <el-table-column prop="dataset" label="关联知识库" min-width="130" />
                         <el-table-column prop="datasetId" label="知识库ID" min-width="130" />
                         <el-table-column prop="authorizor" label="授权人" min-width="130" />
                         <el-table-column prop="type" label="授权类型" min-width="130" />
                         <el-table-column prop="date" label="授权时间" min-width="130" />
-                        <el-table-column label="详情" min-width="100">
-                            <template #default="scope">
-                                <el-button link type="primary" @click="onDetail(scope.row)">
-                                    查看
-                                </el-button>
-                            </template>
-                        </el-table-column>
                     </el-table>
                 </div>
                 <div class="pagination-block">
@@ -74,7 +67,7 @@
 <script setup lang="ts">
 import { reactive, ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import apiService, { AuthQueryParams } from '../../service/api'
+import apiService, { AuthQueryParams } from '@/service/api'
 
 const formInline = reactive({
     authorizationId:'',
@@ -436,12 +429,6 @@ const handleSizeChange = (val:number) => {
 const handleCurrentChange =(val:number) => {
     currentPage.value = val
     loadAuthLogs()
-}
-//详情
-const onDetail = (row: any) => {
-    ElMessage.info(`查看授权 ${row.authorizationId} 的详细信息`)
-    //打开详情弹窗
-
 }
 </script>
 <style scoped lang="less">
