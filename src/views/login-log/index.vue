@@ -54,7 +54,7 @@
 <script setup lang="ts">
 import { reactive, ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import apiService, { LoginQueryParams } from '@/service/api'
+import apiService, { LoginQueryParams } from '../../service/api'
 
 const formInline = reactive({
     user: '',

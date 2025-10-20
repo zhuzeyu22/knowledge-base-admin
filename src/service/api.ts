@@ -75,6 +75,16 @@ export interface ConversationListResponse {
     pageSize: number
 }
 
+export interface ConversationMessage {
+    content: string
+    time: string
+    type: 'user' | 'assistant'
+}
+
+export interface ConversationDetailResponse {
+    data: ConversationMessage[]
+}
+
 //登录日志
 export interface LoginLog {
     id: number
@@ -142,7 +152,7 @@ export const apiService = {
     async getConversationLogs(params: ConversationQueryParams = {}): Promise<ConversationListResponse> {
         return request.get('api/conversation-logs', { params })
     },
-    async getConversationDetail(id: number): Promise<ConversationLog> {
+    async getConversationDetail(id: string): Promise<ConversationDetailResponse> {
         return request.get(`api/conversation-logs/${id}`)
     },
     //login
@@ -152,9 +162,6 @@ export const apiService = {
     //auth
     async getAuthLogs(params: AuthQueryParams = {}): Promise<AuthListResponse> {
         return request.get('api/auth-logs', { params })
-    },
-    async getAuthDetail(id: number): Promise<AuthLog> {
-        return request.get(`api/auth-logs/${id}`)
     }
 }
 

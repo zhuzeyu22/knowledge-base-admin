@@ -3,7 +3,7 @@
         <el-container class="container">
             <!-- 标题 -->
             <el-header class="page-header page-style">
-                <h2 style="font-size: 20px;">对话记录</h2>
+                <h2 class="page-title">对话记录</h2>
             </el-header>
             <!-- 下方表格 -->
             <el-main class="page-main page-style">
@@ -58,6 +58,40 @@
                         prev-text="< 上一页"
                         next-text="下一页 >" />
                 </div>
+
+                <!-- 详情抽屉 -->
+                <transition name="overlay-fade">
+                    <div class="custom-drawer-overlay" v-if="drawerVisible" @click="drawerVisible = false"></div>
+                </transition>
+                <transition name="drawer-slide">
+                    <div class="custom-drawer" v-if="drawerVisible">
+                        <div class="drawer-header">
+                            <div class="header-content">
+                                <h3>对话记录</h3>
+                                <p class="session-info">{{ currentSession.log }}</p>
+                            </div>
+                            <el-icon class="close-icon" @click="drawerVisible = false">
+                                <Close/>
+                            </el-icon>
+                        </div>
+                        <div class="drawer-body">
+                            <div class="conversation-content">
+                                <div 
+                                    v-for="(message, index) in conversationMessages" 
+                                    :key="index"
+                                    :class="['message-item', message.type === 'user' ? 'message-right' : 'message-left']"
+                                >
+                                    <div class="message-bubble">
+                                        <div class="message-text">{{ message.content }}</div>
+                                    </div>
+                                    <div v-if="message.type === 'assistant'" class="message-meta">
+                                        <span class="time">{{ message.time }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </transition>
             </el-main>
         </el-container>
 
@@ -66,7 +100,8 @@
 <script setup lang="ts">
 import { reactive, ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import apiService, { ConversationQueryParams } from '@/service/api'
+import { Close } from '@element-plus/icons-vue'
+import apiService, { ConversationQueryParams, ConversationMessage } from '../../service/api'
 
 const formInline = reactive({
     log: '',
@@ -104,16 +139,43 @@ const getMockData = [
     { id: '25', log: 'log025', user: 'user003', dataset: '技术知识库', date: '2024-12-25 13:50', rounds: '7' }
 ]
 
+const getMockDetail: ConversationMessage[] = [
+    {
+        content: '今天天气好不好',
+        time: '2025-10-14 11:11',
+        type: 'user'
+    },
+    {
+        content: '今天北京的天气挺好的，天气晴朗，阳光充足。根据墨迹天气信息，北京今日（2025 年 10 月 20 日）天气为晴，最低温度 1℃，最高温度 10℃，空气质量优，pm2.5 指数 10，湿度 25，西北风 2 级。',
+        time: '耗时3s  花费 Token 231  2025-10-14 11:11',
+        type: 'assistant'
+    },
+    {
+        content: '你今天开心吗',
+        time: '2025-10-14 11:12',
+        type: 'user'
+    },
+    {
+        content: '当然开心啦！能帮你解答天气问题，还能跟你聊天，这种互动的感觉特别好。而且每次能帮到你，看着问题一个个被解决，我就会觉得特别有价值。要不要跟我分享下你今天的心情呀？或者我帮你整理一份今日开心小事清单，咱们一起记录点快乐的瞬间？',
+        time: '耗时2s  花费 Token 231  2025-10-14 11:12',
+        type: 'assistant'
+    }
+]
 //当前显示的日志列表
 const logList = ref<any[]>([])
 
 //查询加载状态
 const queryLoading = ref(false)
 
-//分页相关
+//分页
 const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
+
+//抽屉
+const drawerVisible = ref(false)
+const currentSession = ref<any>({})
+const conversationMessages = ref<ConversationMessage[]>([])
 
 //加载对话记录
 const loadConversationLogs = async (params: ConversationQueryParams = {}) => {
@@ -199,9 +261,18 @@ const onReset = () => {
 }
 
 //详情
-const onDetail = (row: any) => {
-    ElMessage.info(`查看会话 ${row.log} 的详细信息`)
-    //跳转到详情页面或打开详情弹窗
+const onDetail = async (row: any) => {
+    currentSession.value = row
+    drawerVisible.value = true
+    
+    try {
+        const response = await apiService.getConversationDetail(row.log)
+        conversationMessages.value = response.data
+    } catch (error: any) {
+        ElMessage.error('调用API获取对话详情失败，展示模拟数据')
+        //模拟数据
+        conversationMessages.value = getMockDetail
+    }
 }
 
 //分页大小改变
@@ -238,11 +309,17 @@ const handleCurrentChange = (val: number) => {
     .page-header {
         height: 73px;
         line-height: 73px;
+        
+        .page-title {
+            margin: 0;
+            font-size: 20px;
+        }
     }
 
     .page-main {
         position: relative;
         margin: 20px 0;
+        overflow: hidden;
 
         ::v-deep .input {
             width: 300px;
@@ -251,6 +328,10 @@ const handleCurrentChange = (val: number) => {
         .log-table {
             max-height: calc(100% - 210px);
             overflow-y: auto;
+            
+            .table {
+                width: 100%;
+            }
         }
 
         .pagination-block {
@@ -259,7 +340,188 @@ const handleCurrentChange = (val: number) => {
             bottom: 20px;
             padding: 10px;
         }
-    }
 
+        //遮罩
+        .custom-drawer-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1;
+        }
+
+        .overlay-fade-enter-active,
+        .overlay-fade-leave-active {
+            transition: opacity 0.3s ease;
+        }
+
+        .overlay-fade-enter-from,
+        .overlay-fade-leave-to {
+            opacity: 0;
+        }
+
+        .overlay-fade-enter-to,
+        .overlay-fade-leave-from {
+            opacity: 1;
+        }
+
+        //抽屉
+        .custom-drawer {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 50%;
+            min-width: 600px;
+            max-width: 800px;
+            background-color: #fff;
+            box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15);
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+
+            @media (max-width: 1200px) {
+                width: 60%;
+                min-width: 500px;
+            }
+
+            @media (max-width: 768px) {
+                width: 80%;
+                min-width: 400px;
+            }
+
+            @media (max-width: 576px) {
+                width: 90%;
+                min-width: 320px;
+            }
+
+            .drawer-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 20px;
+
+                .header-content {
+                    flex: 1;
+                    
+                    h3 {
+                        margin: 0 0 8px 0;
+                        font-size: 20px;
+                        color: #303133;
+                    }
+                    
+                    .session-info {
+                        margin: 0;
+                        font-size: 14px;
+                        color: #909399;
+                    }
+                }
+
+                .close-icon {
+                    font-size: 30px;
+                    cursor: pointer;
+                    color: #909399;
+                    margin-left: 20px;
+                    &:hover {
+                        color: #409eff;
+                    }
+                }
+            }
+
+            .drawer-body {
+                flex: 1;
+                overflow: hidden;
+                padding: 0 20px 20px 20px;
+                display: flex;
+                flex-direction: column;
+
+                .conversation-content {
+                    flex: 1;
+                    padding: 20px;
+                    background-color: #f0f2f5;
+                    border-radius: 8px;
+                    overflow-y: auto;
+                    margin-bottom: 20px;
+
+                    .message-item {
+                        display: flex;
+                        flex-direction: column;
+                        margin-bottom: 20px;
+
+                        &.message-right {
+                            align-items: flex-end;
+
+                            .message-bubble {
+                                background: #5b7ce6;
+                                color: #fff;
+                                border-radius: 15px;
+                                max-width: 70%;
+                            }
+                        }
+
+                        &.message-left {
+                            align-items: flex-start;
+
+                            .message-bubble {
+                                background: #fff;
+                                color: #333;
+                                border-radius: 15px;
+                                max-width: 70%;
+                            }
+                        }
+                        
+                        .message-bubble {
+                            padding: 12px 16px;
+                            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                            
+                            .message-text {
+                                font-size: 14px;
+                                line-height: 1.6;
+                                word-break: break-word;
+                            }
+                        }
+
+                        .message-meta {
+                            display: flex;
+                            gap: 10px;
+                            font-size: 12px;
+                            margin-top: 6px;
+                            padding: 0 8px;
+                            color: #999;
+                            opacity: 0;
+                            visibility: hidden;
+                            transition: opacity 0.3s ease, visibility 0.3s ease;
+                            
+                            .time {
+                                color: #909399;
+                            }
+                        }
+
+                        &:hover .message-meta {
+                            opacity: 1;
+                            visibility: visible;
+                        }
+                    }
+                }
+            }
+        }
+
+        //抽屉滑入滑出动画
+        .drawer-slide-enter-active,
+        .drawer-slide-leave-active {
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .drawer-slide-enter-from,
+        .drawer-slide-leave-to {
+            transform: translateX(100%);
+        }
+
+        .drawer-slide-enter-to,
+        .drawer-slide-leave-from {
+            transform: translateX(0);
+        }
+    }
 }
 </style>

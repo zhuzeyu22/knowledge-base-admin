@@ -67,7 +67,7 @@
 <script setup lang="ts">
 import { reactive, ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import apiService, { AuthQueryParams } from '@/service/api'
+import apiService, { AuthQueryParams } from '../../service/api'
 
 const formInline = reactive({
     authorizationId:'',

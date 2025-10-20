@@ -86,7 +86,7 @@ import * as echarts from 'echarts';
 import type { ECharts } from 'echarts';
 import { ElDatePicker, ElMessage } from 'element-plus';
 import { Plus, Minus, View, UserFilled, Document } from '@element-plus/icons-vue';
-import apiService, { TrendQueryParams } from '@/service/api';
+import apiService, { TrendQueryParams } from '../../service/api';
 
 //卡片数据
 interface StatCard {
