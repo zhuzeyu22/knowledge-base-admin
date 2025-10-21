@@ -301,7 +301,7 @@ const handleCurrentChange = (val: number) => {
     .page-style {
         width: 100%;
         border: 1px solid #e4e7ed;
-        border-radius: 4px;
+        border-radius: 20px;
         background-color: #fff;
         box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.12);
     }
@@ -359,26 +359,12 @@ const handleCurrentChange = (val: number) => {
             bottom: 0;
             width: 50%;
             min-width: 600px;
+            max-width: 1200px;
             background-color: #fff;
             box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15);
             z-index: 2;
             display: flex;
             flex-direction: column;
-
-            @media (max-width: 1200px) {
-                width: 60%;
-                min-width: 500px;
-            }
-
-            @media (max-width: 768px) {
-                width: 80%;
-                min-width: 400px;
-            }
-
-            @media (max-width: 576px) {
-                width: 90%;
-                min-width: 320px;
-            }
 
             .drawer-header {
                 display: flex;

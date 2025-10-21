@@ -594,7 +594,7 @@ onUnmounted(() => {
         height: 73px;
         line-height: 73px;
         border: 1px solid #e4e7ed;
-        border-radius: 4px;
+        border-radius: 20px;
         background-color: #fff;
         box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.12);
     }

@@ -10,7 +10,7 @@ const routes = [
       {
         path: "private",
         name: "private",
-        component: () => import("../views/private/index.vue"),
+        component: () => import("../views/private/details.vue"),
       },
       {
         path: "public",
