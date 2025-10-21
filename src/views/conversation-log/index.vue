@@ -45,6 +45,7 @@
                         </el-table-column>
                     </el-table>
                 </div>
+                <!-- 分页 -->
                 <div class="pagination-block">
                     <el-pagination 
                         :v-model:current-page="currentPage" 
@@ -58,7 +59,6 @@
                         prev-text="< 上一页"
                         next-text="下一页 >" />
                 </div>
-
                 <!-- 详情抽屉 -->
                 <transition name="overlay-fade">
                     <div class="custom-drawer-overlay" v-if="drawerVisible" @click="drawerVisible = false"></div>
@@ -110,7 +110,7 @@ const formInline = reactive({
 })
 
 
-//模拟数据，调用api失败显示
+//模拟数据
 const getMockData = [
     { id: '1', log: 'log001', user: 'user001', dataset: '法律知识库', date: '2024-12-01 09:30', rounds: '3' },
     { id: '2', log: 'log002', user: 'user002', dataset: '医疗知识库', date: '2024-12-02 14:15', rounds: '5' },
@@ -161,10 +161,10 @@ const getMockDetail: ConversationMessage[] = [
         type: 'assistant'
     }
 ]
-//当前显示的日志列表
+//当前日志
 const logList = ref<any[]>([])
 
-//查询加载状态
+//查询状态
 const queryLoading = ref(false)
 
 //分页
@@ -351,21 +351,6 @@ const handleCurrentChange = (val: number) => {
             z-index: 1;
         }
 
-        .overlay-fade-enter-active,
-        .overlay-fade-leave-active {
-            transition: opacity 0.3s ease;
-        }
-
-        .overlay-fade-enter-from,
-        .overlay-fade-leave-to {
-            opacity: 0;
-        }
-
-        .overlay-fade-enter-to,
-        .overlay-fade-leave-from {
-            opacity: 1;
-        }
-
         //抽屉
         .custom-drawer {
             position: absolute;
@@ -374,7 +359,6 @@ const handleCurrentChange = (val: number) => {
             bottom: 0;
             width: 50%;
             min-width: 600px;
-            max-width: 800px;
             background-color: #fff;
             box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15);
             z-index: 2;
@@ -404,15 +388,12 @@ const handleCurrentChange = (val: number) => {
 
                 .header-content {
                     flex: 1;
-                    
                     h3 {
-                        margin: 0 0 8px 0;
                         font-size: 20px;
-                        color: #303133;
                     }
                     
                     .session-info {
-                        margin: 0;
+                        margin-top: 10px;
                         font-size: 14px;
                         color: #909399;
                     }
@@ -422,7 +403,6 @@ const handleCurrentChange = (val: number) => {
                     font-size: 30px;
                     cursor: pointer;
                     color: #909399;
-                    margin-left: 20px;
                     &:hover {
                         color: #409eff;
                     }
@@ -430,10 +410,10 @@ const handleCurrentChange = (val: number) => {
             }
 
             .drawer-body {
+                display: flex;
                 flex: 1;
                 overflow: hidden;
-                padding: 0 20px 20px 20px;
-                display: flex;
+                padding: 0 20px 20px;
                 flex-direction: column;
 
                 .conversation-content {
@@ -442,12 +422,11 @@ const handleCurrentChange = (val: number) => {
                     background-color: #f0f2f5;
                     border-radius: 8px;
                     overflow-y: auto;
-                    margin-bottom: 20px;
 
                     .message-item {
                         display: flex;
                         flex-direction: column;
-                        margin-bottom: 20px;
+                        margin-bottom: 10px;
 
                         &.message-right {
                             align-items: flex-end;
@@ -477,7 +456,7 @@ const handleCurrentChange = (val: number) => {
                             
                             .message-text {
                                 font-size: 14px;
-                                line-height: 1.6;
+                                line-height: 1.5;
                                 word-break: break-word;
                             }
                         }
@@ -488,14 +467,10 @@ const handleCurrentChange = (val: number) => {
                             font-size: 12px;
                             margin-top: 6px;
                             padding: 0 8px;
-                            color: #999;
+                            color: #909399;
                             opacity: 0;
                             visibility: hidden;
                             transition: opacity 0.3s ease, visibility 0.3s ease;
-                            
-                            .time {
-                                color: #909399;
-                            }
                         }
 
                         &:hover .message-meta {
