@@ -1,78 +1,74 @@
 import request from './request'
 
-//数据统计
-export interface StatCardData {
-    title: string
-    value: string | number
-    icon: string,
-    iconClass: string,
-    trend: number
+//数据统计页面
+//周数据统计
+export interface WeeklyData {
+    currentDatasetQueries: number
+    currentDatasetUsers:number
+    currentActiveUsers:number
+    currentResources:number
+    datasetQueriesGrowthRate:number
+    datasetUsersGrowthRate:number
+    activeUsersGrowthRate:number
+    resourcesGrowthRate:number
+}
+// //用户分布 目前缺失
+// export interface UserDistributionData {
+//     categories: string[]
+//     values: number[]
+// }
+//访问趋势
+export interface VisitStatsParams {
+    startDate?:string
+    endDate?:string
+}
+export interface DailyVisitData {
+    date:string
+    visitorCount:number
+    visitCount:number
+}
+export interface VisitStatsResponse {
+    data:DailyVisitData[]
 }
 
-export interface ChartData {
-    name: string
-    value: number
-}
-
-export interface UserDistributionData {
-    categories: string[]
-    values: number[]
-}
-
-export interface TrendData {
-    dates: string[]
-    visitCount: number[]
-    visitorCount: number[]
-}
-
+//文档类型饼图
 export interface DocumentTypeData {
-    value: number
-    name: string
+    type: string
+    count: number
+    proportion:number
 }
 
-export interface TopDocument {
-    name: string
-    dept: string
-    calls: number
-    tokens: string
-}
-
-export interface StatDataResponse {
-    cardData: StatCardData[]
-    userDistribution: UserDistributionData
-    documentTypes: DocumentTypeData[]
-    topDocuments: TopDocument[]
-}
-
-export interface TrendQueryParams {
-    startDate?: string
-    endDate?: string
+//文档调用次数排行榜
+export interface DocumentRankingData {
+    documentName: string
+    creator: string
+    callCount: number
 }
 
 //对话记录
 export interface ConversationLog {
-    id: number
-    log: string
-    user: string
-    dataset: string
-    date: string
-    rounds: number
+    conversationId: number
+    name: string
+    userName: string
+    mode:string
+    createdAt:string
+    dialogueCount:number
 }
 
 export interface ConversationQueryParams {
-    log?: string
-    user?: string
-    startDate?: string
-    endDate?: string
-    page?: number
+    userName?: string
+    startTime?: string
+    endTime?: string
+    pageNum?: number
     pageSize?: number
 }
 
 export interface ConversationListResponse {
-    data: ConversationLog[]
+    records: ConversationLog[]
     total: number
-    page: number
-    pageSize: number
+    size: number//每页条数
+    current:number//当前页码
+    pages: number//总页
 }
 
 export interface ConversationMessage {
@@ -87,81 +83,92 @@ export interface ConversationDetailResponse {
 
 //登录日志
 export interface LoginLog {
-    id: number
-    user: string
-    type: string
-    date: string
-    operation: string
+    loginId: string
+    userName: string
+    loginAt: string
+    loginMethod: string
+    success: boolean
 }
 
 export interface LoginQueryParams {
-    user?: string
-    startDate?: string
-    endDate?: string
-    page?: number
+    userName?: string
+    loginStartTime?: string
+    loginEndTime?: string
+    pageNum?: number
     pageSize?: number
 }
 
 export interface LoginListResponse {
-    data: LoginLog[]
+    records: LoginLog[]
     total: number
-    page: number
-    pageSize: number
+    size: number
+    current: number
+    pages: number
 }
 
 //授权记录
 export interface AuthLog {
-    id: number
-    authorizationId: number
-    authorizedUser: string
-    dataset: string
-    datasetId: number
-    authorizor: string
-    type: string
-    date: string
+    permissionId: number
+    tenantName:string
+    datasetId:string
+    authorizerName:string
+    hasPermission:boolean
+    createdAt:string
 }
 
 export interface AuthQueryParams {
     authorizationId?: number
-    startDate?: string
-    endDate?: string
+    startTime?: string
+    endTime?: string
     dataset?: string
-    authorizer?: string
-    authorizedUser?: string
-    page?: number
+    authorizerName?: string
+    tenantName?: string
+    pageNum?: number
     pageSize?: number
 }
 
 export interface AuthListResponse {
-    data: AuthLog[]
+    records: AuthLog[]
     total: number
-    page: number
-    pageSize: number
+    size: number
+    current: number
+    pages: number
 }
 
 //接口定义
 export const apiService = {
     //数据统计
-    async getStatData(): Promise<StatDataResponse> {
-        return request.get('api/stat/data')
+    //周数据
+    async getWeeklyData(): Promise<WeeklyData> {
+        return request.post('/statistics/weekly-statistics')
     },
-    async getTrendData(params: TrendQueryParams = {}): Promise<TrendData> {
-        return request.get('api/stat/trend', { params })
+    //折线图
+    async getTrendData(params: VisitStatsParams): Promise<VisitStatsResponse> {
+        return request.post('/statistics/visit-trend', params)
     },
+    //饼图
+    async getDocumentTypeData(): Promise<DocumentTypeData[]>{
+        return request.post('/statistics/document-type-pie')
+    },
+    //排行榜
+    async getDocumentRankingData(): Promise<DocumentRankingData[]>{
+        return request.post('/statistics/document-usage-ranking')
+    },
+
     //对话记录
     async getConversationLogs(params: ConversationQueryParams = {}): Promise<ConversationListResponse> {
-        return request.get('api/conversation-logs', { params })
+        return request.post('/statistics/conversation-list', params)
     },
     async getConversationDetail(id: string): Promise<ConversationDetailResponse> {
-        return request.get(`api/conversation-logs/${id}`)
+        return request.post(`/statistics/conversation-list/${id}`)
     },
     //login
     async getLoginLogs(params: LoginQueryParams = {}): Promise<LoginListResponse> {
-        return request.get('api/login-logs', { params })
+        return request.post('/statistics/login-log/list', params)
     },
     //auth
     async getAuthLogs(params: AuthQueryParams = {}): Promise<AuthListResponse> {
-        return request.get('api/auth-logs', { params })
+        return request.post('/statistics/permission-list', params)
     }
 }
 

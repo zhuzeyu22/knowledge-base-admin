@@ -35,7 +35,7 @@
                 </div>
                 <!-- 授权记录表单 -->
                 <div class="log-table">
-                    <el-table class="table" :data="authList" style="width: 100%" :border="false" stripe>
+                    <el-table class="table" :data="authList" style="width: 100%" :border="false" >
                         <el-table-column prop="id" label="序号" min-width="100" />
                         <el-table-column prop="authorizationId" label="授权ID" min-width="100" />
                         <el-table-column prop="authorizedUser" label="被授权对象" min-width="100" />
@@ -350,7 +350,7 @@ const loadAuthLogs = async(params:AuthQueryParams = {}) =>{
         }
         const response = await apiService.getAuthLogs(queryParams)
 
-        authList.value = response.data
+        authList.value = response.records
         total.value = response.total
         ElMessage.success(`加载完成，共${response.total}条记录`)
     } catch(error:any) {
@@ -386,8 +386,8 @@ const onQuery = async () => {
     //时间范围
     if (formInline.date && formInline.date.length === 2) {
         const [startDate, endDate] = formInline.date
-        queryParams.startDate = startDate
-        queryParams.endDate = endDate
+        queryParams.startTime = startDate
+        queryParams.endTime = endDate
     }
     
     //知识库
@@ -397,12 +397,12 @@ const onQuery = async () => {
 
     //授权人
     if (formInline.authorizer.trim()) {
-        queryParams.authorizer = formInline.authorizer
+        queryParams.authorizerName = formInline.authorizer
     }
 
     //被授权人
     if (formInline.authorizedUser.trim()) {
-        queryParams.authorizedUser = formInline.authorizer
+        queryParams.tenantName = formInline.authorizer
     }
 
     currentPage.value = 1
@@ -462,7 +462,7 @@ const handleCurrentChange =(val:number) => {
         }
 
         .log-table{
-            max-height: calc(100% - 300px);
+            max-height: calc(100% - 170px);
             overflow-y: auto;
         }
         .pagination-block{

@@ -25,7 +25,7 @@
                 </div>
                 <!-- 登录表单 -->
                 <div class="login-table">
-                    <el-table class="table" :data="loginList" style="width: 100%" :border="false" stripe>
+                    <el-table class="table" :data="loginList" style="width: 100%" :border="false" >
                         <el-table-column prop="id" label="序号" min-width="100" />
                         <el-table-column prop="user" label="用户标识" min-width="130" />
                         <el-table-column prop="type" label="操作类型" min-width="130" />
@@ -231,7 +231,7 @@ const loadLoginLogs = async (params: LoginQueryParams = {}) => {
         }
         const response = await apiService.getLoginLogs(queryParams)
 
-        loginList.value = response.data
+        loginList.value = response.records
         total.value = response.total
 
         ElMessage.success(`加载完成，共${response.total}条记录`)
@@ -262,13 +262,13 @@ const onQuery = async () => {
 
     //用户
     if(formInline.user.trim()){
-        queryParams.user = formInline.user.trim()
+        queryParams.userName = formInline.user.trim()
     }
     //date
     if(formInline.date && formInline.date.length === 2){
         const [startDate, endDate] = formInline.date
-        queryParams.startDate = startDate
-        queryParams.endDate = endDate
+        queryParams.loginStartTime = startDate
+        queryParams.loginEndTime = endDate
     }
 
     //重置到第一页
@@ -332,7 +332,7 @@ const handleCurrentChange = (val: number) => {
         }
 
         .login-table{
-            max-height: calc(100% - 160px);
+            max-height: calc(100% - 120px);
             overflow-y: auto;
         }
         .pagination-block {

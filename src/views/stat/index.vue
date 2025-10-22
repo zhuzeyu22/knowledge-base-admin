@@ -65,11 +65,10 @@
                     <!-- 知识库调用排名 -->
                     <el-card class="chart">
                         <h4 class="h4">知识库调用排名</h4>
-                        <el-table class="table" :data="topDocsSorted" style="width: 100%" :border="false" stripe>
-                            <el-table-column prop="name" label="知识文档" min-width="180" />
-                            <el-table-column prop="dept" label="所属部门" min-width="100" />
+                        <el-table class="table" :data="topDocsSorted" style="width: 100%" :border="false">
+                            <el-table-column prop="name" label="知识文档" min-width="160" />
+                            <el-table-column prop="creator" label="创建人" min-width="160" />
                             <el-table-column prop="calls" label="调用次数" min-width="100" sortable />
-                            <el-table-column prop="tokens" label="调用token数" min-width="120" sortable />
                         </el-table>
                     </el-card>
 
@@ -86,7 +85,7 @@ import * as echarts from 'echarts';
 import type { ECharts } from 'echarts';
 import { ElDatePicker, ElMessage } from 'element-plus';
 import { Plus, Minus, View, UserFilled, Document } from '@element-plus/icons-vue';
-import apiService, { TrendQueryParams } from '../../service/api';
+import apiService, { VisitStatsParams, WeeklyData } from '../../service/api';
 
 //卡片数据
 interface StatCard {
@@ -97,7 +96,37 @@ interface StatCard {
     trend: number;
 }
 
-//模拟卡片数据
+const convertWeeklyDataToCards = (weeklyData: WeeklyData): StatCard[] => [
+    {
+        title: '访问次数',
+        value: weeklyData.currentDatasetQueries.toLocaleString(),
+        icon: View, 
+        iconClass: 'icon-blue',
+        trend: weeklyData.datasetQueriesGrowthRate,
+    },
+    {
+        title: '访问人数',
+        value: weeklyData.currentDatasetUsers.toLocaleString(),
+        icon: UserFilled,
+        iconClass: 'icon-purple',
+        trend: weeklyData.datasetUsersGrowthRate
+    },
+    {
+        title: '文档总数',
+        value: weeklyData.currentResources.toLocaleString(),
+        icon: Document,
+        iconClass: 'icon-green',
+        trend: weeklyData.resourcesGrowthRate,
+    },
+    {
+        title: '活跃用户',
+        value: weeklyData.currentActiveUsers.toLocaleString(),
+        icon: UserFilled,
+        trend: weeklyData.activeUsersGrowthRate,
+        iconClass: 'icon-red'
+    }
+];
+
 const getMockCardData = (): StatCard[] => [
     {
         title: '访问次数',
@@ -130,24 +159,23 @@ const getMockCardData = (): StatCard[] => [
 ];
 const cardData = ref<StatCard[]>(getMockCardData());
 
-// 图表
+//图表
 const userChart = ref<HTMLDivElement | null>(null);
 const trendChart = ref<HTMLDivElement | null>(null);
 const documentChart = ref<HTMLDivElement | null>(null);
 
-//图表实例
+//实例
 var userChartInstance: ECharts | null = null;
 var trendChartInstance: ECharts | null = null;
 var documentChartInstance: ECharts | null = null;
 let resizeTimer: number | undefined;
 
-// 日期选择相关
+//日期选择相关
 const dateRange = ref<[Date, Date]>([
     new Date(new Date().getTime() - 3600 * 1000 * 24 * 6),
     new Date()
 ]);
 
-//用户分布模拟数据
 const getMockUserData = () => ({
     categories: ['北京银行总部', '科技部', '南京分行', '苏州分行', '南昌分行', '其他分行'],
     values: [20, 50, 25, 30, 25, 60],
@@ -155,7 +183,6 @@ const getMockUserData = () => ({
 
 const userChartData = ref(getMockUserData());
 
-//访问趋势模拟数据 - 根据日期范围生成
 const getMockTrendData = (startDate: Date, endDate: Date) => {
     //计算日期范围天数
     const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)) + 1;
@@ -168,18 +195,15 @@ const getMockTrendData = (startDate: Date, endDate: Date) => {
         dates.push(`${date.getMonth() + 1}-${date.getDate()}`);
     }
     
-    //生成固定模式的模拟数据（不使用随机数）
     const visitCount = [];
     const visitorCount = [];
     const baseVisitor = 30;
     const baseVisit = 45;
     
     for (let i = 0; i < days; i++) {
-        //访问人数：基于正弦波动生成
         const visitorValue = Math.round(baseVisitor + Math.sin(i * 0.5) * 10 + (i % 3) * 3);
         visitorCount.push(visitorValue);
         
-        //访问次数：比访问人数多一些
         const visitValue = Math.round(baseVisit + Math.sin(i * 0.5) * 15 + (i % 3) * 5);
         visitCount.push(visitValue);
     }
@@ -195,7 +219,6 @@ const defaultDateRange = computed(() => {
     return [start, end] as [Date, Date];
 });
 
-//文档类型分布模拟数据
 const getMockDocumentTypeData = () => [
     { value: 335, name: 'pdf' },
     { value: 310, name: 'doc' },
@@ -208,50 +231,42 @@ const getMockDocumentTypeData = () => [
 
 const documentTypeData = ref(getMockDocumentTypeData());
 
-//知识库调用排名模拟数据
 type TopDocRow = { 
     name: string; 
-    dept: string; 
+    creator: string;
     calls: number; 
-    tokens: string 
 };
 
 const getMockTopDocs = (): TopDocRow[] => [
     {
         name: '金融法规.pdf',
-        dept: '合规部',
-        calls: 570,
-        tokens: '38.1w'
+        creator: 'user001',
+        calls: 570
     },
     {
         name: '风控指南.xlsx',
-        dept: '风控部',
-        calls: 468,
-        tokens: '29.7w'
+        creator: 'user001',
+        calls: 468
     },
     {
         name: '客户服务手册.pdf',
-        dept: '客服部',
-        calls: 442,
-        tokens: '27.3w'
+        creator: 'user001',
+        calls: 442
     },
     {
         name: '线上运营规范.doc',
-        dept: '运营部',
-        calls: 401,
-        tokens: '25.6w'
+        creator: 'user001',
+        calls: 401
     },
     {
         name: '数据报表规范.xlsx',
-        dept: '数据部',
-        calls: 356,
-        tokens: '22.9w'
+        creator: 'user001',
+        calls: 356
     },
     {
         name: '信息安全手册.pdf',
-        dept: '信息安全部',
-        calls: 318,
-        tokens: '20.2w'
+        creator: 'user001',
+        calls: 318
     },
 ];
 
@@ -261,47 +276,8 @@ const topDocsSorted = computed(() =>
     [...topDocs.value].sort((a, b) => b.calls - a.calls)
 );
 
-//加载
-const loadStatData = async () => {
-    try {
-        const response = await apiService.getStatData();
-
-        //更新卡片数据，映射图标
-        const iconMap: { [key: string]: any } = {
-            'View': View,
-            'UserFilled': UserFilled,
-            'Document': Document
-        };
-
-        cardData.value = response.cardData.map(card => ({
-            ...card,
-            icon: iconMap[card.icon] || View
-        }));
-
-        userChartData.value = response.userDistribution;
-
-        documentTypeData.value = response.documentTypes;
-
-        topDocs.value = response.topDocuments;
-
-        initUserChart();
-        initDocumentChart();
-
-        ElMessage.success('数据加载成功');
-    } catch (error: any) {
-        ElMessage.error(error.message || '后端加载数据失败，使用模拟数据');
-        //API调用失败，使用模拟数据
-        cardData.value = getMockCardData();
-        userChartData.value = getMockUserData();
-        documentTypeData.value = getMockDocumentTypeData();
-        topDocs.value = getMockTopDocs();
-        initUserChart();
-        initDocumentChart();
-    }
-};
-
-//访问趋势数据
-const loadTrendData = async (startDate?: Date, endDate?: Date) => {
+//加载数据
+const loadAllData = async (startDate?: Date, endDate?: Date) => {
     try {
         //确定日期范围
         const [sDate, eDate] = startDate && endDate
@@ -309,17 +285,37 @@ const loadTrendData = async (startDate?: Date, endDate?: Date) => {
             : defaultDateRange.value;
 
         //格式化日期为字符串
-        const params: TrendQueryParams = {
+        const trendParams: VisitStatsParams = {
             startDate: sDate.toISOString().split('T')[0],
             endDate: eDate.toISOString().split('T')[0]
         };
 
-        const response = await apiService.getTrendData(params);
+        const [weeklyResponse, trendResponse, documentTypeResponse, rankingResponse] = await Promise.all([
+            apiService.getWeeklyData(),
+            apiService.getTrendData(trendParams),
+            apiService.getDocumentTypeData(),
+            apiService.getDocumentRankingData()
+        ]);
 
-        //更新日期选择器值
+        cardData.value = convertWeeklyDataToCards(weeklyResponse);
+
         dateRange.value = [sDate, eDate];
 
-        //使用API返回的数据初始化图表
+        documentTypeData.value = documentTypeResponse.map(item => ({
+            value: item.count,
+            name: item.type
+        }));
+
+        topDocs.value = rankingResponse.map(item => ({
+            name: item.documentName,
+            creator: item.creator,
+            calls: item.callCount
+        }));
+
+        //用户分布图表目前使用模拟数据 后端暂无
+        initUserChart();
+        initDocumentChart();
+
         if (trendChart.value) {
             if (trendChartInstance) {
                 (trendChartInstance as ECharts).dispose();
@@ -343,7 +339,7 @@ const loadTrendData = async (startDate?: Date, endDate?: Date) => {
                 xAxis: {
                     type: 'category',
                     boundaryGap: false,
-                    data: response.dates
+                    data: trendResponse.data.map(item => item.date)
                 },
                 yAxis: {
                     type: 'value',
@@ -354,13 +350,13 @@ const loadTrendData = async (startDate?: Date, endDate?: Date) => {
                     {
                         name: '访问次数',
                         type: 'line',
-                        data: response.visitCount,
+                        data: trendResponse.data.map(item => item.visitCount),
                         smooth: true
                     },
                     {
                         name: '访问人数',
                         type: 'line',
-                        data: response.visitorCount,
+                        data: trendResponse.data.map(item => item.visitorCount),
                         smooth: true
                     }
                 ]
@@ -369,28 +365,29 @@ const loadTrendData = async (startDate?: Date, endDate?: Date) => {
             trendChartInstance.setOption(options);
         }
 
-        ElMessage.success('趋势数据加载成功');
+        ElMessage.success('数据加载成功');
     } catch (error: any) {
-        ElMessage.error(error.message || '后端加载趋势数据失败，使用模拟数据');
-        //API调用失败，使用模拟数据
+        ElMessage.error(error.message || '后端加载数据失败，使用模拟数据');
+        cardData.value = getMockCardData();
+        userChartData.value = getMockUserData();
+        documentTypeData.value = getMockDocumentTypeData();
+        topDocs.value = getMockTopDocs();
+        initUserChart();
+        initDocumentChart();
         initTrendChart(startDate, endDate);
     }
 };
 
 //初始化图表
 const initUserChart = () => {
-    //确保容器存在
     if (!userChart.value) return
-
     //销毁已存在
     if (userChartInstance) {
         (userChartInstance as ECharts).dispose();
     }
 
-    //创建新用户图表实例
     userChartInstance = echarts.init(userChart.value);
 
-    //图表配置
     const options = {
         grid: {
             left: '3%',
@@ -409,7 +406,6 @@ const initUserChart = () => {
         yAxis: {
             type: 'value'
         },
-        //柱状图核心数据
         series: [
             {
                 data: userChartData.value.values,
@@ -419,7 +415,6 @@ const initUserChart = () => {
         ]
     };
 
-    //应用配置到图表
     userChartInstance.setOption(options);
 }
 const initTrendChart = (startDate?: Date, endDate?: Date) => {
@@ -429,18 +424,15 @@ const initTrendChart = (startDate?: Date, endDate?: Date) => {
         (trendChartInstance as ECharts).dispose();
     }
 
-    //确定日期范围
     const [sDate, eDate] = startDate && endDate
         ? [startDate, endDate]
         : defaultDateRange.value;
 
-    //设置日期选择器值
     dateRange.value = [sDate, eDate];
 
-    //使用模拟数据（传入日期范围）
+    //使用模拟数据
     const trendData = getMockTrendData(sDate, eDate);
 
-    //新实例
     trendChartInstance = echarts.init(trendChart.value);
 
     const options = {
@@ -541,7 +533,7 @@ const initDocumentChart = () => {
 //日期变化
 const handleDateChange = (newDateRange: [Date, Date]) => {
     dateRange.value = newDateRange;//同步更新
-    loadTrendData(newDateRange[0], newDateRange[1]);
+    loadAllData(newDateRange[0], newDateRange[1]);
 };
 
 //窗口大小变化（防抖）
@@ -556,19 +548,13 @@ const handleResize = () => {
     }, 150);
 };
 
-//挂载
 onMounted(() => {
-    loadStatData();
-    loadTrendData();
-    //监听窗口
+    loadAllData();
     window.addEventListener('resize', handleResize);
 });
 
-//卸载 清理资源
 onUnmounted(() => {
-    //移除监听
     window.removeEventListener('resize', handleResize);
-    //销毁实例
     if (userChartInstance) {
         userChartInstance.dispose();
         userChartInstance = null;

@@ -29,7 +29,7 @@
                 </div>
                 <!-- 对话记录表单 -->
                 <div class="log-table">
-                    <el-table class="table" :data="logList" style="width: 100%" :border="false" stripe>
+                    <el-table class="table" :data="logList" style="width: 100%" :border="false" >
                         <el-table-column prop="id" label="序号" min-width="100" />
                         <el-table-column prop="log" label="会话标识" min-width="130" />
                         <el-table-column prop="user" label="用户标识" min-width="130" />
@@ -190,7 +190,7 @@ const loadConversationLogs = async (params: ConversationQueryParams = {}) => {
 
         const response = await apiService.getConversationLogs(queryParams)
 
-        logList.value = response.data
+        logList.value = response.records
         total.value = response.total
 
         ElMessage.success(`加载完成，共${response.total}条记录`)
@@ -229,14 +229,14 @@ const onQuery = async () => {
 
     //用户标识
     if (formInline.user.trim()) {
-        queryParams.user = formInline.user.trim()
+        queryParams.userName = formInline.user.trim()
     }
 
     //时间范围
     if (formInline.date && formInline.date.length === 2) {
         const [startDate, endDate] = formInline.date
-        queryParams.startDate = startDate
-        queryParams.endDate = endDate
+        queryParams.startTime = startDate
+        queryParams.endTime = endDate
     }
 
     //重置到第一页
@@ -326,7 +326,7 @@ const handleCurrentChange = (val: number) => {
         }
 
         .log-table {
-            max-height: calc(100% - 210px);
+            max-height: calc(100% - 170px);
             overflow-y: auto;
             
             .table {
