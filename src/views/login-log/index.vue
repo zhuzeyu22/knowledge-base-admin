@@ -26,11 +26,17 @@
                 <!-- 登录表单 -->
                 <div class="login-table">
                     <el-table class="table" :data="loginList" style="width: 100%" :border="false" >
-                        <el-table-column prop="id" label="序号" min-width="100" />
-                        <el-table-column prop="user" label="用户标识" min-width="130" />
-                        <el-table-column prop="type" label="操作类型" min-width="130" />
-                        <el-table-column prop="date" label="开始时间" min-width="130" />
-                        <el-table-column prop="operation" label="操作描述" min-width="100" />
+                        <el-table-column type="index" label="序号" min-width="100" />
+                        <el-table-column prop="userName" label="用户标识" min-width="130" />
+                        <el-table-column prop="loginMethod" label="登录方式" min-width="130" />
+                        <el-table-column prop="loginAt" label="登录时间" min-width="130" />
+                        <el-table-column label="登录状态" min-width="100">
+                            <template #default="scope">
+                                <span>
+                                    {{ scope.row.success ? '登陆成功' : '登陆失败' }}
+                                </span>
+                            </template>
+                        </el-table-column>
                     </el-table>
                 </div>
                 <div class="pagination-block">
@@ -61,154 +67,29 @@ const formInline = reactive({
     date: [],
 })
 
+//模拟数据（匹配API接口字段）
 const getMockData = [
-    {
-        id: '1',
-        user: 'user001',
-        type: '登录',
-        date: '2024-12-01 09:30',
-        operation: '登录成功'
-    },
-    {
-        id: '2',
-        user: 'user002',
-        type: '登录',
-        date: '2024-12-01 09:30',
-        operation: '登录失败'
-    },
-    {
-        id: '3',
-        user: 'user003',
-        type: '登录',
-        date: '2024-12-01 09:30',
-        operation: '登录成功'
-    },
-    {
-        id: '4',
-        user: 'user004',
-        type: '登录',
-        date: '2024-12-01 09:30',
-        operation: '登录失败'
-    },
-    {
-        id: '5',
-        user: 'user001',
-        type: '注册',
-        date: '2024-12-01 09:30',
-        operation: '注册成功'
-    },
-    {
-        id: '6',
-        user: 'user001',
-        type: '登录',
-        date: '2024-12-01 09:30',
-        operation: '登录成功'
-    },
-    {
-        id: '7',
-        user: 'user002',
-        type: '登录',
-        date: '2024-12-01 09:30',
-        operation: '登录失败'
-    },
-    {
-        id: '8',
-        user: 'user003',
-        type: '登录',
-        date: '2024-12-01 09:30',
-        operation: '登录成功'
-    },
-    {
-        id: '9',
-        user: 'user004',
-        type: '登录',
-        date: '2024-12-01 09:30',
-        operation: '登录失败'
-    },
-    {
-        id: '10',
-        user: 'user001',
-        type: '注册',
-        date: '2024-12-01 09:30',
-        operation: '注册成功'
-    },
-    {
-        id: '11',
-        user: 'user001',
-        type: '登录',
-        date: '2024-12-01 09:30',
-        operation: '登录成功'
-    },
-    {
-        id: '12',
-        user: 'user002',
-        type: '登录',
-        date: '2024-12-01 09:30',
-        operation: '登录失败'
-    },
-    {
-        id: '13',
-        user: 'user003',
-        type: '登录',
-        date: '2024-12-01 09:30',
-        operation: '登录成功'
-    },
-    {
-        id: '14',
-        user: 'user004',
-        type: '登录',
-        date: '2024-12-01 09:30',
-        operation: '登录失败'
-    },
-    {
-        id: '15',
-        user: 'user001',
-        type: '注册',
-        date: '2024-12-01 09:30',
-        operation: '注册成功'
-    },
-    {
-        id: '16',
-        user: 'user001',
-        type: '登录',
-        date: '2024-12-01 09:30',
-        operation: '登录成功'
-    },
-    {
-        id: '17',
-        user: 'user002',
-        type: '登录',
-        date: '2024-12-01 09:30',
-        operation: '登录失败'
-    },
-    {
-        id: '18',
-        user: 'user003',
-        type: '登录',
-        date: '2024-12-01 09:30',
-        operation: '登录成功'
-    },
-    {
-        id: '19',
-        user: 'user004',
-        type: '登录',
-        date: '2024-12-01 09:30',
-        operation: '登录失败'
-    },
-    {
-        id: '20',
-        user: 'user001',
-        type: '注册',
-        date: '2024-12-01 09:30',
-        operation: '注册成功'
-    },
-    {
-        id: '21',
-        user: 'user001',
-        type: '注册',
-        date: '2024-12-01 09:30',
-        operation: '注册成功'
-    },
+    { loginId: 'login001', userName: 'user001', loginAt: '2024-12-01 09:30', loginMethod: 'password', success: true },
+    { loginId: 'login002', userName: 'user002', loginAt: '2024-12-01 10:15', loginMethod: 'password', success: false },
+    { loginId: 'login003', userName: 'user003', loginAt: '2024-12-01 11:20', loginMethod: 'password', success: true },
+    { loginId: 'login004', userName: 'user004', loginAt: '2024-12-01 12:30', loginMethod: 'sms', success: false },
+    { loginId: 'login005', userName: 'user001', loginAt: '2024-12-01 13:45', loginMethod: 'password', success: true },
+    { loginId: 'login006', userName: 'user005', loginAt: '2024-12-01 14:10', loginMethod: 'wechat', success: true },
+    { loginId: 'login007', userName: 'user002', loginAt: '2024-12-01 15:25', loginMethod: 'password', success: false },
+    { loginId: 'login008', userName: 'user006', loginAt: '2024-12-01 16:30', loginMethod: 'password', success: true },
+    { loginId: 'login009', userName: 'user007', loginAt: '2024-12-02 09:00', loginMethod: 'sms', success: true },
+    { loginId: 'login010', userName: 'user008', loginAt: '2024-12-02 10:15', loginMethod: 'password', success: false },
+    { loginId: 'login011', userName: 'user001', loginAt: '2024-12-02 11:30', loginMethod: 'password', success: true },
+    { loginId: 'login012', userName: 'user009', loginAt: '2024-12-02 12:45', loginMethod: 'wechat', success: true },
+    { loginId: 'login013', userName: 'user003', loginAt: '2024-12-02 13:20', loginMethod: 'password', success: true },
+    { loginId: 'login014', userName: 'user010', loginAt: '2024-12-02 14:35', loginMethod: 'password', success: false },
+    { loginId: 'login015', userName: 'user004', loginAt: '2024-12-02 15:50', loginMethod: 'sms', success: true },
+    { loginId: 'login016', userName: 'user002', loginAt: '2024-12-03 09:10', loginMethod: 'password', success: true },
+    { loginId: 'login017', userName: 'user005', loginAt: '2024-12-03 10:25', loginMethod: 'password', success: false },
+    { loginId: 'login018', userName: 'user006', loginAt: '2024-12-03 11:40', loginMethod: 'wechat', success: true },
+    { loginId: 'login019', userName: 'user007', loginAt: '2024-12-03 12:55', loginMethod: 'password', success: true },
+    { loginId: 'login020', userName: 'user008', loginAt: '2024-12-03 14:10', loginMethod: 'password', success: false },
+    { loginId: 'login021', userName: 'user009', loginAt: '2024-12-03 15:25', loginMethod: 'sms', success: true }
 ]
 //当前显示的登录列表
 const loginList = ref<any[]>([])
@@ -226,7 +107,7 @@ const loadLoginLogs = async (params: LoginQueryParams = {}) => {
         queryLoading.value = true;
         const queryParams = {
             ...params,
-            page: currentPage.value,
+            pageNum: currentPage.value,
             pageSize: pageSize.value
         }
         const response = await apiService.getLoginLogs(queryParams)

@@ -342,9 +342,7 @@ const loadAllData = async (startDate?: Date, endDate?: Date) => {
                     data: trendResponse.data.map(item => item.date)
                 },
                 yAxis: {
-                    type: 'value',
-                    min: 0,
-                    max: 100
+                    type: 'value'
                 },
                 series: [
                     {
@@ -454,9 +452,7 @@ const initTrendChart = (startDate?: Date, endDate?: Date) => {
             data: trendData.dates
         },
         yAxis: {
-            type: 'value',
-            min: 0,
-            max: 100
+            type: 'value'
         },
         series: [
             {

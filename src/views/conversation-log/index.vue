@@ -10,13 +10,9 @@
                 <!-- 查询模块表格 -->
                 <div class="query-table">
                     <el-form :inline="true" :model="formInline">
-                        <el-form-item label="会话标识">
-                            <el-input class="input" v-model="formInline.log" clearable />
-                        </el-form-item>
                         <el-form-item label="用户标识">
                             <el-input class="input" v-model="formInline.user" clearable />
                         </el-form-item>
-                        <br>
                         <el-form-item label="时间范围">
                             <el-date-picker class="input" v-model="formInline.date" type="daterange" range-separator="至"
                                 start-placeholder="开始日期" end-placeholder="结束日期" clearable />
@@ -30,12 +26,11 @@
                 <!-- 对话记录表单 -->
                 <div class="log-table">
                     <el-table class="table" :data="logList" style="width: 100%" :border="false" >
-                        <el-table-column prop="id" label="序号" min-width="100" />
-                        <el-table-column prop="log" label="会话标识" min-width="130" />
-                        <el-table-column prop="user" label="用户标识" min-width="130" />
-                        <el-table-column prop="dataset" label="涉及知识库" min-width="130" />
-                        <el-table-column prop="date" label="开始时间" min-width="130" />
-                        <el-table-column prop="rounds" label="对话轮数" min-width="100" />
+                        <el-table-column type="index" label="序号" min-width="100" />
+                        <el-table-column prop="userName" label="用户标识" min-width="130" />
+                        <el-table-column prop="name" label="会话名称" min-width="130" />
+                        <el-table-column prop="createdAt" label="开始时间" min-width="130" />
+                        <el-table-column prop="dialogueCount" label="对话轮数" min-width="100" />
                         <el-table-column label="操作" min-width="100">
                             <template #default="scope">
                                 <el-button link type="primary" @click="onDetail(scope.row)">
@@ -68,7 +63,7 @@
                         <div class="drawer-header">
                             <div class="header-content">
                                 <h3>对话记录</h3>
-                                <p class="session-info">{{ currentSession.log }}</p>
+                                <p class="session-info">用户: {{ currentSession.userName }} | 会话: {{ currentSession.name }}</p>
                             </div>
                             <el-icon class="close-icon" @click="drawerVisible = false">
                                 <Close/>
@@ -104,7 +99,6 @@ import { Close } from '@element-plus/icons-vue'
 import apiService, { ConversationQueryParams, ConversationMessage } from '../../service/api'
 
 const formInline = reactive({
-    log: '',
     user: '',
     date: [],
 })
@@ -112,31 +106,31 @@ const formInline = reactive({
 
 //模拟数据
 const getMockData = [
-    { id: '1', log: 'log001', user: 'user001', dataset: '法律知识库', date: '2024-12-01 09:30', rounds: '3' },
-    { id: '2', log: 'log002', user: 'user002', dataset: '智能Agent系统', date: '2024-12-02 14:15', rounds: '5' },
-    { id: '3', log: 'log003', user: 'user001', dataset: '直接调用大模型', date: '2024-12-03 16:45', rounds: '2' },
-    { id: '4', log: 'log004', user: 'user003', dataset: '技术知识库', date: '2024-12-04 10:20', rounds: '7' },
-    { id: '5', log: 'log005', user: 'user002', dataset: '医疗知识库', date: '2024-12-05 13:10', rounds: '4' },
-    { id: '6', log: 'log006', user: 'user004', dataset: '智能Agent系统', date: '2024-12-06 15:30', rounds: '6' },
-    { id: '7', log: 'log007', user: 'user005', dataset: '直接调用大模型', date: '2024-12-07 10:00', rounds: '8' },
-    { id: '8', log: 'log008', user: 'user006', dataset: '法律知识库', date: '2024-12-08 11:20', rounds: '3' },
-    { id: '9', log: 'log009', user: 'user007', dataset: '医疗知识库', date: '2024-12-09 13:45', rounds: '5' },
-    { id: '10', log: 'log010', user: 'user008', dataset: '智能Agent系统', date: '2024-12-10 15:30', rounds: '4' },
-    { id: '11', log: 'log011', user: 'user009', dataset: '教育知识库', date: '2024-12-11 09:15', rounds: '6' },
-    { id: '12', log: 'log012', user: 'user010', dataset: '直接调用大模型', date: '2024-12-12 10:40', rounds: '7' },
-    { id: '13', log: 'log013', user: 'user001', dataset: '法律知识库', date: '2024-12-13 14:20', rounds: '2' },
-    { id: '14', log: 'log014', user: 'user002', dataset: '智能Agent系统', date: '2024-12-14 16:00', rounds: '5' },
-    { id: '15', log: 'log015', user: 'user003', dataset: '技术知识库', date: '2024-12-15 09:50', rounds: '8' },
-    { id: '16', log: 'log016', user: 'user004', dataset: '直接调用大模型', date: '2024-12-16 11:30', rounds: '3' },
-    { id: '17', log: 'log017', user: 'user005', dataset: '金融知识库', date: '2024-12-17 13:10', rounds: '6' },
-    { id: '18', log: 'log018', user: 'user006', dataset: '智能Agent系统', date: '2024-12-18 15:45', rounds: '4' },
-    { id: '19', log: 'log019', user: 'user007', dataset: '医疗知识库', date: '2024-12-19 10:25', rounds: '7' },
-    { id: '20', log: 'log020', user: 'user008', dataset: '直接调用大模型', date: '2024-12-20 12:00', rounds: '5' },
-    { id: '21', log: 'log021', user: 'user009', dataset: '教育知识库', date: '2024-12-21 14:35', rounds: '3' },
-    { id: '22', log: 'log022', user: 'user010', dataset: '金融知识库', date: '2024-12-22 16:20', rounds: '6' },
-    { id: '23', log: 'log023', user: 'user001', dataset: '智能Agent系统', date: '2024-12-23 09:40', rounds: '8' },
-    { id: '24', log: 'log024', user: 'user002', dataset: '医疗知识库', date: '2024-12-24 11:15', rounds: '4' },
-    { id: '25', log: 'log025', user: 'user003', dataset: '直接调用大模型', date: '2024-12-25 13:50', rounds: '7' }
+    { conversationId: 1, log: 'log001', name: '法律知识库对话', userName: 'user001', mode: 'chat', createdAt: '2024-12-01 09:30', dialogueCount: 3 },
+    { conversationId: 2, log: 'log002', name: 'Agent系统咨询', userName: 'user002', mode: 'chat', createdAt: '2024-12-02 14:15', dialogueCount: 5 },
+    { conversationId: 3, log: 'log003', name: '大模型对话', userName: 'user001', mode: 'chat', createdAt: '2024-12-03 16:45', dialogueCount: 2 },
+    { conversationId: 4, log: 'log004', name: '技术知识库咨询', userName: 'user003', mode: 'chat', createdAt: '2024-12-04 10:20', dialogueCount: 7 },
+    { conversationId: 5, log: 'log005', name: '医疗知识库', userName: 'user002', mode: 'chat', createdAt: '2024-12-05 13:10', dialogueCount: 4 },
+    { conversationId: 6, log: 'log006', name: 'Agent系统对话', userName: 'user004', mode: 'chat', createdAt: '2024-12-06 15:30', dialogueCount: 6 },
+    { conversationId: 7, log: 'log007', name: '大模型咨询', userName: 'user005', mode: 'chat', createdAt: '2024-12-07 10:00', dialogueCount: 8 },
+    { conversationId: 8, log: 'log008', name: '法律知识库', userName: 'user006', mode: 'chat', createdAt: '2024-12-08 11:20', dialogueCount: 3 },
+    { conversationId: 9, log: 'log009', name: '医疗知识库咨询', userName: 'user007', mode: 'chat', createdAt: '2024-12-09 13:45', dialogueCount: 5 },
+    { conversationId: 10, log: 'log010', name: 'Agent系统', userName: 'user008', mode: 'chat', createdAt: '2024-12-10 15:30', dialogueCount: 4 },
+    { conversationId: 11, log: 'log011', name: '教育知识库对话', userName: 'user009', mode: 'chat', createdAt: '2024-12-11 09:15', dialogueCount: 6 },
+    { conversationId: 12, log: 'log012', name: '大模型对话', userName: 'user010', mode: 'chat', createdAt: '2024-12-12 10:40', dialogueCount: 7 },
+    { conversationId: 13, log: 'log013', name: '法律知识库咨询', userName: 'user001', mode: 'chat', createdAt: '2024-12-13 14:20', dialogueCount: 2 },
+    { conversationId: 14, log: 'log014', name: 'Agent系统对话', userName: 'user002', mode: 'chat', createdAt: '2024-12-14 16:00', dialogueCount: 5 },
+    { conversationId: 15, log: 'log015', name: '技术知识库', userName: 'user003', mode: 'chat', createdAt: '2024-12-15 09:50', dialogueCount: 8 },
+    { conversationId: 16, log: 'log016', name: '大模型咨询', userName: 'user004', mode: 'chat', createdAt: '2024-12-16 11:30', dialogueCount: 3 },
+    { conversationId: 17, log: 'log017', name: '金融知识库对话', userName: 'user005', mode: 'chat', createdAt: '2024-12-17 13:10', dialogueCount: 6 },
+    { conversationId: 18, log: 'log018', name: 'Agent系统咨询', userName: 'user006', mode: 'chat', createdAt: '2024-12-18 15:45', dialogueCount: 4 },
+    { conversationId: 19, log: 'log019', name: '医疗知识库对话', userName: 'user007', mode: 'chat', createdAt: '2024-12-19 10:25', dialogueCount: 7 },
+    { conversationId: 20, log: 'log020', name: '大模型对话', userName: 'user008', mode: 'chat', createdAt: '2024-12-20 12:00', dialogueCount: 5 },
+    { conversationId: 21, log: 'log021', name: '教育知识库咨询', userName: 'user009', mode: 'chat', createdAt: '2024-12-21 14:35', dialogueCount: 3 },
+    { conversationId: 22, log: 'log022', name: '金融知识库', userName: 'user010', mode: 'chat', createdAt: '2024-12-22 16:20', dialogueCount: 6 },
+    { conversationId: 23, log: 'log023', name: 'Agent系统对话', userName: 'user001', mode: 'chat', createdAt: '2024-12-23 09:40', dialogueCount: 8 },
+    { conversationId: 24, log: 'log024', name: '医疗知识库咨询', userName: 'user002', mode: 'chat', createdAt: '2024-12-24 11:15', dialogueCount: 4 },
+    { conversationId: 25, log: 'log025', name: '大模型咨询', userName: 'user003', mode: 'chat', createdAt: '2024-12-25 13:50', dialogueCount: 7 }
 ]
 
 const getMockDetail: ConversationMessage[] = [
@@ -184,7 +178,7 @@ const loadConversationLogs = async (params: ConversationQueryParams = {}) => {
 
         const queryParams = {
             ...params,
-            page: currentPage.value,
+            pageNum: currentPage.value,
             pageSize: pageSize.value
         }
 
@@ -214,7 +208,7 @@ onMounted(() => {
 
 //查询
 const onQuery = async () => {
-    if (!formInline.log.trim() && !formInline.user.trim() && (!formInline.date || formInline.date.length === 0)) {
+    if (!formInline.user.trim() && (!formInline.date || formInline.date.length === 0)) {
         ElMessage.warning('请输入查询条件')
         return
     }
@@ -222,12 +216,7 @@ const onQuery = async () => {
     //查询参数
     const queryParams: ConversationQueryParams = {}
 
-    //会话标识
-    if (formInline.log.trim()) {
-        queryParams.log = formInline.log.trim()
-    }
-
-    //用户标识
+    //用户
     if (formInline.user.trim()) {
         queryParams.userName = formInline.user.trim()
     }
@@ -248,7 +237,6 @@ const onQuery = async () => {
 
 //重置
 const onReset = () => {
-    formInline.log = ''
     formInline.user = ''
     formInline.date = []
     
@@ -266,7 +254,7 @@ const onDetail = async (row: any) => {
     drawerVisible.value = true
     
     try {
-        const response = await apiService.getConversationDetail(row.log)
+        const response = await apiService.getConversationDetail(row.conversationId || row.log)
         conversationMessages.value = response.data
     } catch (error: any) {
         ElMessage.error('调用API获取对话详情失败，展示模拟数据')

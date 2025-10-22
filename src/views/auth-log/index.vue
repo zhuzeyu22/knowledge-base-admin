@@ -10,20 +10,14 @@
                 <!-- 查询模块 -->
                 <div class="query-table">
                     <el-form :inline="true" :model="formInline">
-                        <el-form-item label="授权ID">
-                            <el-input class="input" v-model="formInline.authorizationId" clearable />
-                        </el-form-item>
                         <el-form-item label="时间范围">
                             <el-date-picker class="input" v-model="formInline.date" type="daterange" range-separator="至"
                                 start-placeholder="开始日期" end-placeholder="结束日期" clearable />
                         </el-form-item>
-                        <el-form-item label="关联知识库">
-                            <el-input class="input" v-model="formInline.dataset" clearable />
-                        </el-form-item>
-                        <br>
                         <el-form-item label="授权人">
                             <el-input class="input" v-model="formInline.authorizer" clearable />
                         </el-form-item>
+                        <br>
                         <el-form-item label="被授权人">
                             <el-input class="input" v-model="formInline.authorizedUser" clearable />
                         </el-form-item>
@@ -36,14 +30,17 @@
                 <!-- 授权记录表单 -->
                 <div class="log-table">
                     <el-table class="table" :data="authList" style="width: 100%" :border="false" >
-                        <el-table-column prop="id" label="序号" min-width="100" />
-                        <el-table-column prop="authorizationId" label="授权ID" min-width="100" />
-                        <el-table-column prop="authorizedUser" label="被授权对象" min-width="100" />
-                        <el-table-column prop="dataset" label="关联知识库" min-width="130" />
-                        <el-table-column prop="datasetId" label="知识库ID" min-width="130" />
-                        <el-table-column prop="authorizor" label="授权人" min-width="130" />
-                        <el-table-column prop="type" label="授权类型" min-width="130" />
-                        <el-table-column prop="date" label="授权时间" min-width="130" />
+                        <el-table-column type="index" label="序号" min-width="100" />
+                        <el-table-column prop="tenantName" label="被授权对象" min-width="130" />
+                        <el-table-column prop="authorizerName" label="授权人" min-width="130" />
+                        <el-table-column label="共享权限" min-width="130">
+                            <template #default="scope">
+                                <span>
+                                    {{ scope.row.hasPermission ? '成功' : '失败' }}
+                                </span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="createdAt" label="授权时间" min-width="130" />
                     </el-table>
                 </div>
                 <div class="pagination-block">
@@ -70,264 +67,38 @@ import { ElMessage } from 'element-plus'
 import apiService, { AuthQueryParams } from '../../service/api'
 
 const formInline = reactive({
-    authorizationId:'',
     date: [],
-    dataset:'',
     authorizer:'',
     authorizedUser:''
 })
 
+//模拟数据（匹配API接口字段）
 const getMockData = [
-    {
-        id: '1',
-        authorizationId:'01',
-        authorizedUser:'user10',
-        dataset:'共享知识库A',
-        datasetId:'001',
-        authorizor:'admin21',
-        type:'可管理',
-        date:'2024-12-01 09:30'
-    },
-    {
-        id: '2',
-        authorizationId:'02',
-        authorizedUser:'user20',
-        dataset:'共享知识库A',
-        datasetId:'001',
-        authorizor:'admin21',
-        type:'可编辑',
-        date:'2024-12-01 09:30'
-    },
-    {
-        id: '3',
-        authorizationId:'03',
-        authorizedUser:'user20',
-        dataset:'共享知识库B',
-        datasetId:'002',
-        authorizor:'admin21',
-        type:'可查看',
-        date:'2024-12-01 09:30'
-    },
-    {
-        id: '4',
-        authorizationId:'04',
-        authorizedUser:'user25',
-        dataset:'共享知识库C',
-        datasetId:'003',
-        authorizor:'admin21',
-        type:'可管理',
-        date:'2024-12-01 09:30'
-    },
-    {
-        id: '5',
-        authorizationId:'05',
-        authorizedUser:'user25',
-        dataset:'共享知识库A',
-        datasetId:'001',
-        authorizor:'admin21',
-        type:'可查看',
-        date:'2024-12-01 09:30'
-    },
-    {
-        id: '6',
-        authorizationId:'01',
-        authorizedUser:'user10',
-        dataset:'共享知识库A',
-        datasetId:'001',
-        authorizor:'admin21',
-        type:'可管理',
-        date:'2024-12-01 09:30'
-    },
-    {
-        id: '7',
-        authorizationId:'02',
-        authorizedUser:'user20',
-        dataset:'共享知识库A',
-        datasetId:'001',
-        authorizor:'admin21',
-        type:'可编辑',
-        date:'2024-12-01 09:30'
-    },
-    {
-        id: '8',
-        authorizationId:'03',
-        authorizedUser:'user20',
-        dataset:'共享知识库B',
-        datasetId:'002',
-        authorizor:'admin21',
-        type:'可查看',
-        date:'2024-12-01 09:30'
-    },
-    {
-        id: '9',
-        authorizationId:'04',
-        authorizedUser:'user25',
-        dataset:'共享知识库C',
-        datasetId:'003',
-        authorizor:'admin21',
-        type:'可管理',
-        date:'2024-12-01 09:30'
-    },
-    {
-        id: '10',
-        authorizationId:'05',
-        authorizedUser:'user25',
-        dataset:'共享知识库A',
-        datasetId:'001',
-        authorizor:'admin21',
-        type:'可查看',
-        date:'2024-12-01 09:30'
-    },
-    {
-        id: '11',
-        authorizationId:'01',
-        authorizedUser:'user10',
-        dataset:'共享知识库A',
-        datasetId:'001',
-        authorizor:'admin21',
-        type:'可管理',
-        date:'2024-12-01 09:30'
-    },
-    {
-        id: '12',
-        authorizationId:'02',
-        authorizedUser:'user20',
-        dataset:'共享知识库A',
-        datasetId:'001',
-        authorizor:'admin21',
-        type:'可编辑',
-        date:'2024-12-01 09:30'
-    },
-    {
-        id: '13',
-        authorizationId:'03',
-        authorizedUser:'user20',
-        dataset:'共享知识库B',
-        datasetId:'002',
-        authorizor:'admin21',
-        type:'可查看',
-        date:'2024-12-01 09:30'
-    },
-    {
-        id: '14',
-        authorizationId:'04',
-        authorizedUser:'user25',
-        dataset:'共享知识库C',
-        datasetId:'003',
-        authorizor:'admin21',
-        type:'可管理',
-        date:'2024-12-01 09:30'
-    },
-    {
-        id: '15',
-        authorizationId:'05',
-        authorizedUser:'user25',
-        dataset:'共享知识库A',
-        datasetId:'001',
-        authorizor:'admin21',
-        type:'可查看',
-        date:'2024-12-01 09:30'
-    },
-    {
-        id: '16',
-        authorizationId:'01',
-        authorizedUser:'user10',
-        dataset:'共享知识库A',
-        datasetId:'001',
-        authorizor:'admin21',
-        type:'可管理',
-        date:'2024-12-01 09:30'
-    },
-    {
-        id: '17',
-        authorizationId:'02',
-        authorizedUser:'user20',
-        dataset:'共享知识库A',
-        datasetId:'001',
-        authorizor:'admin21',
-        type:'可编辑',
-        date:'2024-12-01 09:30'
-    },
-    {
-        id: '18',
-        authorizationId:'03',
-        authorizedUser:'user20',
-        dataset:'共享知识库B',
-        datasetId:'002',
-        authorizor:'admin21',
-        type:'可查看',
-        date:'2024-12-01 09:30'
-    },
-    {
-        id: '19',
-        authorizationId:'04',
-        authorizedUser:'user25',
-        dataset:'共享知识库C',
-        datasetId:'003',
-        authorizor:'admin21',
-        type:'可管理',
-        date:'2024-12-01 09:30'
-    },
-    {
-        id: '20',
-        authorizationId:'05',
-        authorizedUser:'user25',
-        dataset:'共享知识库A',
-        datasetId:'001',
-        authorizor:'admin21',
-        type:'可查看',
-        date:'2024-12-01 09:30'
-    },
-    {
-        id: '21',
-        authorizationId:'01',
-        authorizedUser:'user10',
-        dataset:'共享知识库A',
-        datasetId:'001',
-        authorizor:'admin21',
-        type:'可管理',
-        date:'2024-12-01 09:30'
-    },
-    {
-        id: '22',
-        authorizationId:'02',
-        authorizedUser:'user20',
-        dataset:'共享知识库A',
-        datasetId:'001',
-        authorizor:'admin21',
-        type:'可编辑',
-        date:'2024-12-01 09:30'
-    },
-    {
-        id: '23',
-        authorizationId:'03',
-        authorizedUser:'user20',
-        dataset:'共享知识库B',
-        datasetId:'002',
-        authorizor:'admin21',
-        type:'可查看',
-        date:'2024-12-01 09:30'
-    },
-    {
-        id: '24',
-        authorizationId:'04',
-        authorizedUser:'user25',
-        dataset:'共享知识库C',
-        datasetId:'003',
-        authorizor:'admin21',
-        type:'可管理',
-        date:'2024-12-01 09:30'
-    },
-    {
-        id: '25',
-        authorizationId:'05',
-        authorizedUser:'user25',
-        dataset:'共享知识库A',
-        datasetId:'001',
-        authorizor:'admin21',
-        type:'可查看',
-        date:'2024-12-01 09:30'
-    }
+    { permissionId: 1, tenantName: 'user10', datasetId: '001', authorizerName: 'admin21', hasPermission: true, createdAt: '2024-12-01 09:30' },
+    { permissionId: 2, tenantName: 'user20', datasetId: '001', authorizerName: 'admin21', hasPermission: true, createdAt: '2024-12-01 10:15' },
+    { permissionId: 3, tenantName: 'user20', datasetId: '002', authorizerName: 'admin21', hasPermission: false, createdAt: '2024-12-01 11:20' },
+    { permissionId: 4, tenantName: 'user25', datasetId: '003', authorizerName: 'admin21', hasPermission: true, createdAt: '2024-12-01 12:30' },
+    { permissionId: 5, tenantName: 'user25', datasetId: '001', authorizerName: 'admin21', hasPermission: false, createdAt: '2024-12-01 13:45' },
+    { permissionId: 6, tenantName: 'user10', datasetId: '001', authorizerName: 'admin22', hasPermission: true, createdAt: '2024-12-01 14:10' },
+    { permissionId: 7, tenantName: 'user20', datasetId: '001', authorizerName: 'admin22', hasPermission: true, createdAt: '2024-12-01 15:25' },
+    { permissionId: 8, tenantName: 'user20', datasetId: '002', authorizerName: 'admin21', hasPermission: false, createdAt: '2024-12-01 16:30' },
+    { permissionId: 9, tenantName: 'user25', datasetId: '003', authorizerName: 'admin22', hasPermission: true, createdAt: '2024-12-02 09:00' },
+    { permissionId: 10, tenantName: 'user25', datasetId: '001', authorizerName: 'admin21', hasPermission: false, createdAt: '2024-12-02 10:15' },
+    { permissionId: 11, tenantName: 'user10', datasetId: '001', authorizerName: 'admin21', hasPermission: true, createdAt: '2024-12-02 11:30' },
+    { permissionId: 12, tenantName: 'user20', datasetId: '001', authorizerName: 'admin22', hasPermission: true, createdAt: '2024-12-02 12:45' },
+    { permissionId: 13, tenantName: 'user20', datasetId: '002', authorizerName: 'admin21', hasPermission: false, createdAt: '2024-12-02 13:20' },
+    { permissionId: 14, tenantName: 'user25', datasetId: '003', authorizerName: 'admin21', hasPermission: true, createdAt: '2024-12-02 14:35' },
+    { permissionId: 15, tenantName: 'user25', datasetId: '001', authorizerName: 'admin22', hasPermission: false, createdAt: '2024-12-02 15:50' },
+    { permissionId: 16, tenantName: 'user10', datasetId: '001', authorizerName: 'admin21', hasPermission: true, createdAt: '2024-12-03 09:10' },
+    { permissionId: 17, tenantName: 'user20', datasetId: '001', authorizerName: 'admin21', hasPermission: true, createdAt: '2024-12-03 10:25' },
+    { permissionId: 18, tenantName: 'user20', datasetId: '002', authorizerName: 'admin22', hasPermission: false, createdAt: '2024-12-03 11:40' },
+    { permissionId: 19, tenantName: 'user25', datasetId: '003', authorizerName: 'admin21', hasPermission: true, createdAt: '2024-12-03 12:55' },
+    { permissionId: 20, tenantName: 'user25', datasetId: '001', authorizerName: 'admin22', hasPermission: false, createdAt: '2024-12-03 14:10' },
+    { permissionId: 21, tenantName: 'user10', datasetId: '001', authorizerName: 'admin21', hasPermission: true, createdAt: '2024-12-03 15:25' },
+    { permissionId: 22, tenantName: 'user20', datasetId: '001', authorizerName: 'admin21', hasPermission: true, createdAt: '2024-12-04 09:30' },
+    { permissionId: 23, tenantName: 'user20', datasetId: '002', authorizerName: 'admin22', hasPermission: false, createdAt: '2024-12-04 10:45' },
+    { permissionId: 24, tenantName: 'user25', datasetId: '003', authorizerName: 'admin21', hasPermission: true, createdAt: '2024-12-04 11:50' },
+    { permissionId: 25, tenantName: 'user25', datasetId: '001', authorizerName: 'admin22', hasPermission: false, createdAt: '2024-12-04 13:05' }
 ]
 //当前显示的登录列表
 const authList = ref<any[]>([])
@@ -345,8 +116,8 @@ const loadAuthLogs = async(params:AuthQueryParams = {}) =>{
         queryLoading.value = true;
         const queryParams = {
             ...params,
-            page:currentPage.value,
-            pageSize:pageSize.value
+            pageNum: currentPage.value,
+            pageSize: pageSize.value
         }
         const response = await apiService.getAuthLogs(queryParams)
 
@@ -370,29 +141,19 @@ onMounted(() => {
 
 //查询
 const onQuery = async () => {
-    if (!formInline.authorizationId.trim() && (!formInline.date || formInline.date.length === 0)
-     && !formInline.dataset.trim() && !formInline.authorizer.trim() && !formInline.authorizedUser.trim()) {
+    if ((!formInline.date || formInline.date.length === 0)
+     && !formInline.authorizer.trim() && !formInline.authorizedUser.trim()) {
         ElMessage.warning('请输入查询条件')
         return
     }
 
     const queryParams:AuthQueryParams = {}
 
-    //授权ID
-    if (formInline.authorizationId.trim()) {
-        queryParams.authorizationId = Number(formInline.authorizationId.trim())
-    }
-
     //时间范围
     if (formInline.date && formInline.date.length === 2) {
         const [startDate, endDate] = formInline.date
         queryParams.startTime = startDate
         queryParams.endTime = endDate
-    }
-    
-    //知识库
-    if (formInline.dataset.trim()) {
-        queryParams.dataset = formInline.dataset
     }
 
     //授权人
@@ -402,7 +163,7 @@ const onQuery = async () => {
 
     //被授权人
     if (formInline.authorizedUser.trim()) {
-        queryParams.tenantName = formInline.authorizer
+        queryParams.tenantName = formInline.authorizedUser
     }
 
     currentPage.value = 1
@@ -411,9 +172,7 @@ const onQuery = async () => {
 
 //重置
 const onReset = () => {
-    formInline.authorizationId = ''
     formInline.date = []
-    formInline.dataset = ''
     formInline.authorizer = ''
     formInline.authorizedUser = ''
     currentPage.value = 1
