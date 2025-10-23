@@ -1,6 +1,6 @@
 <template>
     <div class="login-log-page">
-        <el-container>
+        <el-container class="container">
             <!-- 标题 -->
             <el-header class="page-header page-style">
                 <h2 style="font-size: 20px;">登录日志</h2>
@@ -25,13 +25,32 @@
                 </div>
                 <!-- 登录表单 -->
                 <div class="login-table">
-                    <el-table class="table" :data="loginList" style="width: 100%" :border="false" stripe>
-                        <el-table-column prop="id" label="序号" min-width="100" />
-                        <el-table-column prop="user" label="用户标识" min-width="130" />
-                        <el-table-column prop="type" label="操作类型" min-width="130" />
-                        <el-table-column prop="date" label="开始时间" min-width="130" />
-                        <el-table-column prop="operation" label="操作描述" min-width="100" />
+                    <el-table class="table" :data="loginList" style="width: 100%" :border="false" >
+                        <el-table-column type="index" label="序号" min-width="100" />
+                        <el-table-column prop="userName" label="用户标识" min-width="130" />
+                        <el-table-column prop="loginMethod" label="登录方式" min-width="130" />
+                        <el-table-column prop="loginAt" label="登录时间" min-width="130" />
+                        <el-table-column label="登录状态" min-width="100">
+                            <template #default="scope">
+                                <span>
+                                    {{ scope.row.success ? '登陆成功' : '登陆失败' }}
+                                </span>
+                            </template>
+                        </el-table-column>
                     </el-table>
+                </div>
+                <div class="pagination-block">
+                    <el-pagination 
+                        :v-model:current-page="currentPage" 
+                        :v-model:page-size="pageSize"
+                        :page-sizes="[10, 20, 50, 100]"
+                        :background="true"
+                        layout="sizes, prev, pager, next" 
+                        :total="total"
+                        @size-change="handleSizeChange" 
+                        @current-change="handleCurrentChange"
+                        prev-text="< 上一页"
+                        next-text="下一页 >" />
                 </div>
             </el-main>
         </el-container>
@@ -39,128 +58,143 @@
     </div>
 </template>
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import apiService, { LoginQueryParams } from '../../service/api'
 
 const formInline = reactive({
     user: '',
     date: [],
 })
 
-const originalLoginList = [
-    {
-        id: '1',
-        user: 'user001',
-        type: '登录',
-        date: '2024-12-01 09:30',
-        operation: '登录成功'
-    },
-    {
-        id: '2',
-        user: 'user002',
-        type: '登录',
-        date: '2024-12-01 09:30',
-        operation: '登录失败'
-    },
-    {
-        id: '3',
-        user: 'user003',
-        type: '登录',
-        date: '2024-12-01 09:30',
-        operation: '登录成功'
-    },
-    {
-        id: '4',
-        user: 'user004',
-        type: '登录',
-        date: '2024-12-01 09:30',
-        operation: '登录失败'
-    },
-    {
-        id: '5',
-        user: 'user001',
-        type: '注册',
-        date: '2024-12-01 09:30',
-        operation: '注册成功'
-    }
+//模拟数据（匹配API接口字段）
+const getMockData = [
+    { loginId: 'login001', userName: 'user001', loginAt: '2024-12-01 09:30', loginMethod: 'password', success: true },
+    { loginId: 'login002', userName: 'user002', loginAt: '2024-12-01 10:15', loginMethod: 'password', success: false },
+    { loginId: 'login003', userName: 'user003', loginAt: '2024-12-01 11:20', loginMethod: 'password', success: true },
+    { loginId: 'login004', userName: 'user004', loginAt: '2024-12-01 12:30', loginMethod: 'sms', success: false },
+    { loginId: 'login005', userName: 'user001', loginAt: '2024-12-01 13:45', loginMethod: 'password', success: true },
+    { loginId: 'login006', userName: 'user005', loginAt: '2024-12-01 14:10', loginMethod: 'wechat', success: true },
+    { loginId: 'login007', userName: 'user002', loginAt: '2024-12-01 15:25', loginMethod: 'password', success: false },
+    { loginId: 'login008', userName: 'user006', loginAt: '2024-12-01 16:30', loginMethod: 'password', success: true },
+    { loginId: 'login009', userName: 'user007', loginAt: '2024-12-02 09:00', loginMethod: 'sms', success: true },
+    { loginId: 'login010', userName: 'user008', loginAt: '2024-12-02 10:15', loginMethod: 'password', success: false },
+    { loginId: 'login011', userName: 'user001', loginAt: '2024-12-02 11:30', loginMethod: 'password', success: true },
+    { loginId: 'login012', userName: 'user009', loginAt: '2024-12-02 12:45', loginMethod: 'wechat', success: true },
+    { loginId: 'login013', userName: 'user003', loginAt: '2024-12-02 13:20', loginMethod: 'password', success: true },
+    { loginId: 'login014', userName: 'user010', loginAt: '2024-12-02 14:35', loginMethod: 'password', success: false },
+    { loginId: 'login015', userName: 'user004', loginAt: '2024-12-02 15:50', loginMethod: 'sms', success: true },
+    { loginId: 'login016', userName: 'user002', loginAt: '2024-12-03 09:10', loginMethod: 'password', success: true },
+    { loginId: 'login017', userName: 'user005', loginAt: '2024-12-03 10:25', loginMethod: 'password', success: false },
+    { loginId: 'login018', userName: 'user006', loginAt: '2024-12-03 11:40', loginMethod: 'wechat', success: true },
+    { loginId: 'login019', userName: 'user007', loginAt: '2024-12-03 12:55', loginMethod: 'password', success: true },
+    { loginId: 'login020', userName: 'user008', loginAt: '2024-12-03 14:10', loginMethod: 'password', success: false },
+    { loginId: 'login021', userName: 'user009', loginAt: '2024-12-03 15:25', loginMethod: 'sms', success: true }
 ]
 //当前显示的登录列表
-const loginList = ref([...originalLoginList])
+const loginList = ref<any[]>([])
 
 //查询加载状态
 const queryLoading = ref(false)
 
-//格式化日期为可比较的格式
-const formatDate = (dateStr: string) => {
-    return new Date(dateStr.replace(' ', 'T'))
+//分页相关
+const currentPage = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
+
+const loadLoginLogs = async (params: LoginQueryParams = {}) => {
+    try {
+        queryLoading.value = true;
+        const queryParams = {
+            ...params,
+            pageNum: currentPage.value,
+            pageSize: pageSize.value
+        }
+        const response = await apiService.getLoginLogs(queryParams)
+
+        loginList.value = response.records
+        total.value = response.total
+
+        ElMessage.success(`加载完成，共${response.total}条记录`)
+    } catch (error: any) {
+        ElMessage.error(error.message || '后端加载数据失败')
+        const start = (currentPage.value - 1) * pageSize.value
+        const end = start + pageSize.value
+        loginList.value = getMockData.slice(start, end);
+        total.value = getMockData.length;
+    } finally {
+        queryLoading.value = false;
+    }
 }
 
-//检查日期是否在范围内
-const isDateInRange = (dateStr: string, startDate: Date, endDate: Date) => {
-    const date = formatDate(dateStr)
-    return date >= startDate && date <= endDate
-}
+onMounted(() =>{
+    loadLoginLogs()
+})
 
 //查询
 const onQuery = async () => {
     // 检查是否所有输入框都为空
-    if ( !formInline.user.trim() && (!formInline.date || formInline.date.length === 0)) {
+    if (!formInline.user.trim() && (!formInline.date || formInline.date.length === 0)) {
         ElMessage.warning('请输入查询条件')
         return
     }
+    
+    const queryParams:LoginQueryParams = {}
 
-    queryLoading.value = true
-
-    try {
-        //模拟API调用延迟
-        await new Promise(resolve => setTimeout(resolve, 500))
-        
-        let filteredList = [...originalLoginList]
-        
-        //用户标识
-        if (formInline.user.trim()) {
-            filteredList = filteredList.filter(item => 
-                item.user.toLowerCase().includes(formInline.user.trim().toLowerCase())
-            )
-        }
-        
-        //时间范围
-        if (formInline.date && formInline.date.length === 2) {
-            const [startDate, endDate] = formInline.date
-            filteredList = filteredList.filter(item => 
-                isDateInRange(item.date, startDate, endDate)
-            )
-        }
-        
-        loginList.value = filteredList
-        
-        ElMessage.success(`查询完成，共找到 ${filteredList.length} 条记录`)
-        
-    } catch (error) {
-        ElMessage.error('查询失败，请重试')
-        console.error('查询错误:', error)
-    } finally {
-        queryLoading.value = false
+    //用户
+    if(formInline.user.trim()){
+        queryParams.userName = formInline.user.trim()
     }
+    //date
+    if(formInline.date && formInline.date.length === 2){
+        const [startDate, endDate] = formInline.date
+        queryParams.loginStartTime = startDate
+        queryParams.loginEndTime = endDate
+    }
+
+    //重置到第一页
+    currentPage.value = 1
+
+    await loadLoginLogs(queryParams)
 }
 
 //重置
 const onReset = () => {
     formInline.user = ''
     formInline.date = []
-    loginList.value = [...originalLoginList]
+    currentPage.value = 1
+    pageSize.value = 10
+    loadLoginLogs()
     ElMessage.info('已重置查询条件')
+}
+
+//分页大小改变
+const handleSizeChange = (val: number) => {
+    pageSize.value = val
+    currentPage.value = 1 // 改变每页条数时，重置到第一页
+    loadLoginLogs()
+}
+
+//当前页改变
+const handleCurrentChange = (val: number) => {
+    currentPage.value = val
+    loadLoginLogs()
 }
 </script>
 <style scoped lang="less">
 .login-log-page {
-    width: 1200px;
-    height: 100%;
+    width: 100%;
+
+    .container {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 40px)
+    }
 
     .page-style {
         width: 100%;
         border: 1px solid #e4e7ed;
-        border-radius: 4px;
+        border-radius: 20px;
         background-color: #fff;
         box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.12);
     }
@@ -171,11 +205,22 @@ const onReset = () => {
     }
 
     .page-main {
+        position: relative;
         margin: 20px 0;
-        height: 700px;
 
         ::v-deep .input {
             width: 300px;
+        }
+
+        .login-table{
+            max-height: calc(100% - 120px);
+            overflow-y: auto;
+        }
+        .pagination-block {
+            position: absolute;
+            right: 20px;
+            bottom: 20px;
+            padding: 10px;
         }
 
     }

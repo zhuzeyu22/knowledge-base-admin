@@ -18,6 +18,11 @@ const routes = [
         component: () => import("../views/private/create/index.vue"),
       },
       {
+        path: "details",
+        name: "details",
+        component: () => import("../views/private/details.vue"),
+      },
+      {
         path: "public",
         name: "public",
         component: () => import("../views/public/index.vue"),

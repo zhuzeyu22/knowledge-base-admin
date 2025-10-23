@@ -6,9 +6,6 @@
         </el-header>
         <el-main v-infinite-scroll="load" :infinite-scroll-disabled="loading" :infinite-scroll-distance="10"
             class="context-style" style="overflow: auto">
-            <!-- <ul v-infinite-scroll="load" class="infinite-list" style="overflow: auto">
-                <li v-for="i in count" :key="i" class="infinite-list-item">{{ i }}</li>
-            </ul> -->
             <el-space wrap :size="16">
                 <CreateCard />
                 <KnowledgeBaseCard v-for="item in datasetList" :key="item.id" :dataset="item" />

@@ -18,6 +18,7 @@
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
+    "@types/node": "^24.8.1",
     "@vitejs/plugin-vue": "^5.1.4",
     "axios": "^1.12.2",
     "cz-conventional-changelog": "^3.3.0",

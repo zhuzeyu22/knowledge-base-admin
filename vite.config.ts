@@ -1,12 +1,13 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
+import path from "path";
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [vue()],
   resolve: {
     alias: {
-      "@": "/src",
+      "@": path.resolve(__dirname, "src")
     },
   },
   server: {
@@ -18,6 +19,10 @@ export default defineConfig({
         changeOrigin: true,
       },
       "/tenant": {
+        target: "http://www.finna.com.cn",
+        changeOrigin: true,
+      },
+      "/statistics": {
         target: "http://www.finna.com.cn",
         changeOrigin: true,
       },

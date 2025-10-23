@@ -8,73 +8,14 @@
             </div>
         </div>
     </el-card>
-    <!-- <el-dialog v-model="dialogVisible" title="新建知识库" width="800">
-        <div class="dialog-content">
-            <el-col>
-                <el-row style="margin-bottom: 20px;">
-                    <el-col :span="6">
-                        <el-image></el-image>
-                    </el-col>
-                    <el-col :span="18">
-                        <el-input v-model="knowledgeBaseName" placeholder="请输入知识库名称"></el-input>
-                        <el-input type="textarea" v-model="knowledgeBaseDescription" placeholder="请输入知识库简介" rows="4"
-                            style="margin-top: 10px;"></el-input>
-                    </el-col>
-                </el-row>
-                <el-row style="align-items: flex-start;">
-                    <el-col :span="6">
-                        知识库标签
-                    </el-col>
-                    <el-col :span="18">
-                        <el-radio-group v-model="knowledgeBaseTag" size="small">
-                            <el-radio-button label="official">官方</el-radio-button>
-                            <el-radio-button label="unofficial">非官方</el-radio-button>
-                        </el-radio-group>
-                    </el-col>
-                </el-row>
-            </el-col>
-        </div>
-        <template #footer>
-            <div class="dialog-footer">
-                <el-button @click="handlePreStepClick">取消</el-button>
-                <el-button type="primary" @click="handleNextStepClick">
-                    创建知识库
-                </el-button>
-            </div>
-        </template>
-</el-dialog> -->
 </template>
 
 <script setup lang="ts">
-// import { ref } from 'vue'
-// import { ElMessage } from 'element-plus'
 import router from '@/router'
 
 const handleCreateClick = () => {
     router.push({ name: 'create' })
 }
-
-// const dialogVisible = ref(false)
-// const knowledgeBaseName = ref('')
-// const knowledgeBaseDescription = ref('')
-// const knowledgeBaseTag = ref('official')
-// const handlePreStepClick = () => {
-//     dialogVisible.value = false
-// }
-// const handleNextStepClick = () => {
-//     if (knowledgeBaseName.value.trim() === '') {
-//         ElMessage({
-//             message: '知识库名称不能为空.',
-//             type: 'error',
-//         })
-//         return
-//     }
-
-//     router.push({
-//         name: 'create',
-//         query: { name: knowledgeBaseName.value },
-//     })
-// }
 
 </script>
 
