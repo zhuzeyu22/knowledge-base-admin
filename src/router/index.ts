@@ -13,14 +13,14 @@ const routes = [
         component: () => import("../views/private/index.vue"),
       },
       {
+        path: "create",
+        name: "create",
+        component: () => import("../views/private/create/index.vue"),
+      },
+      {
         path: "public",
         name: "public",
         component: () => import("../views/public/index.vue"),
-      },
-      {
-        path: "permission",
-        name: "permission",
-        component: () => import("../views/permission/index.vue"),
       },
       {
         path: "stat",

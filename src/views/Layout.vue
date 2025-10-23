@@ -5,7 +5,6 @@
                 <el-menu style="height: 100%;">
                     <el-menu-item index="1" @click="$router.push('/private')">个人知识库</el-menu-item>
                     <el-menu-item index="2" @click="$router.push('/public')">共享知识库</el-menu-item>
-                    <el-menu-item index="3" @click="$router.push('/permission')">权限管理</el-menu-item>
                     <el-menu-item index="4" @click="$router.push('/stat')">数据统计</el-menu-item>
                     <el-menu-item index="5" @click="$router.push('/conversation-log')">对话记录</el-menu-item>
                     <el-menu-item index="6" @click="$router.push('/login-log')">登陆记录</el-menu-item>
