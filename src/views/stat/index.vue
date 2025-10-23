@@ -84,7 +84,7 @@ import { ref, onMounted, onUnmounted, computed } from 'vue';
 import * as echarts from 'echarts';
 import type { ECharts } from 'echarts';
 import { ElDatePicker, ElMessage } from 'element-plus';
-import { Plus, Minus, View, UserFilled, Document } from '@element-plus/icons-vue';
+import { Plus, Minus, View, UserFilled, StarFilled, Document } from '@element-plus/icons-vue';
 import apiService, { VisitStatsParams, WeeklyData } from '../../service/api';
 
 //卡片数据
@@ -121,7 +121,7 @@ const convertWeeklyDataToCards = (weeklyData: WeeklyData): StatCard[] => [
     {
         title: '活跃用户',
         value: weeklyData.currentActiveUsers.toLocaleString(),
-        icon: UserFilled,
+        icon: StarFilled,
         trend: weeklyData.activeUsersGrowthRate,
         iconClass: 'icon-red'
     }
@@ -152,7 +152,7 @@ const getMockCardData = (): StatCard[] => [
     {
         title: '活跃用户',
         value: '5,237',
-        icon: UserFilled,
+        icon: StarFilled,
         trend: 6.8,
         iconClass: 'icon-red'
     }

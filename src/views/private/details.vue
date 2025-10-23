@@ -18,7 +18,7 @@
                             <el-tab-pane label="召回测试" name="recall"></el-tab-pane>
                             <el-tab-pane label="设置" name="settings"></el-tab-pane>
                         </el-tabs>
-                    </div>
+                    </div> 
                 </div>
             </el-header>
             <el-main class="page-main">
@@ -236,9 +236,6 @@ const getMockData = ref([
                                 background-color: #fff;
                                 border: 1px solid #000;
                                 z-index: 1;
-                            }
-                            &.is-active:not(:first-child) {
-                                margin-left: -1px;
                             }
 
                             &:hover {
