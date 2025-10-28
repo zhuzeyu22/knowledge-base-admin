@@ -47,6 +47,11 @@ const routes = [
         name: "auth-log",
         component: () => import("../views/auth-log/index.vue"),
       },
+      {
+        path: "logout",
+        name: "logout",
+        component: () => import("../views/logout/index.vue"),
+      },
     ],
   },
 ];

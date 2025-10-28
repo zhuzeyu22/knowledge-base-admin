@@ -251,79 +251,106 @@
                                         <el-row style="width: 100%; margin-bottom: 10px;">
                                             同时执行全文检索和向量检索，并应用重排序步骤，从两类查询结果中选择匹配用户问题的最佳结果，用户可以选择设置权重或配置重新排序模型。
                                         </el-row>
-                                        <!-- <el-row>
-                                                <el-col :span="12">
-                                                    <el-card shadow="never">
-                                                        <el-row class="font-weight">
-                                                            <div>权重设置</div>
-                                                            <el-radio value="weighted_score"></el-radio>
-                                                        </el-row>
-                                                        <el-row>通过调整分配的权重，重新排序策略确定是优先进行语义匹配还是关键字匹配。</el-row>
-                                                    </el-card>
-                                                </el-col>
-                                                <el-col :span="12">
-                                                    <el-card shadow="never">
-                                                        <el-row class="font-weight">
-                                                            <div>Rerank 模型</div>
-                                                            <el-radio value="reranking_model"></el-radio>
-                                                        </el-row>
-                                                        <el-row>通过调整分配的权重，重新排序策略确定是优先进行语义匹配还是关键字匹配。</el-row>
-                                                    </el-card>
-                                                </el-col>
-                                        </el-row> -->
                                         <el-row>
-                                            <el-col :span="12">
-                                                <el-card :shadow="retrieval_model.reranking_mode === 'weighted_score' ? 'always' : 'never'" >
-                                                    <el-radio-group v-model="retrieval_model.reranking_mode">
-                                                        <el-radio value="weighted_score">
-                                                            <el-row class="font-weight">
-                                                                <div>权重设置</div>
-                                                            </el-row>
-                                                            <el-row>通过调整分配的权重，重新排序策略确定是优先进行语义匹配还是关键字匹配。</el-row>
-                                                        </el-radio>
-                                                    </el-radio-group>
-                                                </el-card>
-                                            </el-col>
+
+                                            <el-tabs v-model="retrieval_model.reranking_mode" type="border-card">
+                                                <el-tab-pane name="weighted_score" label="权重设置">
+                                                    <div>通过调整分配的权重，重新排序策略确定是优先进行语义匹配还是关键字匹配。</div>
+                                                    <el-row style="margin-bottom: 10px;">
+                                                        <el-slider
+                                                            v-model="retrieval_model.weights.keyword_setting.keyword_weight"
+                                                            :onchange="retrieval_model.weights.vector_setting.vector_weight = Number((1 - retrieval_model.weights.keyword_setting.keyword_weight).toFixed(1))"
+                                                            :min="0" :max="1" :step="0.1" />
+                                                        <el-col :span="12">语义{{
+                                                            retrieval_model.weights.keyword_setting.keyword_weight
+                                                        }}</el-col>
+                                                        <el-col :span="12">{{
+                                                            retrieval_model.weights.vector_setting.vector_weight
+                                                            }}关键词</el-col>
+                                                    </el-row>
+                                                    <el-row v-if="retrieval_model.reranking_enable"
+                                                        style="width: 100%; margin-bottom: 10px;">
+                                                        <el-input v-model="retrieval_model.reranking_model_name"
+                                                            disabled></el-input>
+                                                    </el-row>
+                                                    <el-row>
+                                                        <el-row style="width: 100%;" :gutter="20">
+                                                            <el-col :span="12">Top K</el-col>
+                                                            <el-col :span="12">
+                                                                <el-switch
+                                                                    v-model="retrieval_model.score_threshold_enabled" />
+                                                                Score 阈值
+                                                            </el-col>
+                                                        </el-row>
+                                                        <el-row style="width: 100%;" :gutter="20">
+                                                            <el-col :span="12">
+                                                                <el-input-number v-model="retrieval_model.top_k"
+                                                                    :min="1" :max="10" :step="1" />
+                                                                <el-slider class="slider-style"
+                                                                    v-model="retrieval_model.top_k" size="small"
+                                                                    :min="1" :max="10" :step="1" />
+                                                            </el-col>
+                                                            <el-col :span="12">
+                                                                <el-input-number
+                                                                    v-model="retrieval_model.score_threshold"
+                                                                    :disabled="!retrieval_model.score_threshold_enabled"
+                                                                    :min="0" :max="1" :step="0.01" />
+                                                                <el-slider class="slider-style"
+                                                                    v-model="retrieval_model.score_threshold"
+                                                                    size="small"
+                                                                    :disabled="!retrieval_model.score_threshold_enabled"
+                                                                    :min="0" :max="1" :step="0.01" />
+                                                            </el-col>
+                                                        </el-row>
+                                                    </el-row>
+                                                </el-tab-pane>
+                                                <el-tab-pane name="reranking_model" label="Rerank 模型">
+                                                    <div>重排序模型将根据候选文档列表与用户问题语义匹配度进行重新排序，从而改进语义排序的结果</div>
+
+                                                    <el-row
+                                                        style="width: 100%; margin-bottom: 10px; display: flex; align-items: center;">
+                                                        <el-switch v-model="retrieval_model.reranking_enable"
+                                                            style="margin-right: 10px;" />
+                                                        <div>Rerank 模型</div>
+                                                    </el-row>
+                                                    <el-row v-if="retrieval_model.reranking_enable"
+                                                        style="width: 100%; margin-bottom: 10px;">
+                                                        <el-input v-model="retrieval_model.reranking_model_name"
+                                                            disabled></el-input>
+                                                    </el-row>
+                                                    <el-row>
+                                                        <el-row style="width: 100%;" :gutter="20">
+                                                            <el-col :span="12">Top K</el-col>
+                                                            <el-col :span="12">
+                                                                <el-switch
+                                                                    v-model="retrieval_model.score_threshold_enabled" />
+                                                                Score 阈值
+                                                            </el-col>
+                                                        </el-row>
+                                                        <el-row style="width: 100%;" :gutter="20">
+                                                            <el-col :span="12">
+                                                                <el-input-number v-model="retrieval_model.top_k"
+                                                                    :min="1" :max="10" :step="1" />
+                                                                <el-slider class="slider-style"
+                                                                    v-model="retrieval_model.top_k" size="small"
+                                                                    :min="1" :max="10" :step="1" />
+                                                            </el-col>
+                                                            <el-col :span="12">
+                                                                <el-input-number
+                                                                    v-model="retrieval_model.score_threshold"
+                                                                    :disabled="!retrieval_model.score_threshold_enabled"
+                                                                    :min="0" :max="1" :step="0.01" />
+                                                                <el-slider class="slider-style"
+                                                                    v-model="retrieval_model.score_threshold"
+                                                                    size="small"
+                                                                    :disabled="!retrieval_model.score_threshold_enabled"
+                                                                    :min="0" :max="1" :step="0.01" />
+                                                            </el-col>
+                                                        </el-row>
+                                                    </el-row>
+                                                </el-tab-pane>
+                                            </el-tabs>
                                         </el-row>
-                                        <el-card shadow="never">
-                                            <el-row
-                                                style="width: 100%; margin-bottom: 10px; display: flex; align-items: center;">
-                                                <el-switch v-model="retrieval_model.reranking_enable"
-                                                    style="margin-right: 10px;" />
-                                                <div>Rerank 模型</div>
-                                            </el-row>
-                                            <el-row v-if="retrieval_model.reranking_enable"
-                                                style="width: 100%; margin-bottom: 10px;">
-                                                <el-input v-model="retrieval_model.reranking_model_name"
-                                                    disabled></el-input>
-                                            </el-row>
-                                            <el-row>
-                                                <el-row style="width: 100%;" :gutter="20">
-                                                    <el-col :span="12">Top K</el-col>
-                                                    <el-col :span="12">
-                                                        <el-switch v-model="retrieval_model.score_threshold_enabled" />
-                                                        Score 阈值
-                                                    </el-col>
-                                                </el-row>
-                                                <el-row style="width: 100%;" :gutter="20">
-                                                    <el-col :span="12">
-                                                        <el-input-number v-model="retrieval_model.top_k" :min="1"
-                                                            :max="10" :step="1" />
-                                                        <el-slider class="slider-style" v-model="retrieval_model.top_k"
-                                                            size="small" :min="1" :max="10" :step="1" />
-                                                    </el-col>
-                                                    <el-col :span="12">
-                                                        <el-input-number v-model="retrieval_model.score_threshold"
-                                                            :disabled="!retrieval_model.score_threshold_enabled"
-                                                            :min="0" :max="1" :step="0.01" />
-                                                        <el-slider class="slider-style"
-                                                            v-model="retrieval_model.score_threshold" size="small"
-                                                            :disabled="!retrieval_model.score_threshold_enabled"
-                                                            :min="0" :max="1" :step="0.01" />
-                                                    </el-col>
-                                                </el-row>
-                                            </el-row>
-                                        </el-card>
                                     </el-collapse-item>
                                 </el-collapse>
                             </el-card>
@@ -331,9 +358,9 @@
                     </div>
                     <div style=" align-self: flex-end; display: flex; flex-direction: row-reverse; justify-content:
                                                         space-between; margin-top: 10px;">
-                        <el-button style="align-self: flex-end;" v-if="step !== 3" type="primary"
+                        <el-button style="align-self: flex-end;" v-if="step === 1" type="primary"
                             @click="handleNext">下一步</el-button>
-                        <el-button v-if="step === 3" type="primary" @click="handleNext">保存并处理</el-button>
+                        <el-button v-if="step === 2" type="primary" @click="handleInit">保存并处理</el-button>
                         <el-button v-if="step !== 1" type="primary" @click="handlePrev"
                             style="margin-right: 10px;">上一步</el-button>
                     </div>
@@ -407,6 +434,17 @@ const retrieval_model = ref({
     score_threshold: 0.5,
     score_threshold_enabled: false,
     reranking_mode: 'weighted_score',
+    weights: {
+        keyword_setting: {
+            keyword_weight: 0.3
+        },
+        vector_setting: {
+            embedding_model_name: "",
+            embedding_provider_name: "",
+            vector_weight: 0.7
+        },
+        weight_type: 'customized'
+    }
 })
 
 const handleUploadChange: UploadProps['onChange'] = (uploadFile, uploadFiles) => {
@@ -439,13 +477,14 @@ const handleCollapseParentMode = (value: string) => {
     return value !== hierarchical.value.parent_mode
 }
 
-// const handleCollapseIndexingTechnique = (value: string) => {
-//     return value !== indexing_technique.value
-// }
-
 const handleCollapseSearchMethod = (value: string) => {
     return value !== retrieval_model.value.search_method
 }
+
+const handleInit = () => {
+
+}
+
 
 </script>
 
