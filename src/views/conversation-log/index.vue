@@ -184,10 +184,10 @@ const loadConversationLogs = async (params: ConversationQueryParams = {}) => {
 
         const response = await apiService.getConversationLogs(queryParams)
 
-        logList.value = response.records
-        total.value = response.total
+        logList.value = response.data.records
+        total.value = response.data.total
 
-        ElMessage.success(`加载完成，共${response.total}条记录`)
+        ElMessage.success(`数据加载完成`)
     } catch (error: any) {
         ElMessage.error(error.message || '后端加载数据失败，使用模拟数据')
         

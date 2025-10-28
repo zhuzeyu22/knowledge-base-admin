@@ -45,8 +45,8 @@
                 </div>
                 <div class="pagination-block">
                     <el-pagination 
-                        :v-model:current-page="currentPage" 
-                        :v-model:page-size="pageSize"
+                        v-model:current-page="currentPage" 
+                        v-model:page-size="pageSize"
                         :page-sizes="[10, 20, 50, 100]"
                         :background="true"
                         layout="sizes, prev, pager, next" 
@@ -121,9 +121,9 @@ const loadAuthLogs = async(params:AuthQueryParams = {}) =>{
         }
         const response = await apiService.getAuthLogs(queryParams)
 
-        authList.value = response.records
-        total.value = response.total
-        ElMessage.success(`加载完成，共${response.total}条记录`)
+        authList.value = response.data.records
+        total.value = response.data.total
+        ElMessage.success(`数据加载完成`)
     } catch(error:any) {
         ElMessage.error(error.message || '后端加载数据失败')
         const start = (currentPage.value - 1) * pageSize.value

@@ -41,8 +41,8 @@
                 </div>
                 <div class="pagination-block">
                     <el-pagination 
-                        :v-model:current-page="currentPage" 
-                        :v-model:page-size="pageSize"
+                        v-model:current-page="currentPage" 
+                        v-model:page-size="pageSize"
                         :page-sizes="[10, 20, 50, 100]"
                         :background="true"
                         layout="sizes, prev, pager, next" 
@@ -112,10 +112,10 @@ const loadLoginLogs = async (params: LoginQueryParams = {}) => {
         }
         const response = await apiService.getLoginLogs(queryParams)
 
-        loginList.value = response.records
-        total.value = response.total
+        loginList.value = response.data.records
+        total.value = response.data.total
 
-        ElMessage.success(`加载完成，共${response.total}条记录`)
+        ElMessage.success(`数据加载完成`)
     } catch (error: any) {
         ElMessage.error(error.message || '后端加载数据失败')
         const start = (currentPage.value - 1) * pageSize.value
@@ -125,6 +125,14 @@ const loadLoginLogs = async (params: LoginQueryParams = {}) => {
     } finally {
         queryLoading.value = false;
     }
+}
+
+// 格式化日期为 YYYY-MM-DD 格式
+const formatDate = (date: Date): string => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
 }
 
 onMounted(() =>{
@@ -148,8 +156,9 @@ const onQuery = async () => {
     //date
     if(formInline.date && formInline.date.length === 2){
         const [startDate, endDate] = formInline.date
-        queryParams.loginStartTime = startDate
-        queryParams.loginEndTime = endDate
+        // 转换日期为字符串格式 YYYY-MM-DD
+        queryParams.loginStartTime = formatDate(startDate)
+        queryParams.loginEndTime = formatDate(endDate)
     }
 
     //重置到第一页

@@ -99,30 +99,30 @@ interface StatCard {
 const convertWeeklyDataToCards = (weeklyData: WeeklyData): StatCard[] => [
     {
         title: '访问次数',
-        value: weeklyData.currentDatasetQueries.toLocaleString(),
+        value: (weeklyData.currentDatasetQueries || 0).toLocaleString(),
         icon: View, 
         iconClass: 'icon-blue',
-        trend: weeklyData.datasetQueriesGrowthRate,
+        trend: weeklyData.datasetQueriesGrowthRate || 0,
     },
     {
         title: '访问人数',
-        value: weeklyData.currentDatasetUsers.toLocaleString(),
+        value: (weeklyData.currentDatasetUsers || 0).toLocaleString(),
         icon: UserFilled,
         iconClass: 'icon-purple',
-        trend: weeklyData.datasetUsersGrowthRate
+        trend: weeklyData.datasetUsersGrowthRate || 0
     },
     {
         title: '文档总数',
-        value: weeklyData.currentResources.toLocaleString(),
+        value: (weeklyData.currentResources || 0).toLocaleString(),
         icon: Document,
         iconClass: 'icon-green',
-        trend: weeklyData.resourcesGrowthRate,
+        trend: weeklyData.resourcesGrowthRate || 0,
     },
     {
         title: '活跃用户',
-        value: weeklyData.currentActiveUsers.toLocaleString(),
+        value: (weeklyData.currentActiveUsers || 0).toLocaleString(),
         icon: StarFilled,
-        trend: weeklyData.activeUsersGrowthRate,
+        trend: weeklyData.activeUsersGrowthRate || 0,
         iconClass: 'icon-red'
     }
 ];
@@ -297,16 +297,16 @@ const loadAllData = async (startDate?: Date, endDate?: Date) => {
             apiService.getDocumentRankingData()
         ]);
 
-        cardData.value = convertWeeklyDataToCards(weeklyResponse);
+        cardData.value = convertWeeklyDataToCards(weeklyResponse.data);
 
         dateRange.value = [sDate, eDate];
 
-        documentTypeData.value = documentTypeResponse.map(item => ({
+        documentTypeData.value = documentTypeResponse.data.map(item => ({
             value: item.count,
             name: item.type
         }));
 
-        topDocs.value = rankingResponse.map(item => ({
+        topDocs.value = rankingResponse.data.map(item => ({
             name: item.documentName,
             creator: item.creator,
             calls: item.callCount
