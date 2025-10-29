@@ -9,6 +9,7 @@
                     <el-menu-item index="5" @click="$router.push('/conversation-log')">对话记录</el-menu-item>
                     <el-menu-item index="6" @click="$router.push('/login-log')">登陆记录</el-menu-item>
                     <el-menu-item index="7" @click="$router.push('/auth-log')">授权记录</el-menu-item>
+                    <el-menu-item index="8" @click="$router.push('/logout')">退出登录</el-menu-item>
                 </el-menu>
             </el-aside>
             <el-main>
@@ -24,6 +25,12 @@ import { defineComponent } from "vue";
 export default defineComponent({
 
 })
+
+const logout = () => {
+    console.log('logout')
+    localStorage.removeItem('token')
+}
+
 </script>
 <style>
 .common-layout {

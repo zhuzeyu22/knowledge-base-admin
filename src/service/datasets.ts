@@ -30,21 +30,6 @@ export const fetchFileIndexingEstimate = (body: IndexingEstimateParams) => {
   return request.post(`/datasets/indexing-estimate`, body);
 };
 
-// 共享空间查询
-export const getKnowledgeBaseList = ({
-  include_all = false,
-  page = 1,
-  limit = 30,
-}: {
-  include_all: boolean;
-  page: number;
-  limit: number;
-}) => {
-  return request.get("/datasets/share", {
-    params: { page, limit, include_all },
-  });
-};
-
 export type KnowledgeBase = {
   [key in string]: any;
 };
@@ -67,4 +52,76 @@ export type UploadResponse = {
 // 上传文档
 export const uploadDocument = (data: FormData) => {
   return request.postForm(`/files/upload?source=datasets`, data);
+};
+
+// 创建知识库
+export const initDataset = (body: {
+  data_source: {
+    type: string;
+    info_list: {
+      data_source_type: string;
+      file_info_list: {
+        file_ids: string[];
+      };
+    };
+  };
+  doc_form: string;
+  doc_language: string;
+  embedding_model: string;
+  embedding_model_provider: string;
+  indexing_technique: string;
+  process_rule: {
+    mode: string;
+    rules:
+      | {
+          segmentation: {
+            separator: string;
+            max_tokens: number;
+            chunk_overlap: number;
+          };
+          pre_processing_rules: {
+            id: string;
+            enabled: boolean;
+          }[];
+        }
+      | {
+          parent_mode: string;
+          pre_processing_rules: {
+            id: string;
+            enabled: boolean;
+          }[];
+          segmentation: {
+            separator: string;
+            max_tokens: number;
+          };
+          subchunk_segmentation: {
+            separator: string;
+            max_tokens: number;
+          };
+        };
+  };
+  retrieval_model: any;
+  official: string;
+}) => {
+  return request.post(`/datasets/init`, body);
+};
+
+// 查询个人知识库列表
+export const getPrivateDatasetList = (page: number, limit: number) => {
+  return request.get(`/datasets?page=${page}&limit=${limit}&include_all=false`);
+};
+
+// 查询共享知识库列表
+export const getPublicDatasetList = ({
+  include_all = false,
+  page = 1,
+  limit = 30,
+}: {
+  include_all: boolean;
+  page: number;
+  limit: number;
+}) => {
+  return request.get("/datasets/share", {
+    params: { page, limit, include_all },
+  });
 };
