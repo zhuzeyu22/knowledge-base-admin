@@ -26,6 +26,10 @@ export default defineConfig({
         target: "http://www.finna.com.cn",
         changeOrigin: true,
       },
+      "/datasets": {
+        target: "http://www.finna.com.cn",
+        changeOrigin: true,
+      },
     },
   },
 });

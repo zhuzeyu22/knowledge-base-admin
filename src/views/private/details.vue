@@ -24,11 +24,11 @@
             <el-main class="page-main">
                 <div class="tool">
                     <el-input style="width: 240px" v-model="searchName" size="large" placeholder="搜索文档名称"
-                        :prefix-icon="Search" clearable @clear="onClearSearch" />
+                        :prefix-icon="Search" clearable @clear="onClearSearch" @keyup.enter="loadData" />
                     <el-button type="primary" size="default">添加文件</el-button>
                 </div>
                 <div class="table">
-                    <el-table :data="filteredData" >
+                    <el-table :data="documentList" >
                         <el-table-column type="selection" width="40" />
                         <el-table-column prop="id" label="" width="20" />
                         <el-table-column prop="name" label="名称" min-width="200" />
@@ -106,10 +106,13 @@
     </div>
 </template>
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { ElMessage, type TabsPaneContext } from 'element-plus'
 import { Search, List, MoreFilled } from '@element-plus/icons-vue'
+import apiService from '../../service/knowledge/use-document-list'
 
+const route = useRoute()
 const activeTab = ref('document')
 const dialogFormVisible = ref(false)
 const deleteDialogVisible = ref(false)
@@ -124,6 +127,10 @@ interface RowRename {
 }
 const currentRow = ref<RowRename | null>(null)
 const newName = ref('')
+const queryLoading = ref(false)
+const documentList = ref<any[]>([])
+const datasetId = ref((route.query.id as string) || (route.params.id as string) || '')
+
 const handleTabClick = (tab: TabsPaneContext) => {
     console.log('切换到:', tab.paneName)
 }
@@ -169,19 +176,30 @@ const getMockData = ref([
 
 const searchName = ref('')
 
-//搜索后的数据
-const filteredData = computed(() => {
-    if (!searchName.value.trim()) {
-        return getMockData.value
+const loadData = async () => {
+    try {
+        queryLoading.value = true
+        const queryParams = {
+            keyword: searchName.value
+        }
+        const response = await apiService.getDocumentList(datasetId.value, queryParams)
+        
+        documentList.value = response.data
+        
+        ElMessage.success('数据加载完成')
+        
+    } catch (error: any) {
+        ElMessage.error(error.message || '使用模拟数据')
+        documentList.value = getMockData.value
+    } finally {
+        queryLoading.value = false
     }
-    const keyword = searchName.value.trim().toLowerCase()
-    return getMockData.value.filter(item =>
-        item.name.toLowerCase().includes(keyword)
-    )
-})
+} 
+
 //清空搜索
 const onClearSearch = () => {
     searchName.value = ''
+    loadData()
 }
 //按时间排序
 const sortByUploadTime = (a: any, b: any) => {
@@ -218,9 +236,9 @@ const handleDelete = (row: RowRename) => {
 }
 const confirmDelete = () => {
     if (currentRow.value) {
-        const index = getMockData.value.findIndex(item => item.id === currentRow.value!.id)
+        const index = documentList.value.findIndex(item => item.id === currentRow.value!.id)
         if (index !== -1) {
-            getMockData.value.splice(index, 1)
+            documentList.value.splice(index, 1)
             ElMessage.success('删除成功')
         }
     }
@@ -231,6 +249,16 @@ const handleDeleteClose = () => {
     currentRow.value = null;
     deleteDialogVisible.value = false;
 }
+
+onMounted(() => {
+    //检查datasetId
+    if (!datasetId.value) {
+        ElMessage.warning('缺少知识库ID，请从知识库列表进入')
+        documentList.value = getMockData.value
+        return
+    }
+    loadData()
+})
 </script>
 <style scoped lang="less">
 .private-details-page {
