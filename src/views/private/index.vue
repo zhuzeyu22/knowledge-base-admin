@@ -17,9 +17,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import KnowledgeBaseCard from './components/KnowledgeBaseCard.vue'
-import { getKnowledgeBaseList } from '@/service/datasets';
 import { Dataset } from '@/models/dataset';
 import CreateCard from './components/createCard.vue';
+import { getPrivateDatasetList } from '@/service/datasets';
 
 const datasetList = ref<Dataset[]>([])
 const search = ref('')
@@ -27,17 +27,30 @@ const search = ref('')
 const page = ref(1)
 const limit = ref(50)
 const loading = ref(false)
+const total = ref(1)
+
 const handleSearchChange = () => {
     console.log('Search changed:', search.value)
 }
 
+const getTotal = () => {
+    getPrivateDatasetList(
+        page.value,
+        limit.value,
+    ).then((res) => {
+        total.value = res.total
+    })
+}
+getTotal()
 const load = () => {
+    if (datasetList.value.length >= total.value) {
+        return
+    }
     loading.value = true
-    // getKnowledgeBaseList({
-    //     page: page.value,
-    //     limit: limit.value,
-    //     include_all: true
-    // }).finally(() => {
+    getPrivateDatasetList(
+        page.value,
+        limit.value,
+    ).finally(() => {
         datasetList.value.push(... new Array(50).fill(0).map((_, index) => ({
             id: String(index + 1),
             name: `知识库${index + 1}`,
@@ -48,7 +61,7 @@ const load = () => {
             characterNumber: 3211,
         })))
         loading.value = false
-    // })
+    })
 }
 
 load()

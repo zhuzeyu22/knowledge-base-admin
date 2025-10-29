@@ -50,23 +50,23 @@
                                             <el-col :span="8">分段重叠长度</el-col>
                                         </el-row>
                                         <el-row :gutter="20">
-                                            <el-col :span="8"><el-input v-model="custom.separator"></el-input></el-col>
+                                            <el-col :span="8"><el-input
+                                                    v-model="custom.segmentation.separator"></el-input></el-col>
                                             <el-col :span="8"><el-input-number
-                                                    v-model="custom.max_tokens"></el-input-number></el-col>
+                                                    v-model="custom.segmentation.max_tokens"></el-input-number></el-col>
                                             <el-col :span="8"><el-input-number
-                                                    v-model="custom.chunk_overlap"></el-input-number></el-col>
+                                                    v-model="custom.segmentation.chunk_overlap"></el-input-number></el-col>
                                         </el-row>
                                         <el-row>
                                             <el-col :span="24">
                                                 文本预处理规则
                                             </el-col>
                                             <el-col :span="24">
-                                                <el-checkbox v-model="custom.pre_processing_rules.remove_extra_spaces"
+                                                <el-checkbox v-model="custom.pre_processing_rules[0].enabled"
                                                     label="替换掉连续的空格、换行符和制表符" />
                                             </el-col>
                                             <el-col :span="24">
-                                                <el-checkbox
-                                                    v-model="custom.pre_processing_rules.remove_urls_and_emails"
+                                                <el-checkbox v-model="custom.pre_processing_rules[1].enabled"
                                                     label="删除所有 URL 和电子邮件地址" />
                                             </el-col>
                                         </el-row>
@@ -89,9 +89,9 @@
                                                             </el-row>
                                                             <el-row :gutter="20">
                                                                 <el-col :span="10"><el-input
-                                                                        v-model="paragraph.separator"></el-input></el-col>
+                                                                        v-model="hierarchical.segmentation.separator"></el-input></el-col>
                                                                 <el-col :span="10"><el-input-number
-                                                                        v-model="paragraph.max_tokens"></el-input-number></el-col>
+                                                                        v-model="hierarchical.segmentation.max_tokens"></el-input-number></el-col>
                                                             </el-row>
                                                         </el-card>
 
@@ -114,9 +114,9 @@
                                             </el-row>
                                             <el-row :gutter="20" style="width: 100%;">
                                                 <el-col :span="10"><el-input
-                                                        v-model="hierarchical.separator"></el-input></el-col>
+                                                        v-model="hierarchical.subchunk_segmentation.separator"></el-input></el-col>
                                                 <el-col :span="10"><el-input-number
-                                                        v-model="hierarchical.max_tokens"></el-input-number></el-col>
+                                                        v-model="hierarchical.subchunk_segmentation.max_tokens"></el-input-number></el-col>
                                             </el-row>
                                         </el-row>
                                         <el-row style="width: 100%; margin-bottom: 10px;">
@@ -124,13 +124,11 @@
                                                 文本预处理规则
                                             </el-col>
                                             <el-col :span="24">
-                                                <el-checkbox
-                                                    v-model="hierarchical.pre_processing_rules.remove_extra_spaces"
+                                                <el-checkbox v-model="hierarchical.pre_processing_rules[0].enabled"
                                                     label="替换掉连续的空格、换行符和制表符" />
                                             </el-col>
                                             <el-col :span="24">
-                                                <el-checkbox
-                                                    v-model="hierarchical.pre_processing_rules.remove_urls_and_emails"
+                                                <el-checkbox v-model="hierarchical.pre_processing_rules[1].enabled"
                                                     label="删除所有 URL 和电子邮件地址" />
                                             </el-col>
                                         </el-row>
@@ -263,10 +261,10 @@
                                                             :min="0" :max="1" :step="0.1" />
                                                         <el-col :span="12">语义{{
                                                             retrieval_model.weights.keyword_setting.keyword_weight
-                                                        }}</el-col>
+                                                            }}</el-col>
                                                         <el-col :span="12">{{
                                                             retrieval_model.weights.vector_setting.vector_weight
-                                                            }}关键词</el-col>
+                                                        }}关键词</el-col>
                                                     </el-row>
                                                     <el-row v-if="retrieval_model.reranking_enable"
                                                         style="width: 100%; margin-bottom: 10px;">
@@ -387,7 +385,7 @@ import router from '@/router';
 import { ref } from 'vue'
 import { UploadFilled, Back } from '@element-plus/icons-vue'
 import type { UploadProps, UploadUserFile } from 'element-plus'
-import { uploadDocument, UploadResponse } from '@/service/datasets';
+import { initDataset, uploadDocument, UploadResponse } from '@/service/datasets';
 
 const radio = ref('datasets')
 const fileList = ref<UploadUserFile[]>([])
@@ -398,28 +396,40 @@ const step = ref(1)
 
 const process_rule = ref('custom')
 const custom = ref({
-    separator: '\\n\\n',
-    max_tokens: 500,
-    chunk_overlap: 50,
-    pre_processing_rules: {
-        remove_extra_spaces: false,
-        remove_urls_and_emails: false,
-    }
+    segmentation: {
+        separator: '\\n\\n',
+        max_tokens: 500,
+        chunk_overlap: 50,
+    },
+    pre_processing_rules: [
+        {
+            id: "remove_extra_spaces",
+            enabled: false
+        }, {
+            id: 'remove_urls_and_emails',
+            enabled: false
+        }
+    ],
 })
 const hierarchical = ref({
-    separator: '\\n\\n',
-    max_tokens: 500,
-    chunk_overlap: 50,
     parent_mode: 'paragraph',
-    pre_processing_rules: {
-        remove_extra_spaces: false,
-        remove_urls_and_emails: false,
-    }
-})
-
-const paragraph = ref({
-    separator: '\\n\\n',
-    max_tokens: 500,
+    pre_processing_rules: [
+        {
+            id: "remove_extra_spaces",
+            enabled: false
+        }, {
+            id: 'remove_urls_and_emails',
+            enabled: false
+        }
+    ],
+    segmentation: {
+        separator: '\\n\\n',
+        max_tokens: 500,
+    },
+    subchunk_segmentation: {
+        separator: '\\n\\n',
+        max_tokens: 500,
+    },
 })
 
 const indexing_technique = ref('high_quality')
@@ -447,12 +457,16 @@ const retrieval_model = ref({
     }
 })
 
+// official
+// unofficial
+const official = ref('official')
+
 const handleUploadChange: UploadProps['onChange'] = (uploadFile, uploadFiles) => {
     const formData = new FormData()
     if (uploadFile.raw) {
         formData.append('file', uploadFile.raw)
         uploadDocument(formData).then(response => {
-            res.value.push(response.data)
+            res.value.push(response)
             console.log('File uploaded successfully:', response)
         }).catch(error => {
             console.error('File upload failed:', error)
@@ -482,7 +496,34 @@ const handleCollapseSearchMethod = (value: string) => {
 }
 
 const handleInit = () => {
+    // console.log('res', res.value)
+    // console.log('res', res.value.map(x => x.id))
+    const params = {
+        data_source: {
+            type: "upload_file",
+            info_list: {
+                data_source_type: "upload_file",
+                file_info_list: {
+                    file_ids: res.value.map(x => x.id)
+                }
+            }
+        },
+        doc_form: 'text_model',
+        doc_language: 'Chinese Simplified',
+        embedding_model: embedding_model.value,
+        embedding_model_provider: embedding_model_provider.value,
+        indexing_technique: indexing_technique.value,
+        process_rule: {
+            mode: process_rule.value,
+            rules: process_rule.value === 'custom' ? custom.value : hierarchical.value
+        },
+        retrieval_model: retrieval_model.value,
+        official: official.value
+    }
 
+    initDataset(params).then(res => {
+        console.log('res', res)
+    })
 }
 
 
