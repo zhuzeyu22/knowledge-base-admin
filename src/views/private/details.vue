@@ -18,16 +18,17 @@
                             <el-tab-pane label="召回测试" name="recall"></el-tab-pane>
                             <el-tab-pane label="设置" name="settings"></el-tab-pane>
                         </el-tabs>
-                    </div> 
+                    </div>
                 </div>
             </el-header>
             <el-main class="page-main">
                 <div class="tool">
-                    <el-input style="width: 240px" size="large" placeholder="搜索内容" :prefix-icon="Search" />
+                    <el-input style="width: 240px" v-model="searchName" size="large" placeholder="搜索文档名称"
+                        :prefix-icon="Search" clearable @clear="onClearSearch" />
                     <el-button type="primary" size="default">添加文件</el-button>
                 </div>
                 <div class="table">
-                    <el-table :data="getMockData" >
+                    <el-table :data="filteredData" >
                         <el-table-column type="selection" width="40" />
                         <el-table-column prop="id" label="" width="20" />
                         <el-table-column prop="name" label="名称" min-width="200" />
@@ -38,7 +39,8 @@
                         </el-table-column>
                         <el-table-column prop="charCount" label="字符数" width="100" />
                         <el-table-column prop="recallCount" label="召回次数" width="100" />
-                        <el-table-column prop="uploadTime" label="上传时间" width="180" />
+                        <el-table-column prop="uploadTime" label="上传时间" width="180" sortable
+                            :sort-method="sortByUploadTime" />
                         <el-table-column label="状态" width="100">
                             <template #default="{ row }">
                                 <span :class="['status-text', row.enabled ? 'status-available' : 'status-disabled']">
@@ -53,39 +55,75 @@
                         </el-table-column>
                         <el-table-column width="50">
                             <template #default>
-                                <el-button link class="icon-btn">
-                                    <el-icon :size="16"><List /></el-icon>
+                                <el-button link class="icon-btn" title="分段设置">
+                                    <el-icon :size="16">
+                                        <List />
+                                    </el-icon>
                                 </el-button>
                             </template>
                         </el-table-column>
                         <el-table-column width="50">
-                            <template #default>
+                            <template #default = "scope">
                                 <el-dropdown>
                                     <el-button link class="icon-btn">
-                                        <el-icon :size="16"><MoreFilled /></el-icon>
+                                        <el-icon :size="16">
+                                            <MoreFilled />
+                                        </el-icon>
                                     </el-button>
                                     <template #dropdown>
                                         <el-dropdown-menu>
-                                            <el-dropdown-item>重命名</el-dropdown-item>
-                                            <el-dropdown-item>删除</el-dropdown-item>
+                                            <el-dropdown-item @click="handleRename(scope.row)">重命名</el-dropdown-item>
+                                            <el-dropdown-item @click="handleDelete(scope.row)">删除</el-dropdown-item>
                                         </el-dropdown-menu>
                                     </template>
                                 </el-dropdown>
                             </template>
                         </el-table-column>
                     </el-table>
+                    <el-dialog title="重命名" v-model="dialogFormVisible" :before-close="handleClose" width="400px">
+                        <el-input v-model="newName" placeholder="请输入新名称" clearable></el-input>
+                        <template #footer>
+                            <div class="dialog-footer">
+                                <el-button @click="dialogFormVisible = false">取消</el-button>
+                                <el-button type="primary" @click="saveRename">保存</el-button>
+                            </div>
+                        </template>
+                    </el-dialog>
+                    <el-dialog title="确定删除吗？" v-model="deleteDialogVisible" :before-close="handleDeleteClose" width="400px">
+                        <div class="delete-content">
+                            <p class="warning-text">如果您需要稍后恢复处理，您将从您离开的地方继续</p>
+                        </div>
+                        <template #footer>
+                            <div class="dialog-footer">
+                                <el-button @click="deleteDialogVisible = false">取消</el-button>
+                                <el-button type="danger" @click="confirmDelete">确定删除</el-button>
+                            </div>
+                        </template>
+                    </el-dialog>
                 </div>
             </el-main>
         </el-container>
     </div>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue'
-import type { TabsPaneContext } from 'element-plus'
+import { ref, computed } from 'vue'
+import { ElMessage, type TabsPaneContext } from 'element-plus'
 import { Search, List, MoreFilled } from '@element-plus/icons-vue'
 
 const activeTab = ref('document')
-
+const dialogFormVisible = ref(false)
+const deleteDialogVisible = ref(false)
+interface RowRename {
+  id: number;
+  name: string;
+  segmentMode: string;
+  charCount: string;
+  recallCount: number;
+  uploadTime: string;
+  enabled: boolean;
+}
+const currentRow = ref<RowRename | null>(null)
+const newName = ref('')
 const handleTabClick = (tab: TabsPaneContext) => {
     console.log('切换到:', tab.paneName)
 }
@@ -115,7 +153,7 @@ const getMockData = ref([
         segmentMode: '通用',
         charCount: '42.1k',
         recallCount: 3,
-        uploadTime: '2024-10-13 16:48:09',
+        uploadTime: '2024-10-12 11:22:33',
         enabled: false,
     },
     {
@@ -124,10 +162,75 @@ const getMockData = ref([
         segmentMode: '通用',
         charCount: '56.7k',
         recallCount: 2,
-        uploadTime: '2024-10-12 11:22:33',
+        uploadTime: '2024-10-13 16:48:09',
         enabled: true,
     },
 ])
+
+const searchName = ref('')
+
+//搜索后的数据
+const filteredData = computed(() => {
+    if (!searchName.value.trim()) {
+        return getMockData.value
+    }
+    const keyword = searchName.value.trim().toLowerCase()
+    return getMockData.value.filter(item =>
+        item.name.toLowerCase().includes(keyword)
+    )
+})
+//清空搜索
+const onClearSearch = () => {
+    searchName.value = ''
+}
+//按时间排序
+const sortByUploadTime = (a: any, b: any) => {
+    const timeA = new Date(a.uploadTime).getTime()
+    const timeB = new Date(b.uploadTime).getTime()
+    return timeA - timeB
+}
+//重命名
+const handleRename = (row: RowRename) => {
+    currentRow.value = row;
+    newName.value = row.name;
+    dialogFormVisible.value = true;
+}
+const saveRename = () => {
+    if(!newName.value.trim()){
+        ElMessage.warning('名称不能为空')
+        return 
+    }
+    if(currentRow.value){
+        currentRow.value.name = newName.value.trim();
+    }
+    ElMessage.success('修改成功')
+    dialogFormVisible.value = false;
+}
+const handleClose = () => {
+    newName.value = '';
+    currentRow.value = null;
+    dialogFormVisible.value = false;
+}
+//删除
+const handleDelete = (row: RowRename) => {
+    currentRow.value = row;
+    deleteDialogVisible.value = true;
+}
+const confirmDelete = () => {
+    if (currentRow.value) {
+        const index = getMockData.value.findIndex(item => item.id === currentRow.value!.id)
+        if (index !== -1) {
+            getMockData.value.splice(index, 1)
+            ElMessage.success('删除成功')
+        }
+    }
+    deleteDialogVisible.value = false;
+    currentRow.value = null;
+}
+const handleDeleteClose = () => {
+    currentRow.value = null;
+    deleteDialogVisible.value = false;
+}
 </script>
 <style scoped lang="less">
 .private-details-page {
@@ -266,6 +369,7 @@ const getMockData = ref([
                         background-color: #E2E5EB;
                         border: none;
                         border-radius: 0px;
+
                         &:hover {
                             background-color: #fff;
                         }
@@ -287,6 +391,7 @@ const getMockData = ref([
                     .icon-btn {
                         padding: 4px;
                         color: #606266;
+
                         &:hover {
                             color: #409eff;
                         }
@@ -294,6 +399,27 @@ const getMockData = ref([
                 }
             }
         }
+    }
+}
+
+.delete-content {
+    padding: 10px 0;
+
+    p {
+        margin: 10px 0;
+        font-size: 14px;
+        color: #606266;
+        line-height: 1.6;
+    }
+
+    .highlight-name {
+        font-weight: 600;
+        color: #303133;
+    }
+
+    .warning-text {
+        color: #606266;
+        font-size: 15px;
     }
 }
 </style>
