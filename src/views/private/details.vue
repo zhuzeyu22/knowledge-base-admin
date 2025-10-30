@@ -37,9 +37,9 @@
                                 <el-button size="small" class="segment-btn">通用</el-button>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="charCount" label="字符数" width="100" />
-                        <el-table-column prop="recallCount" label="召回次数" width="100" />
-                        <el-table-column prop="uploadTime" label="上传时间" width="180" sortable
+                        <el-table-column prop="word_count" label="字符数" width="100" />
+                        <el-table-column prop="hit_count" label="召回次数" width="100" />
+                        <el-table-column prop="created_at" label="上传时间" width="180" sortable
                             :sort-method="sortByUploadTime" />
                         <el-table-column label="状态" width="100">
                             <template #default="{ row }">
@@ -110,66 +110,61 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, type TabsPaneContext } from 'element-plus'
 import { Search, List, MoreFilled } from '@element-plus/icons-vue'
-import apiService from '../../service/knowledge/use-document-list'
+import apiService,{DocumentList}from '../../service/knowledge/use-document-list'
 
 const route = useRoute()
 const activeTab = ref('document')
 const dialogFormVisible = ref(false)
 const deleteDialogVisible = ref(false)
-interface RowRename {
-  id: number;
-  name: string;
-  segmentMode: string;
-  charCount: string;
-  recallCount: number;
-  uploadTime: string;
-  enabled: boolean;
-}
-const currentRow = ref<RowRename | null>(null)
+const currentRow = ref<DocumentList | null>(null)
 const newName = ref('')
 const queryLoading = ref(false)
-const documentList = ref<any[]>([])
+const documentList = ref<DocumentList[]>([])
 const datasetId = ref((route.query.id as string) || (route.params.id as string) || '')
 
 const handleTabClick = (tab: TabsPaneContext) => {
     console.log('切换到:', tab.paneName)
 }
 
-const getMockData = ref([
+const getMockData = ref<DocumentList[]>([
     {
         id: 1,
+        datasetId: datasetId.value,
         name: '产品技术白皮书.pdf',
         segmentMode: '通用',
-        charCount: '15.2k',
-        recallCount: 5,
-        uploadTime: '2024-10-15 14:30:25',
+        word_count: 15200,
+        hit_count: 5,
+        created_at: '2024-10-15 14:30:25',
         enabled: true,
     },
     {
         id: 2,
+        datasetId: datasetId.value,
         name: '用户操作手册.docx',
         segmentMode: '通用',
-        charCount: '28.6k',
-        recallCount: 8,
-        uploadTime: '2024-10-14 09:15:42',
+        word_count: 28600,
+        hit_count: 8,
+        created_at: '2024-10-14 09:15:42',
         enabled: true,
     },
     {
         id: 3,
+        datasetId: datasetId.value,
         name: 'API接口文档.md',
         segmentMode: '通用',
-        charCount: '42.1k',
-        recallCount: 3,
-        uploadTime: '2024-10-12 11:22:33',
+        word_count: 42100,
+        hit_count: 3,
+        created_at: '2024-10-12 11:22:33',
         enabled: false,
     },
     {
         id: 4,
+        datasetId: datasetId.value,
         name: '系统架构设计.pdf',
         segmentMode: '通用',
-        charCount: '56.7k',
-        recallCount: 2,
-        uploadTime: '2024-10-13 16:48:09',
+        word_count: 56700,
+        hit_count: 2,
+        created_at: '2024-10-13 16:48:09',
         enabled: true,
     },
 ])
@@ -202,13 +197,13 @@ const onClearSearch = () => {
     loadData()
 }
 //按时间排序
-const sortByUploadTime = (a: any, b: any) => {
-    const timeA = new Date(a.uploadTime).getTime()
-    const timeB = new Date(b.uploadTime).getTime()
+const sortByUploadTime = (a: DocumentList, b: DocumentList) => {
+    const timeA = new Date(a.created_at).getTime()
+    const timeB = new Date(b.created_at).getTime()
     return timeA - timeB
 }
 //重命名
-const handleRename = (row: RowRename) => {
+const handleRename = (row: DocumentList) => {
     currentRow.value = row;
     newName.value = row.name;
     dialogFormVisible.value = true;
@@ -230,7 +225,7 @@ const handleClose = () => {
     dialogFormVisible.value = false;
 }
 //删除
-const handleDelete = (row: RowRename) => {
+const handleDelete = (row: DocumentList) => {
     currentRow.value = row;
     deleteDialogVisible.value = true;
 }

@@ -2,12 +2,16 @@ import request from '../request'
 
 //调用文档列表
 export interface DocumentList {
-    datasetId: string
+    id?: string | number;
+    datasetId: string;
     name: string;
     segmentMode: string;
-    charCount: string;
-    recallCount: number;
-    uploadTime: string;
+    // charCount: string;
+    word_count: number;
+    // recallCount: number;
+    hit_count:number;
+    //uploadTime: string;
+    created_at: string;
     enabled: boolean;
 }
 export interface DocumentListParams {
