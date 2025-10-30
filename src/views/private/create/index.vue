@@ -366,13 +366,23 @@
                 <!-- diliver -->
                 <el-col :span="2">
                 </el-col>
-                <el-col :span="11" v-if="step === 2">
-                    <el-row>
-                        文件预览
+                <el-col :span="11" v-if="step === 2" style="display: flex; flex-direction: column; height: 100%;">
+                    <el-row style="margin-bottom: 10px;">
+                        <div class="title">文件预览</div>
                     </el-row>
-                    <el-select v-model="previewFile" placeholder="请选择文件预览类型" style="width: 100%; margin-top: 10px;">
-                        <el-option v-for="value in fileList" :key="value.uid" :label="value.name" :value="value.uid" />
+                    <el-select v-model="previewFile" placeholder="请选择文件预览" style="width: 100%; margin-bottom: 10px;">
+                        <el-option v-for="value in res" :key="value.id" :label="value.name" :value="value.id" />
                     </el-select>
+                    <!-- 文件内容预览 -->
+                    <el-card shadow="never" style="flex: 1; overflow: hidden; display: flex; flex-direction: column;"
+                        body-style="flex: 1; overflow: auto; display: flex; flex-direction: column;">
+                        <div v-if="!previewFile" style="display: flex; justify-content: center; align-items: center; height: 100%; color: #909399;">
+                            请选择要预览的文件
+                        </div>
+                        <div v-else style="white-space: pre-wrap; word-break: break-word; line-height: 1.6; font-size: 14px;">
+                            {{ previewContent }}
+                        </div>
+                    </el-card>
                 </el-col>
             </el-card>
         </el-main>
@@ -382,14 +392,19 @@
 <script setup lang="ts">
 
 import router from '@/router';
-import { ref } from 'vue'
-import { UploadFilled, Back } from '@element-plus/icons-vue'
+import { ref, watch } from 'vue'
+import { UploadFilled, Back} from '@element-plus/icons-vue'
 import type { UploadProps, UploadUserFile } from 'element-plus'
-import { initDataset, uploadDocument, UploadResponse } from '@/service/datasets';
+import { initDataset, uploadDocument, UploadResponse, getFilesPreview, } from '@/service/datasets';
+import { ElMessage } from 'element-plus';
 
 const radio = ref('datasets')
+
+//文件预览内容
 const fileList = ref<UploadUserFile[]>([])
 const previewFile = ref<string | null>(null)
+const previewContent = ref<string>('')
+
 
 const res = ref<UploadResponse[]>([])
 const step = ref(1)
@@ -461,6 +476,7 @@ const retrieval_model = ref({
 // unofficial
 const official = ref('official')
 
+
 const handleUploadChange: UploadProps['onChange'] = (uploadFile, uploadFiles) => {
     const formData = new FormData()
     if (uploadFile.raw) {
@@ -525,6 +541,31 @@ const handleInit = () => {
         console.log('res', res)
     })
 }
+
+// 获取文件预览内容
+const fetchFilePreview = async (fileId: string) => {
+    if (!fileId) {
+        previewContent.value = ''
+        return
+    }
+    try {
+        const response = await getFilesPreview(fileId)
+        previewContent.value = response.content || '暂无预览内容'
+    } catch (error) {
+        console.error('获取文件预览失败:', error)
+        ElMessage.error('获取文件预览失败')
+        previewContent.value = '加载失败，请重试'
+    }
+}
+
+// watch侦听文件选择变化，自动获取预览内容
+watch(previewFile, (newFileId) => {
+    if (newFileId) {
+        fetchFilePreview(newFileId)
+    } else {
+        previewContent.value = ''
+    }
+})
 
 
 </script>
