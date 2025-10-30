@@ -26,7 +26,7 @@
                 <div class="tool">
                     <el-input style="width: 240px" v-model="searchName" size="large" placeholder="搜索文档名称"
                         :prefix-icon="Search" clearable @clear="onClearSearch" @input="loadData" />
-                    <el-button type="primary" size="default">添加文件</el-button>
+                    <el-button type="primary" size="default" @click="handleCreateClick">添加文件</el-button>
                 </div>
                 <div class="table">
                     <el-table :data="documentList" >
@@ -113,7 +113,7 @@ import { ElMessage, type TabsPaneContext } from 'element-plus'
 import { Search, List, MoreFilled } from '@element-plus/icons-vue'
 import apiService, { DocumentList } from '@/service/knowledge/use-document-list'
 import { Dataset } from '@/models/dataset';
-
+import router from '@/router'
 const route = useRoute()
 const activeTab = ref('document')
 const dialogFormVisible = ref(false)
@@ -136,6 +136,9 @@ const datasetInfo = ref<Dataset>({
 
 const handleTabClick = (tab: TabsPaneContext) => {
     console.log('切换到:', tab.paneName)
+}
+const handleCreateClick = () => {
+    router.push({ name: 'create' })
 }
 
 const searchName = ref('')
