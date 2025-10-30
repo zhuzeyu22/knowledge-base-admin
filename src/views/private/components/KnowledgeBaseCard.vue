@@ -1,5 +1,5 @@
 <template>
-    <el-card>
+    <el-card @click="goToDetails">
         <div class="knowledge-base-card">
             <el-image class="knowledge-base-card-image" :src="dataset.imageUrl" fit="fill" />
             <div class="knowledge-base-card-name">{{ dataset.name }}</div>
@@ -10,7 +10,7 @@
             <div class="knowledge-base-card-description">{{ dataset.description }}</div>
 
             <div class="knowledge-base-card-label">{{ dataset.isOfficial ? '官方' : '非官方' }}</div>
-            <div class="knowledge-base-card-operate">
+            <div class="knowledge-base-card-operate" @click.stop>
                 <el-dropdown trigger="click" placement="bottom-end">
                     <el-icon style="cursor: pointer">
                         <MoreFilled />
@@ -35,13 +35,22 @@ import { MoreFilled } from '@element-plus/icons-vue'
 import { Dataset } from '@/models/dataset';
 import { defineProps } from 'vue';
 import { ref, computed, watch } from 'vue'
+import { useRouter } from 'vue-router'
 
 const props = defineProps<{
     dataset: Dataset;
 }>()
 
+const router = useRouter()
 const updateUserDialogVisible = ref(false)
 
+// 跳转到详情页
+const goToDetails = () => {
+    router.push({
+        name: 'details',
+        query: { id: props.dataset.id }
+    })
+}
 // 定义节点类型
 interface TreeNode {
     id: number | string

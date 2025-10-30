@@ -5,11 +5,11 @@
                 <div class="header-content">
                     <div class="header-left">
                         <div class="icon">
-                            <img src="" alt="知识库图标" class="icon-img" />
+                            <img :src="datasetInfo.imageUrl" alt="知识库图标" class="icon-img" />
                         </div>
-                        <div class="info">
-                            <h3>知识库名称</h3>
-                            <p class="introduction">知识库简介</p>
+                        <div class="info" v-loading="datasetLoading">
+                            <h3>{{ datasetInfo.name }}</h3>
+                            <p class="introduction">{{ datasetInfo.description  }}</p>
                         </div>
                     </div>
                     <div class="header-center">
@@ -25,13 +25,13 @@
             <el-main class="page-main">
                 <div class="tool">
                     <el-input style="width: 240px" v-model="searchName" size="large" placeholder="搜索文档名称"
-                        :prefix-icon="Search" clearable @clear="onClearSearch" @keyup.enter="loadData" />
+                        :prefix-icon="Search" clearable @clear="onClearSearch" @input="loadData" />
                     <el-button type="primary" size="default">添加文件</el-button>
                 </div>
                 <div class="table">
                     <el-table :data="documentList" >
                         <el-table-column type="selection" width="40" />
-                        <el-table-column prop="id" label="" width="20" />
+                        <el-table-column type="index" label="" width="20" />
                         <el-table-column prop="name" label="名称" min-width="200" />
                         <el-table-column label="分段模式" width="120">
                             <template #default>
@@ -111,7 +111,8 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, type TabsPaneContext } from 'element-plus'
 import { Search, List, MoreFilled } from '@element-plus/icons-vue'
-import apiService,{DocumentList}from '../../service/knowledge/use-document-list'
+import apiService, { DocumentList } from '@/service/knowledge/use-document-list'
+import { Dataset } from '@/models/dataset';
 
 const route = useRoute()
 const activeTab = ref('document')
@@ -122,6 +123,16 @@ const newName = ref('')
 const queryLoading = ref(false)
 const documentList = ref<DocumentList[]>([])
 const datasetId = ref((route.query.id as string) || (route.params.id as string) || '')
+const datasetLoading = ref(false)
+const datasetInfo = ref<Dataset>({
+    id: '',
+    name: '',
+    isOfficial: false,
+    imageUrl: '',
+    description: '',
+    documentNumber: 0,
+    characterNumber: 0
+})
 
 const handleTabClick = (tab: TabsPaneContext) => {
     console.log('切换到:', tab.paneName)
@@ -172,6 +183,24 @@ const getMockData = ref<DocumentList[]>([
 
 const searchName = ref('')
 
+// 获取知识库详情
+const loadDatasetInfo = async () => {
+    try {
+        datasetLoading.value = true
+
+        const response = await apiService.getDatasetById(datasetId.value)
+        datasetInfo.value = response
+
+        ElMessage.success('获取知识库id等信息成功')
+    } catch (error: any) {
+        ElMessage.error(error.message || '获取知识库id等信息失败')
+        datasetInfo.value.name = '未命名知识库'
+        datasetInfo.value.description = '暂无简介'
+    } finally {
+        datasetLoading.value = false
+    }
+}
+
 const loadData = async () => {
     try {
         queryLoading.value = true
@@ -179,13 +208,11 @@ const loadData = async () => {
             keyword: searchName.value
         }
         const response = await apiService.getDocumentList(datasetId.value, queryParams)
-        
-        documentList.value = response.data
-        
-        ElMessage.success('数据加载完成')
-        
+    
+        documentList.value = response.data || response
+        ElMessage.success('文档列表数据加载完成')
     } catch (error: any) {
-        ElMessage.error(error.message || '使用模拟数据')
+        ElMessage.error('文档列表数据加载失败，接口调用错误')
         documentList.value = getMockData.value
     } finally {
         queryLoading.value = false
@@ -253,6 +280,7 @@ onMounted(() => {
         documentList.value = getMockData.value
         return
     }
+    loadDatasetInfo()
     loadData()
 })
 </script>
