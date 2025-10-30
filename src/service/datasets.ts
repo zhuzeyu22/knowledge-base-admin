@@ -54,6 +54,19 @@ export const uploadDocument = (data: FormData) => {
   return request.postForm(`/files/upload?source=datasets`, data);
 };
 
+
+// 上传插件
+export const uploadPlugin = (data: FormData) => {
+  return request.postForm(`/workspaces/current/plugin/upload/pkg`, data);
+};
+
+// 安装插件
+export const installPlugin = (data: any) => {
+  return request.post(`/workspaces/current/plugin/install/pkg`, data);
+};
+
+
+
 // 创建知识库
 export const initDataset = (body: {
   data_source: {

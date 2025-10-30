@@ -15,7 +15,8 @@
                     <div class="header-center">
                         <el-tabs v-model="activeTab" @tab-click="handleTabClick" class="custom-tabs">
                             <el-tab-pane label="文档" name="document"></el-tab-pane>
-                            <el-tab-pane label="召回测试" name="recall"></el-tab-pane>
+                            <el-tab-pane label="召回测试" name="recall">
+                            </el-tab-pane>
                             <el-tab-pane label="设置" name="settings"></el-tab-pane>
                         </el-tabs>
                     </div>
