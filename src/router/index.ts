@@ -52,6 +52,16 @@ const routes = [
         name: "logout",
         component: () => import("../views/logout/index.vue"),
       },
+      {
+        path: "hitTesting",
+        name: "hitTesting",
+        component: () => import("../components/hitTesting.vue"),
+      },
+      {
+        path: "plugins",
+        name: "plugins",
+        component: () => import("../views/plugins/index.vue"),
+      },
     ],
   },
 ];
