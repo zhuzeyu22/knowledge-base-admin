@@ -125,3 +125,8 @@ export const getPublicDatasetList = ({
     params: { page, limit, include_all },
   });
 };
+
+// 文件预览
+export const getFilesPreview = (id: string) => {
+  return request.get(`/files/${id}/preview`);
+};

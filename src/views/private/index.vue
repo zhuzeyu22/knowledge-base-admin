@@ -50,16 +50,8 @@ const load = () => {
     getPrivateDatasetList(
         page.value,
         limit.value,
-    ).finally(() => {
-        datasetList.value.push(... new Array(50).fill(0).map((_, index) => ({
-            id: String(index + 1),
-            name: `知识库${index + 1}`,
-            isOfficial: Boolean(index % 2 === 0),
-            imageUrl: 'https://www.baidu.com',
-            description: '这是一个个人知识库',
-            documentNumber: 10,
-            characterNumber: 3211,
-        })))
+    ).then((res) => {
+        datasetList.value.push(...res.data)
         loading.value = false
     })
 }

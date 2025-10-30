@@ -261,10 +261,10 @@
                                                             :min="0" :max="1" :step="0.1" />
                                                         <el-col :span="12">语义{{
                                                             retrieval_model.weights.keyword_setting.keyword_weight
-                                                            }}</el-col>
+                                                        }}</el-col>
                                                         <el-col :span="12">{{
                                                             retrieval_model.weights.vector_setting.vector_weight
-                                                        }}关键词</el-col>
+                                                            }}关键词</el-col>
                                                     </el-row>
                                                     <el-row v-if="retrieval_model.reranking_enable"
                                                         style="width: 100%; margin-bottom: 10px;">
@@ -574,7 +574,6 @@ const handleInit = () => {
         width: 60px !important;
     }
 }
-
 .font-weight {
     font-weight: 600;
 }
