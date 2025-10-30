@@ -138,49 +138,6 @@ const handleTabClick = (tab: TabsPaneContext) => {
     console.log('切换到:', tab.paneName)
 }
 
-const getMockData = ref<DocumentList[]>([
-    {
-        id: 1,
-        datasetId: datasetId.value,
-        name: '产品技术白皮书.pdf',
-        segmentMode: '通用',
-        word_count: 15200,
-        hit_count: 5,
-        created_at: '2024-10-15 14:30:25',
-        enabled: true,
-    },
-    {
-        id: 2,
-        datasetId: datasetId.value,
-        name: '用户操作手册.docx',
-        segmentMode: '通用',
-        word_count: 28600,
-        hit_count: 8,
-        created_at: '2024-10-14 09:15:42',
-        enabled: true,
-    },
-    {
-        id: 3,
-        datasetId: datasetId.value,
-        name: 'API接口文档.md',
-        segmentMode: '通用',
-        word_count: 42100,
-        hit_count: 3,
-        created_at: '2024-10-12 11:22:33',
-        enabled: false,
-    },
-    {
-        id: 4,
-        datasetId: datasetId.value,
-        name: '系统架构设计.pdf',
-        segmentMode: '通用',
-        word_count: 56700,
-        hit_count: 2,
-        created_at: '2024-10-13 16:48:09',
-        enabled: true,
-    },
-])
-
 const searchName = ref('')
 
 // 获取知识库详情
@@ -194,8 +151,6 @@ const loadDatasetInfo = async () => {
         ElMessage.success('获取知识库id等信息成功')
     } catch (error: any) {
         ElMessage.error(error.message || '获取知识库id等信息失败')
-        datasetInfo.value.name = '未命名知识库'
-        datasetInfo.value.description = '暂无简介'
     } finally {
         datasetLoading.value = false
     }
@@ -213,7 +168,6 @@ const loadData = async () => {
         ElMessage.success('文档列表数据加载完成')
     } catch (error: any) {
         ElMessage.error('文档列表数据加载失败，接口调用错误')
-        documentList.value = getMockData.value
     } finally {
         queryLoading.value = false
     }
@@ -277,7 +231,6 @@ onMounted(() => {
     //检查datasetId
     if (!datasetId.value) {
         ElMessage.warning('缺少知识库ID，请从知识库列表进入')
-        documentList.value = getMockData.value
         return
     }
     loadDatasetInfo()
@@ -305,15 +258,18 @@ onMounted(() => {
             box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 
             .header-content {
-                display: flex;
                 position: relative;
+                display: flex;
                 align-items: center;
-                gap: 40px;
+                min-height: 60px;
+                padding-right: 20px;
 
                 .header-left {
                     display: flex;
                     align-items: center;
                     gap: 10px;
+                    max-width: calc(50% - 150px);
+                    min-width: 0;
 
                     .icon {
                         display: flex;
@@ -334,27 +290,37 @@ onMounted(() => {
                     }
 
                     .info {
+                        flex: 1;
+                        min-width: 0;
+                        overflow: hidden;
+
                         h3 {
                             margin: 0;
                             font-weight: 700;
                             font-size: 20px;
                             color: #303133;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
                         }
 
                         .introduction {
                             margin: 5px 0 0 0;
                             font-size: 14px;
                             color: #909399;
+                            word-wrap: break-word;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
                         }
                     }
                 }
 
                 .header-center {
                     position: absolute;
-                    top: 50%;
                     left: 50%;
-                    margin-top: -20px;
-                    margin-left: -130px;
+                    transform: translateX(-50%);
+                    display: flex;
+                    justify-content: center;
 
                     :deep(.custom-tabs) {
                         .el-tabs__header {
