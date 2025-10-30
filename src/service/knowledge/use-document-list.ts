@@ -21,7 +21,7 @@ export interface DocumentListResponse {
 export const apiService = {
     // 获取文档列表
     async getDocumentList(datasetId: string, params: DocumentListParams = {}): Promise<DocumentListResponse> {
-        return request.get(`/datasets/${datasetId}/documents`, {
+        return request.get(`datasets/${datasetId}/documents`, {
             params: params
         })
     }
