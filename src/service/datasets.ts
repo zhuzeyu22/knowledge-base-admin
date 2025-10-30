@@ -1,3 +1,4 @@
+import { RetrievalModel } from "@/models/dataset";
 import request from "./request";
 
 // 下面的这些参数后续具体再对下
@@ -54,7 +55,6 @@ export const uploadDocument = (data: FormData) => {
   return request.postForm(`/files/upload?source=datasets`, data);
 };
 
-
 // 上传插件
 export const uploadPlugin = (data: FormData) => {
   return request.postForm(`/workspaces/current/plugin/upload/pkg`, data);
@@ -64,8 +64,6 @@ export const uploadPlugin = (data: FormData) => {
 export const installPlugin = (data: any) => {
   return request.post(`/workspaces/current/plugin/install/pkg`, data);
 };
-
-
 
 // 创建知识库
 export const initDataset = (body: {
@@ -142,4 +140,28 @@ export const getPublicDatasetList = ({
 // 文件预览
 export const getFilesPreview = (id: string) => {
   return request.get(`/files/${id}/preview`);
+};
+
+export type DatasetHitTesting = {
+  query: string;
+  retrieval_model: RetrievalModel;
+};
+
+// 召回测试
+export const postDatasetHitTesting = (
+  datasetId: string,
+  data: DatasetHitTesting
+) => {
+  return request.post(`/datasets/${datasetId}/hit-testing`, data);
+};
+
+// 召回测试记录
+export const getDatasetHitTestingRecords = (
+  datasetId: string,
+  limit: number,
+  page: number
+) => {
+  return request.get(
+    `/datasets/${datasetId}/queries?limit=${limit}&page=${page}`
+  );
 };
