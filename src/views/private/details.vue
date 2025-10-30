@@ -9,7 +9,7 @@
                         </div>
                         <div class="info" v-loading="datasetLoading">
                             <h3>{{ datasetInfo.name }}</h3>
-                            <p class="introduction">{{ datasetInfo.description  }}</p>
+                            <p class="introduction">{{ datasetInfo.description }}</p>
                         </div>
                     </div>
                     <div class="header-center">
@@ -22,14 +22,14 @@
                     </div>
                 </div>
             </el-header>
-            <el-main class="page-main">
+            <el-main v-if="activeTab === 'document'" class="page-main">
                 <div class="tool">
                     <el-input style="width: 240px" v-model="searchName" size="large" placeholder="搜索文档名称"
                         :prefix-icon="Search" clearable @clear="onClearSearch" @input="loadData" />
                     <el-button type="primary" size="default">添加文件</el-button>
                 </div>
                 <div class="table">
-                    <el-table :data="documentList" >
+                    <el-table :data="documentList">
                         <el-table-column type="selection" width="40" />
                         <el-table-column type="index" label="" width="20" />
                         <el-table-column prop="name" label="名称" min-width="200" />
@@ -64,7 +64,7 @@
                             </template>
                         </el-table-column>
                         <el-table-column width="50">
-                            <template #default = "scope">
+                            <template #default="scope">
                                 <el-dropdown>
                                     <el-button link class="icon-btn">
                                         <el-icon :size="16">
@@ -90,7 +90,8 @@
                             </div>
                         </template>
                     </el-dialog>
-                    <el-dialog title="确定删除吗？" v-model="deleteDialogVisible" :before-close="handleDeleteClose" width="400px">
+                    <el-dialog title="确定删除吗？" v-model="deleteDialogVisible" :before-close="handleDeleteClose"
+                        width="400px">
                         <div class="delete-content">
                             <p class="warning-text">如果您需要稍后恢复处理，您将从您离开的地方继续</p>
                         </div>
@@ -103,6 +104,9 @@
                     </el-dialog>
                 </div>
             </el-main>
+            <el-main v-else-if="activeTab === 'recall'" class="page-main">
+                <HitTesting :datasetId='datasetId' :retrieval_model="datasetInfo.retrieval_model_dict" />
+            </el-main>
         </el-container>
     </div>
 </template>
@@ -113,6 +117,7 @@ import { ElMessage, type TabsPaneContext } from 'element-plus'
 import { Search, List, MoreFilled } from '@element-plus/icons-vue'
 import apiService, { DocumentList } from '@/service/knowledge/use-document-list'
 import { Dataset } from '@/models/dataset';
+import HitTesting from '@/components/hitTesting.vue';
 
 const route = useRoute()
 const activeTab = ref('document')
@@ -124,6 +129,7 @@ const queryLoading = ref(false)
 const documentList = ref<DocumentList[]>([])
 const datasetId = ref((route.query.id as string) || (route.params.id as string) || '')
 const datasetLoading = ref(false)
+
 const datasetInfo = ref<Dataset>({
     id: '',
     name: '',
@@ -131,10 +137,35 @@ const datasetInfo = ref<Dataset>({
     imageUrl: '',
     description: '',
     documentNumber: 0,
-    characterNumber: 0
+    characterNumber: 0,
+    // 下面这一坨先准备好的话，就不用在这里做初始化了
+    retrieval_model_dict: {
+        search_method: 'semantic_search',
+        reranking_enable: false,
+        reranking_mode: 'reranking_model',
+        reranking_model: {
+            reranking_provider_name: '',
+            reranking_model_name: ''
+        },
+        weights: {
+            weight_type: 'customized',
+            keyword_setting: {
+                keyword_weight: 0
+            },
+            vector_setting: {
+                vector_weight: 0,
+                embedding_model_name: '',
+                embedding_provider_name: ''
+            }
+        },
+        top_k: 0,
+        score_threshold_enabled: false,
+        score_threshold: 0
+    }
 })
 
 const handleTabClick = (tab: TabsPaneContext) => {
+    activeTab.value = tab.paneName
     console.log('切换到:', tab.paneName)
 }
 
@@ -208,7 +239,7 @@ const loadData = async () => {
             keyword: searchName.value
         }
         const response = await apiService.getDocumentList(datasetId.value, queryParams)
-    
+
         documentList.value = response.data || response
         ElMessage.success('文档列表数据加载完成')
     } catch (error: any) {
@@ -217,7 +248,7 @@ const loadData = async () => {
     } finally {
         queryLoading.value = false
     }
-} 
+}
 
 //清空搜索
 const onClearSearch = () => {
@@ -237,11 +268,11 @@ const handleRename = (row: DocumentList) => {
     dialogFormVisible.value = true;
 }
 const saveRename = () => {
-    if(!newName.value.trim()){
+    if (!newName.value.trim()) {
         ElMessage.warning('名称不能为空')
-        return 
+        return
     }
-    if(currentRow.value){
+    if (currentRow.value) {
         currentRow.value.name = newName.value.trim();
     }
     ElMessage.success('修改成功')
