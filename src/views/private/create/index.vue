@@ -172,7 +172,7 @@
                                             </el-row>
                                             <el-row v-if="retrieval_model.reranking_enable"
                                                 style="width: 100%; margin-bottom: 10px;">
-                                                <el-input v-model="retrieval_model.reranking_model_name"
+                                                <el-input v-model="retrieval_model.reranking_model.reranking_model_name"
                                                     disabled></el-input>
                                             </el-row>
                                             <el-row>
@@ -215,7 +215,7 @@
                                             </el-row>
                                             <el-row v-if="retrieval_model.reranking_enable"
                                                 style="width: 100%; margin-bottom: 10px;">
-                                                <el-input v-model="retrieval_model.reranking_model_name"
+                                                <el-input v-model="retrieval_model.reranking_model.reranking_model_name"
                                                     disabled></el-input>
                                             </el-row>
                                             <el-row>
@@ -261,14 +261,15 @@
                                                             :min="0" :max="1" :step="0.1" />
                                                         <el-col :span="12">语义{{
                                                             retrieval_model.weights.keyword_setting.keyword_weight
-                                                        }}</el-col>
+                                                            }}</el-col>
                                                         <el-col :span="12">{{
                                                             retrieval_model.weights.vector_setting.vector_weight
-                                                            }}关键词</el-col>
+                                                        }}关键词</el-col>
                                                     </el-row>
                                                     <el-row v-if="retrieval_model.reranking_enable"
                                                         style="width: 100%; margin-bottom: 10px;">
-                                                        <el-input v-model="retrieval_model.reranking_model_name"
+                                                        <el-input
+                                                            v-model="retrieval_model.reranking_model.reranking_model_name"
                                                             disabled></el-input>
                                                     </el-row>
                                                     <el-row>
@@ -385,7 +386,7 @@ import router from '@/router';
 import { ref } from 'vue'
 import { UploadFilled, Back } from '@element-plus/icons-vue'
 import type { UploadProps, UploadUserFile } from 'element-plus'
-import { initDataset, uploadDocument, UploadResponse } from '@/service/datasets';
+import { initDataset, RetrievalModel, uploadDocument, UploadResponse } from '@/service/datasets';
 
 const radio = ref('datasets')
 const fileList = ref<UploadUserFile[]>([])
@@ -436,11 +437,14 @@ const indexing_technique = ref('high_quality')
 const embedding_model = ref('text-embedding-v1')
 const embedding_model_provider = ref('langgenius/tongyi/tongyi')
 
-const retrieval_model = ref({
+const retrieval_model = ref<RetrievalModel>({
     search_method: 'semantic_search',
     top_k: 5,
     reranking_enable: true,
-    reranking_model_name: 'gte-rerank-v2',
+    reranking_model: {
+        reranking_model_name: 'gte-rerank-v2',
+        reranking_provider_name: 'langgenius/tongyi/tongyi'
+    },
     score_threshold: 0.5,
     score_threshold_enabled: false,
     reranking_mode: 'weighted_score',
@@ -574,6 +578,7 @@ const handleInit = () => {
         width: 60px !important;
     }
 }
+
 .font-weight {
     font-weight: 600;
 }

@@ -55,7 +55,7 @@ const routes = [
       {
         path: "hitTesting",
         name: "hitTesting",
-        component: () => import("../components/hitTesting.vue"),
+        component: () => import("../test/testHitTesting.vue"),
       },
       {
         path: "plugins",
