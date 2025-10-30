@@ -7,11 +7,8 @@ export interface DocumentList {
     datasetId: string;
     name: string;
     segmentMode: string;
-    // charCount: string;
     word_count: number;
-    // recallCount: number;
     hit_count:number;
-    //uploadTime: string;
     created_at: string;
     enabled: boolean;
 }
