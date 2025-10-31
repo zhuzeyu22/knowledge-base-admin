@@ -22,9 +22,9 @@
                                 支持上传多个文件, 支持扩展名:doc,.docx,.txt,.pdf,.html,.markdown,.xls,.xlsx,.csv
                                 最大上传文件数量为10个，每个文件不超过40MB
                             </div>
-                            <el-upload v-model:file-list="fileList" style="width: 100%;" drag :auto-upload="false"
+                            <el-upload v-model:file-list="fileList"  style="width: 100%;" drag :auto-upload="false"
                                 accept=".doc,.docx,.txt,.pdf,.html,.markdown,.md,.xls,.xlsx,.csv" action="" :limit="10"
-                                :on-change="handleUploadChange" multiple>
+                                :on-change="handleUploadChange" multiple :show-file-list="false"  >
                                 <el-icon class="el-icon--upload"><upload-filled /></el-icon>
                                 <div class="el-upload__text">
                                     <el-col>
@@ -33,6 +33,23 @@
                                     <el-col style="margin-top: 10px;"> 或将文件拖拽到此处</el-col>
                                 </div>
                             </el-upload>
+                            <!-- 已上传文件列表 -->
+                            <div v-if="res.length > 0" style="margin-top: 20px; width: 100%;">
+                                <div v-for="file in res" :key="file.id" class="uploaded-file-item">
+                                    <div class="file-info" @click="handleFileClick(file.id)">
+                                        <el-icon class="file-icon" :size="32" color="#409EFF">
+                                            <Document />
+                                        </el-icon>
+                                        <div class="file-details">
+                                            <div class="file-name">{{ file.name }}</div>
+                                            <div class="file-meta">{{ getFileExtension(file.name)}} · {{ formatFileSize(file.size) }}</div>
+                                        </div>
+                                    </div>
+                                    <el-icon class="delete-icon" @click="handleDeleteFile(file.id)" :size="20" color="#909399">
+                                        <Delete />
+                                    </el-icon>
+                                </div>
+                            </div>
                         </el-row>
                     </div>
                     <div v-else-if="step === 2" style="flex-grow: 1;overflow-y: auto;">
@@ -68,6 +85,14 @@
                                             <el-col :span="24">
                                                 <el-checkbox v-model="custom.pre_processing_rules[1].enabled"
                                                     label="删除所有 URL 和电子邮件地址" />
+                                            </el-col>
+                                        </el-row>
+                                        <el-row>
+                                            <el-col :span="4">
+                                                <el-button style="color: skyblue;" @click="handlePreviewButton">预览</el-button>
+                                            </el-col>
+                                            <el-col :span="8">
+                                                <el-button  style="border: none;color:black">重置</el-button>
                                             </el-col>
                                         </el-row>
                                     </el-collapse-item>
@@ -366,21 +391,60 @@
                 <!-- diliver -->
                 <el-col :span="2">
                 </el-col>
+                <!-- Step 1 右侧：根据是否点击文件列表显示内容 -->
+                <el-col :span="11" v-if="step === 1" style="display: flex; flex-direction: column; height: 100%;">
+                    <!-- 未点击文件列表时显示空白 -->
+                    <div v-if="!showPreview" style="width: 100%; height: 100%;"></div>
+                    <!-- 点击文件列表后显示预览 -->
+                    <div v-else style="display: flex; flex-direction: column; height: 100%;">
+                        <el-row style="margin-bottom: 10px;">
+                            <div class="title">文件预览</div>
+                        </el-row>
+                        <!-- 文件内容预览 -->
+                        <el-card shadow="never" style="flex: 1; overflow: hidden; display: flex; flex-direction: column;"
+                            body-style="flex: 1; overflow: auto; display: flex; flex-direction: column;">
+                            <div v-if="!previewFile" style="display: flex; justify-content: center; align-items: center; height: 100%; color: #909399;">
+                                请选择要预览的文件
+                            </div>
+                            <div v-else style="white-space: pre-wrap; word-break: break-word; line-height: 1.6; font-size: 14px;">
+                                {{ previewContent }}
+                            </div>
+                        </el-card>
+                    </div>
+                </el-col>
+                <!-- Step 2 右侧：文件预览 -->
                 <el-col :span="11" v-if="step === 2" style="display: flex; flex-direction: column; height: 100%;">
-                    <el-row style="margin-bottom: 10px;">
+                    <el-row style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
                         <div class="title">文件预览</div>
                     </el-row>
-                    <el-select v-model="previewFile" placeholder="请选择文件预览" style="width: 100%; margin-bottom: 10px;">
+                    <el-select v-model="previewFile" placeholder="请选择文件预览" style="width: 100%; margin-bottom: 10px;" :value="previewFile">
                         <el-option v-for="value in res" :key="value.id" :label="value.name" :value="value.id" />
                     </el-select>
                     <!-- 文件内容预览 -->
-                    <el-card shadow="never" style="flex: 1; overflow: hidden; display: flex; flex-direction: column;"
+                    <el-card v-if="!isSegmentPreview" shadow="never" style="flex: 1; overflow: hidden; display: flex; flex-direction: column;"
                         body-style="flex: 1; overflow: auto; display: flex; flex-direction: column;">
                         <div v-if="!previewFile" style="display: flex; justify-content: center; align-items: center; height: 100%; color: #909399;">
                             请选择要预览的文件
                         </div>
                         <div v-else style="white-space: pre-wrap; word-break: break-word; line-height: 1.6; font-size: 14px;">
                             {{ previewContent }}
+                        </div>
+                    </el-card>
+                    <!-- 分段内容预览 -->
+                    <el-card v-else shadow="never" style="flex: 1; overflow: hidden; display: flex; flex-direction: column;"
+                        body-style="flex: 1; overflow: auto; display: flex; flex-direction: column;">
+                        <div style="display: flex; flex-direction: column; gap: 16px;">
+                            <el-card v-for="(segment, index) in segmentPreview" :key="index" shadow="hover" >
+                               
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="font-weight: 600;">Chunk {{ index + 1 }}</span>
+                                        <el-tag size="small" style="border:'none' ;" >{{ segment.content?.length || 0 }} 字符</el-tag>
+                                    </div>
+                                
+                                <div style="white-space: pre-wrap; word-break: break-word; line-height: 1.6; font-size: 14px; color: #606266;">
+                                    {{ segment.content }}
+                                </div>
+                            </el-card>
                         </div>
                     </el-card>
                 </el-col>
@@ -393,17 +457,20 @@
 
 import router from '@/router';
 import { ref, watch } from 'vue'
-import { UploadFilled, Back} from '@element-plus/icons-vue'
+import { UploadFilled, Back, Document, Delete } from '@element-plus/icons-vue'
 import type { UploadProps, UploadUserFile } from 'element-plus'
-import { initDataset, uploadDocument, UploadResponse, getFilesPreview, } from '@/service/datasets';
+import { initDataset, uploadDocument, UploadResponse, getFilesPreview,fetchFileIndexingEstimate,type IndexingEstimateParams} from '@/service/datasets';
 import { ElMessage } from 'element-plus';
 
 const radio = ref('datasets')
 
 //文件预览内容
 const fileList = ref<UploadUserFile[]>([])
-const previewFile = ref<string | null>(null)
+const previewFile = ref<string|null >(null)
 const previewContent = ref<string>('')
+const showPreview = ref(false) // 控制是否显示文件预览模块
+const segmentPreview = ref<any[]>([]) // 存储分段预览数据
+const isSegmentPreview = ref(false) // 标识当前是否为分段预览模式
 
 
 const res = ref<UploadResponse[]>([])
@@ -411,20 +478,21 @@ const step = ref(1)
 
 const process_rule = ref('custom')
 const custom = ref({
-    segmentation: {
-        separator: '\\n\\n',
-        max_tokens: 500,
-        chunk_overlap: 50,
-    },
     pre_processing_rules: [
         {
             id: "remove_extra_spaces",
             enabled: false
         }, {
-            id: 'remove_urls_and_emails',
+            id: 'remove_urls_emails',
             enabled: false
         }
     ],
+    segmentation: {
+        separator: '\\n\\n',
+        max_tokens: 500,
+        chunk_overlap: 50,
+    },
+    
 })
 const hierarchical = ref({
     parent_mode: 'paragraph',
@@ -492,6 +560,10 @@ const handleUploadChange: UploadProps['onChange'] = (uploadFile, uploadFiles) =>
 
 const handlePrev = () => {
     step.value -= 1
+    // 从 step 2 返回到 step 1 时，重置预览状态
+    if (step.value === 1) {
+        showPreview.value = false
+    }
 }
 const handleNext = () => {
     step.value += 1
@@ -558,12 +630,137 @@ const fetchFilePreview = async (fileId: string) => {
     }
 }
 
+//点击预览按钮
+const handlePreviewButton = () => {
+    if (res.value.length > 0) {
+        // 根据当前选择的 process_rule 模式获取对应的配置
+        const currentRules =  custom.value 
+        
+        const params: IndexingEstimateParams = {
+            doc_form: 'text_model',
+            doc_language: 'English',
+            indexing_technique: indexing_technique.value,
+            info_list: {
+                data_source_type: 'upload_file',
+                file_info_list: {
+                    file_ids: res.value.map(x => x.id)
+                }
+            },
+            process_rule: {
+                mode: process_rule.value,
+                rules: currentRules
+            }
+        }
+        
+        fetchFileIndexingEstimate(params).then(response => {
+            console.log('分段预览结果:', response)
+            // 处理返回的分段内容,且不为空的
+            if (response && response.preview) {
+                segmentPreview.value = response.preview
+                isSegmentPreview.value = true
+                ElMessage.success('分段预览加载成功')
+            } else {
+                ElMessage.warning('暂无分段预览数据')
+            }
+        }).catch(error => {
+            console.error('获取分段预览失败:', error)
+            ElMessage.error('获取分段预览失败')
+        })
+    } else {
+        ElMessage.warning('请先上传文件')
+    }
+}
+
+// 点击文件名显示预览
+const handleFileClick = (fileId: string) => {
+    showPreview.value = true // 显示预览模块
+    previewFile.value = fileId // 选中该文件
+    // fetchFilePreview 会通过 watch 自动调用
+}
+
+// 删除文件
+const handleDeleteFile = (fileId: string) => {
+    const index = res.value.findIndex(file => file.id === fileId)
+    if (index > -1) {
+        res.value.splice(index, 1)
+        // 同时从 fileList 中删除
+        const fileListIndex = fileList.value.findIndex(file => file.uid === fileId)
+        if (fileListIndex > -1) {
+            fileList.value.splice(fileListIndex, 1)
+        }
+        // 如果删除的是当前预览的文件，清空预览内容
+        if (previewFile.value === fileId) {
+            previewFile.value = null
+            previewContent.value = ''
+        }
+        // 如果删除后没有文件了，隐藏预览模块
+        if (res.value.length === 0) {
+            showPreview.value = false
+        }
+        ElMessage.success('文件已删除')
+    }
+}
+
+// 获取文件扩展名
+const getFileExtension = (fileName: string): string => {
+    const ext = fileName.split('.').pop()?.toUpperCase() || ''
+    return ext
+}
+
+// 格式化文件大小
+const formatFileSize = (bytes: number): string => {
+    if (!bytes || bytes === 0) return '0B'
+    const k = 1024
+    const sizes = ['B', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return (bytes / Math.pow(k, i)).toFixed(2) + sizes[i]
+}
+
 // watch侦听文件选择变化，自动获取预览内容
 watch(previewFile, (newFileId) => {
     if (newFileId) {
-        fetchFilePreview(newFileId)
+        // 在 step 1 时，只获取文件原始内容
+        if (step.value === 1) {
+            fetchFilePreview(newFileId)
+        } 
+        // 在 step 2 时，获取分段预览
+        else if (step.value === 2) {
+            const params: IndexingEstimateParams = {
+                doc_form: 'text_model',
+                doc_language: 'English',
+                indexing_technique: indexing_technique.value,
+                info_list: {
+                    data_source_type: 'upload_file',
+                    file_info_list: {
+                        file_ids: [newFileId]  
+                    }
+                },
+                process_rule: {
+                    mode: process_rule.value,
+                    rules: custom.value
+                }
+            }
+            
+            fetchFileIndexingEstimate(params).then(response => {
+                console.log('分段预览结果:', response)
+                // 处理返回的分段内容
+                if (response && response.preview) {
+                    segmentPreview.value = response.preview
+                    isSegmentPreview.value = true
+                } else {
+                    segmentPreview.value = []
+                    isSegmentPreview.value = false
+                }
+            }).catch(error => {
+                console.error('获取分段预览失败:', error)
+                segmentPreview.value = []
+                isSegmentPreview.value = false
+            })
+        }
     } else {
         previewContent.value = ''
+        segmentPreview.value = []
+        isSegmentPreview.value = false
     }
 })
 
@@ -617,5 +814,82 @@ watch(previewFile, (newFileId) => {
 }
 .font-weight {
     font-weight: 600;
+}
+
+.uploaded-file-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    background-color: #f5f7fa;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+
+    &:hover {
+        background-color: #e6e8eb;
+    }
+
+    .file-info {
+        display: flex;
+        align-items: center;
+        flex: 1;
+        cursor: pointer;
+        
+        .file-icon {
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .file-details {
+            flex: 1;
+            min-width: 0;
+
+            .file-name {
+                font-size: 14px;
+                color: #303133;
+                font-weight: 500;
+                margin-bottom: 4px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .file-meta {
+                font-size: 12px;
+                color: #909399;
+            }
+        }
+    }
+
+    .delete-icon {
+        cursor: pointer;
+        flex-shrink: 0;
+        margin-left: 12px;
+        transition: color 0.3s ease;
+
+        &:hover {
+            color: #f56c6c !important;
+        }
+    }
+}
+
+.segment-item {
+    border: 1px solid #e4e7ed;
+    transition: all 0.3s ease;
+    
+    &:hover {
+        border-color: #409EFF;
+    }
+    
+    :deep(.el-card__header) {
+        padding: 12px 16px;
+        background-color: #f5f7fa;
+        border-bottom: 1px solid #e4e7ed;
+    }
+    
+    :deep(.el-card__body) {
+        padding: 16px;
+    }
 }
 </style>
