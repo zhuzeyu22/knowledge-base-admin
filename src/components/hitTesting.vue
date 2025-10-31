@@ -46,11 +46,12 @@
                         <div class="title">召回段落
                             <span>{{ records.length }} </span>
                         </div>
-                        <el-card v-for="(item, index) in records" :key="index" class="card-item">
+                        <el-card v-for="(item, index) in records" :key="index" class="card-item"
+                            @click="handleSegementClick(item)">
                             <!-- <template #header> -->
                             <div style="display: flex; justify-content: space-between">
                                 <div>Chunk-{{ item.segment.position }}·{{ item.segment.word_count }} 字符</div>
-                                <div>score{{ item.score.toFixed(2) }}</div>
+                                <div>score {{ item.score.toFixed(2) }}</div>
                             </div>
                             <el-divider />
                             <!-- </template> -->
@@ -66,6 +67,22 @@
                 </el-col>
             </el-row>
         </el-card>
+        <el-dialog v-model="detailVisible" title="段落详情" :modal="false" style="max-height: 600px; overflow-y: auto;"
+            @close="detailVisible = false">
+            <div style="display: flex; justify-content: space-between">
+                <div style="display: flex; flex-direction: row; margin-bottom: 10px;">
+                    <div style="margin-right: 20px;">
+                        Chunk-{{ detail.segment.position }}·{{ detail.segment.word_count }} 字符
+                    </div>
+                    <div>{{ detail.segment.document.name }}</div>
+                </div>
+                <div>score {{ detail.score.toFixed(2) }}</div>
+            </div>
+            <div style="margin-bottom: 20px; font-size: 16px;">{{ detail.segment.content }}</div>
+            <div class="tag">
+                <el-tag v-for="value in detail.segment.keywords">{{ value }}</el-tag>
+            </div>
+        </el-dialog>
     </section>
 </template>
 
@@ -81,6 +98,9 @@ const limit = ref(10)
 const page = ref(1)
 const total = ref(1)
 const query = ref<string>('')
+
+const detailVisible = ref(false)
+const detail = ref({})
 
 const updateRecords = async () => {
     getDatasetHitTestingRecords(datasetId, limit.value, page.value)
@@ -103,6 +123,11 @@ const handleHitTesting = async () => {
 
 const handlePageChange = (currentPage: number, pageSize: number) => {
     updateRecords()
+}
+
+const handleSegementClick = (item) => {
+    detail.value = item
+    detailVisible.value = true
 }
 
 onMounted(() => {
@@ -180,17 +205,6 @@ onMounted(() => {
             max-height: 3em;
         }
 
-        .tag {
-            // display: flex;
-            // gap: 0.5rem;
-            // flex-wrap: wrap
-            // display: inline-block;
-            // margin: 0 8px 8px 0;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 4px;
-        }
 
         :deep(.el-card__header) {
             padding: 16px;
@@ -203,6 +217,17 @@ onMounted(() => {
     }
 }
 
+.tag {
+    // display: flex;
+    // gap: 0.5rem;
+    // flex-wrap: wrap
+    // display: inline-block;
+    // margin: 0 8px 8px 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 4px;
+}
 
 .style_title-left-line {
     display: inline-block;
