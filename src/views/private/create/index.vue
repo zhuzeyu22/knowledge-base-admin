@@ -8,7 +8,7 @@
             </el-button>
             <div>创建知识库</div>
         </el-header>
-        <el-main class="context-style" style="overflow: auto">
+        <el-main v-if="step !== 3" class="context-style" style="overflow: auto">
             <el-card class="wapper-style" body-style="height: 100%; display: flex; flex-direction: row;">
                 <el-col :span="11" style="display: flex; flex-direction: column;">
                     <div v-if="step === 1" style="flex-grow: 1">
@@ -16,15 +16,17 @@
                             <el-radio-group v-model="radio" text-color="#626aef" fill="rgb(239, 240, 253)"
                                 style="margin-bottom: 10px;">
                                 <el-radio-button label="文档上传" value="datasets" />
-                                <el-radio-button label="问答对上传" value="qa_pairs" disabled />
+                                <el-radio-button label="问答对上传" value="qa_pairs" />
                             </el-radio-group>
                             <div style="padding: 10px; font-size: 14px;">
-                                支持上传多个文件, 支持扩展名:doc,.docx,.txt,.pdf,.html,.markdown,.xls,.xlsx,.csv
-                                最大上传文件数量为10个，每个文件不超过40MB
+                                {{ `支持上传多个文件,
+                                支持扩展名:${radio === 'datasets'
+                                        ? 'doc,.docx,.txt,.pdf,.html,.markdown,.xls,.xlsx,' : ''}.csv最大上传文件数量为10个，每个文件不超过40MB`
+                                }}
                             </div>
-                            <el-upload v-model:file-list="fileList"  style="width: 100%;" drag :auto-upload="false"
-                                accept=".doc,.docx,.txt,.pdf,.html,.markdown,.md,.xls,.xlsx,.csv" action="" :limit="10"
-                                :on-change="handleUploadChange" multiple :show-file-list="false"  >
+                            <el-upload v-model:file-list="fileList" style="width: 100%;" drag :auto-upload="false"
+                                :accept="radio === 'datasets' ? '.doc,.docx,.txt,.pdf,.html,.markdown,.md,.xls,.xlsx,.csv' : '.csv'"
+                                action="" :limit="10" :on-change="handleUploadChange" multiple :show-file-list="false">
                                 <el-icon class="el-icon--upload"><upload-filled /></el-icon>
                                 <div class="el-upload__text">
                                     <el-col>
@@ -42,10 +44,12 @@
                                         </el-icon>
                                         <div class="file-details">
                                             <div class="file-name">{{ file.name }}</div>
-                                            <div class="file-meta">{{ getFileExtension(file.name)}} · {{ formatFileSize(file.size) }}</div>
+                                            <div class="file-meta">{{ getFileExtension(file.name) }} · {{
+                                                formatFileSize(file.size) }}</div>
                                         </div>
                                     </div>
-                                    <el-icon class="delete-icon" @click="handleDeleteFile(file.id)" :size="20" color="#909399">
+                                    <el-icon class="delete-icon" @click="handleDeleteFile(file.id)" :size="20"
+                                        color="#909399">
                                         <Delete />
                                     </el-icon>
                                 </div>
@@ -89,10 +93,11 @@
                                         </el-row>
                                         <el-row>
                                             <el-col :span="4">
-                                                <el-button style="color: skyblue;" @click="handlePreviewButton">预览</el-button>
+                                                <el-button style="color: skyblue;"
+                                                    @click="handlePreviewButton">预览</el-button>
                                             </el-col>
                                             <el-col :span="8">
-                                                <el-button  style="border: none;color:black">重置</el-button>
+                                                <el-button style="border: none;color:black">重置</el-button>
                                             </el-col>
                                         </el-row>
                                     </el-collapse-item>
@@ -197,7 +202,7 @@
                                             </el-row>
                                             <el-row v-if="retrieval_model.reranking_enable"
                                                 style="width: 100%; margin-bottom: 10px;">
-                                                <el-input v-model="retrieval_model.reranking_model_name"
+                                                <el-input v-model="retrieval_model.reranking_model.reranking_model_name"
                                                     disabled></el-input>
                                             </el-row>
                                             <el-row>
@@ -240,7 +245,7 @@
                                             </el-row>
                                             <el-row v-if="retrieval_model.reranking_enable"
                                                 style="width: 100%; margin-bottom: 10px;">
-                                                <el-input v-model="retrieval_model.reranking_model_name"
+                                                <el-input v-model="retrieval_model.reranking_model.reranking_model_name"
                                                     disabled></el-input>
                                             </el-row>
                                             <el-row>
@@ -293,7 +298,8 @@
                                                     </el-row>
                                                     <el-row v-if="retrieval_model.reranking_enable"
                                                         style="width: 100%; margin-bottom: 10px;">
-                                                        <el-input v-model="retrieval_model.reranking_model_name"
+                                                        <el-input
+                                                            v-model="retrieval_model.reranking_model.reranking_model_name"
                                                             disabled></el-input>
                                                     </el-row>
                                                     <el-row>
@@ -382,7 +388,7 @@
                     <div style=" align-self: flex-end; display: flex; flex-direction: row-reverse; justify-content:
                                                         space-between; margin-top: 10px;">
                         <el-button style="align-self: flex-end;" v-if="step === 1" type="primary"
-                            @click="handleNext">下一步</el-button>
+                            :disabled="fileList.length === 0" @click="handleNext">下一步</el-button>
                         <el-button v-if="step === 2" type="primary" @click="handleInit">保存并处理</el-button>
                         <el-button v-if="step !== 1" type="primary" @click="handlePrev"
                             style="margin-right: 10px;">上一步</el-button>
@@ -401,12 +407,15 @@
                             <div class="title">文件预览</div>
                         </el-row>
                         <!-- 文件内容预览 -->
-                        <el-card shadow="never" style="flex: 1; overflow: hidden; display: flex; flex-direction: column;"
+                        <el-card shadow="never"
+                            style="flex: 1; overflow: hidden; display: flex; flex-direction: column;"
                             body-style="flex: 1; overflow: auto; display: flex; flex-direction: column;">
-                            <div v-if="!previewFile" style="display: flex; justify-content: center; align-items: center; height: 100%; color: #909399;">
+                            <div v-if="!previewFile"
+                                style="display: flex; justify-content: center; align-items: center; height: 100%; color: #909399;">
                                 请选择要预览的文件
                             </div>
-                            <div v-else style="white-space: pre-wrap; word-break: break-word; line-height: 1.6; font-size: 14px;">
+                            <div v-else
+                                style="white-space: pre-wrap; word-break: break-word; line-height: 1.6; font-size: 14px;">
                                 {{ previewContent }}
                             </div>
                         </el-card>
@@ -414,34 +423,42 @@
                 </el-col>
                 <!-- Step 2 右侧：文件预览 -->
                 <el-col :span="11" v-if="step === 2" style="display: flex; flex-direction: column; height: 100%;">
-                    <el-row style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                    <el-row
+                        style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
                         <div class="title">文件预览</div>
                     </el-row>
-                    <el-select v-model="previewFile" placeholder="请选择文件预览" style="width: 100%; margin-bottom: 10px;" :value="previewFile">
+                    <el-select v-model="previewFile" placeholder="请选择文件预览" style="width: 100%; margin-bottom: 10px;"
+                        :value="previewFile">
                         <el-option v-for="value in res" :key="value.id" :label="value.name" :value="value.id" />
                     </el-select>
                     <!-- 文件内容预览 -->
-                    <el-card v-if="!isSegmentPreview" shadow="never" style="flex: 1; overflow: hidden; display: flex; flex-direction: column;"
+                    <el-card v-if="!isSegmentPreview" shadow="never"
+                        style="flex: 1; overflow: hidden; display: flex; flex-direction: column;"
                         body-style="flex: 1; overflow: auto; display: flex; flex-direction: column;">
-                        <div v-if="!previewFile" style="display: flex; justify-content: center; align-items: center; height: 100%; color: #909399;">
+                        <div v-if="!previewFile"
+                            style="display: flex; justify-content: center; align-items: center; height: 100%; color: #909399;">
                             请选择要预览的文件
                         </div>
-                        <div v-else style="white-space: pre-wrap; word-break: break-word; line-height: 1.6; font-size: 14px;">
+                        <div v-else
+                            style="white-space: pre-wrap; word-break: break-word; line-height: 1.6; font-size: 14px;">
                             {{ previewContent }}
                         </div>
                     </el-card>
                     <!-- 分段内容预览 -->
-                    <el-card v-else shadow="never" style="flex: 1; overflow: hidden; display: flex; flex-direction: column;"
+                    <el-card v-else shadow="never"
+                        style="flex: 1; overflow: hidden; display: flex; flex-direction: column;"
                         body-style="flex: 1; overflow: auto; display: flex; flex-direction: column;">
                         <div style="display: flex; flex-direction: column; gap: 16px;">
-                            <el-card v-for="(segment, index) in segmentPreview" :key="index" shadow="hover" >
-                               
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="font-weight: 600;">Chunk {{ index + 1 }}</span>
-                                        <el-tag size="small" style="border:'none' ;" >{{ segment.content?.length || 0 }} 字符</el-tag>
-                                    </div>
-                                
-                                <div style="white-space: pre-wrap; word-break: break-word; line-height: 1.6; font-size: 14px; color: #606266;">
+                            <el-card v-for="(segment, index) in segmentPreview" :key="index" shadow="hover">
+
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-weight: 600;">Chunk {{ index + 1 }}</span>
+                                    <el-tag size="small" style="border:'none' ;">{{ segment.content?.length || 0 }}
+                                        字符</el-tag>
+                                </div>
+
+                                <div
+                                    style="white-space: pre-wrap; word-break: break-word; line-height: 1.6; font-size: 14px; color: #606266;">
                                     {{ segment.content }}
                                 </div>
                             </el-card>
@@ -449,6 +466,9 @@
                     </el-card>
                 </el-col>
             </el-card>
+        </el-main>
+        <el-main v-else-if="step == 3">
+            <CreateFinish :dataset="dataset" :files="fileList" />
         </el-main>
     </el-container>
 </template>
@@ -458,15 +478,15 @@
 import router from '@/router';
 import { ref, watch } from 'vue'
 import { UploadFilled, Back, Document, Delete } from '@element-plus/icons-vue'
-import type { UploadProps, UploadUserFile } from 'element-plus'
-import { initDataset, uploadDocument, UploadResponse, getFilesPreview,fetchFileIndexingEstimate,type IndexingEstimateParams} from '@/service/datasets';
-import { ElMessage } from 'element-plus';
+import { ElMessage, type UploadProps, type UploadUserFile } from 'element-plus'
+import { initDataset, RetrievalModel, uploadDocument, UploadResponse, getFilesPreview, fetchFileIndexingEstimate, type IndexingEstimateParams } from '@/service/datasets';
+import CreateFinish from '@/components/createFinish.vue'
 
 const radio = ref('datasets')
 
 //文件预览内容
 const fileList = ref<UploadUserFile[]>([])
-const previewFile = ref<string|null >(null)
+const previewFile = ref<string | null>(null)
 const previewContent = ref<string>('')
 const showPreview = ref(false) // 控制是否显示文件预览模块
 const segmentPreview = ref<any[]>([]) // 存储分段预览数据
@@ -492,7 +512,7 @@ const custom = ref({
         max_tokens: 500,
         chunk_overlap: 50,
     },
-    
+
 })
 const hierarchical = ref({
     parent_mode: 'paragraph',
@@ -519,11 +539,14 @@ const indexing_technique = ref('high_quality')
 const embedding_model = ref('text-embedding-v1')
 const embedding_model_provider = ref('langgenius/tongyi/tongyi')
 
-const retrieval_model = ref({
+const retrieval_model = ref<RetrievalModel>({
     search_method: 'semantic_search',
     top_k: 5,
     reranking_enable: true,
-    reranking_model_name: 'gte-rerank-v2',
+    reranking_model: {
+        reranking_model_name: 'gte-rerank-v2',
+        reranking_provider_name: 'langgenius/tongyi/tongyi'
+    },
     score_threshold: 0.5,
     score_threshold_enabled: false,
     reranking_mode: 'weighted_score',
@@ -544,8 +567,19 @@ const retrieval_model = ref({
 // unofficial
 const official = ref('official')
 
+const dataset = ref({})
 
 const handleUploadChange: UploadProps['onChange'] = (uploadFile, uploadFiles) => {
+    const type = uploadFile.name.replace(/.*\./, '')
+    let regex = radio.value === 'datasets' ? [
+        'doc', 'docx', 'txt', 'pdf', 'html', 'markdown', 'xls', 'xlsx'
+    ] : ['csv']
+
+    if (!regex.find(x => x === type)) {
+        ElMessage.error('文件格式错误，请上传正确的文件格式')
+        uploadFiles.pop()
+        return
+    }
     const formData = new FormData()
     if (uploadFile.raw) {
         formData.append('file', uploadFile.raw)
@@ -553,6 +587,7 @@ const handleUploadChange: UploadProps['onChange'] = (uploadFile, uploadFiles) =>
             res.value.push(response)
             console.log('File uploaded successfully:', response)
         }).catch(error => {
+            ElMessage.error(`文件上传失败${error}`)
             console.error('File upload failed:', error)
         })
     }
@@ -596,7 +631,7 @@ const handleInit = () => {
                 }
             }
         },
-        doc_form: 'text_model',
+        doc_form: radio.value === 'datasets' ? 'text_model' : 'qa_model',
         doc_language: 'Chinese Simplified',
         embedding_model: embedding_model.value,
         embedding_model_provider: embedding_model_provider.value,
@@ -611,6 +646,8 @@ const handleInit = () => {
 
     initDataset(params).then(res => {
         console.log('res', res)
+        dataset.value = res
+        step.value = 3
     })
 }
 
@@ -634,8 +671,8 @@ const fetchFilePreview = async (fileId: string) => {
 const handlePreviewButton = () => {
     if (res.value.length > 0) {
         // 根据当前选择的 process_rule 模式获取对应的配置
-        const currentRules =  custom.value 
-        
+        const currentRules = custom.value
+
         const params: IndexingEstimateParams = {
             doc_form: 'text_model',
             doc_language: 'English',
@@ -651,7 +688,7 @@ const handlePreviewButton = () => {
                 rules: currentRules
             }
         }
-        
+
         fetchFileIndexingEstimate(params).then(response => {
             console.log('分段预览结果:', response)
             // 处理返回的分段内容,且不为空的
@@ -722,7 +759,7 @@ watch(previewFile, (newFileId) => {
         // 在 step 1 时，只获取文件原始内容
         if (step.value === 1) {
             fetchFilePreview(newFileId)
-        } 
+        }
         // 在 step 2 时，获取分段预览
         else if (step.value === 2) {
             const params: IndexingEstimateParams = {
@@ -732,7 +769,7 @@ watch(previewFile, (newFileId) => {
                 info_list: {
                     data_source_type: 'upload_file',
                     file_info_list: {
-                        file_ids: [newFileId]  
+                        file_ids: [newFileId]
                     }
                 },
                 process_rule: {
@@ -740,7 +777,7 @@ watch(previewFile, (newFileId) => {
                     rules: custom.value
                 }
             }
-            
+
             fetchFileIndexingEstimate(params).then(response => {
                 console.log('分段预览结果:', response)
                 // 处理返回的分段内容
@@ -812,6 +849,7 @@ watch(previewFile, (newFileId) => {
         width: 60px !important;
     }
 }
+
 .font-weight {
     font-weight: 600;
 }
@@ -835,7 +873,7 @@ watch(previewFile, (newFileId) => {
         align-items: center;
         flex: 1;
         cursor: pointer;
-        
+
         .file-icon {
             margin-right: 12px;
             flex-shrink: 0;
@@ -877,17 +915,17 @@ watch(previewFile, (newFileId) => {
 .segment-item {
     border: 1px solid #e4e7ed;
     transition: all 0.3s ease;
-    
+
     &:hover {
         border-color: #409EFF;
     }
-    
+
     :deep(.el-card__header) {
         padding: 12px 16px;
         background-color: #f5f7fa;
         border-bottom: 1px solid #e4e7ed;
     }
-    
+
     :deep(.el-card__body) {
         padding: 16px;
     }

@@ -8,9 +8,34 @@ export type Dataset = {
   documentNumber: number;
   // 字符数量
   characterNumber: number;
+  retrieval_model_dict: RetrievalModel;
 };
 
-export type DataSource ={
+export type RetrievalModel = {
+  search_method: "semantic_search" | "full_text_search" | "hybrid_search";
+  reranking_enable: boolean;
+  reranking_mode: "weighted_score" | "reranking_model";
+  reranking_model: {
+    reranking_provider_name: string;
+    reranking_model_name: string;
+  };
+  weights: {
+    weight_type: "customized";
+    keyword_setting: {
+      keyword_weight: number;
+    };
+    vector_setting: {
+      vector_weight: number;
+      embedding_model_name: string;
+      embedding_provider_name: string;
+    };
+  };
+  top_k: number;
+  score_threshold_enabled: boolean;
+  score_threshold: number;
+};
+
+export type DataSource = {
   type: string;
   info_list: {
     data_source_type: string;
@@ -18,7 +43,7 @@ export type DataSource ={
       file_ids: string[];
     };
   };
-}
+};
 
 // export type KnowledgeBase = {
 //   data_source: DataSource

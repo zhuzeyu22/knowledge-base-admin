@@ -5,42 +5,47 @@
                 <div class="header-content">
                     <div class="header-left">
                         <div class="icon">
-                            <img src="" alt="知识库图标" class="icon-img" />
+                            <img :src="datasetInfo.imageUrl" onerror="this.style.display='none'"  class="icon-img" />
                         </div>
-                        <div class="info">
-                            <h3>知识库名称</h3>
-                            <p class="introduction">知识库简介</p>
+                        <div class="info" v-loading="datasetLoading">
+                            <h3>{{ datasetInfo.name }}</h3>
+                            <p class="introduction">{{ datasetInfo.description }}</p>
                         </div>
                     </div>
                     <div class="header-center">
                         <el-tabs v-model="activeTab" @tab-click="handleTabClick" class="custom-tabs">
                             <el-tab-pane label="文档" name="document"></el-tab-pane>
-                            <el-tab-pane label="召回测试" name="recall"></el-tab-pane>
+                            <el-tab-pane label="召回测试" name="recall">
+                            </el-tab-pane>
                             <el-tab-pane label="设置" name="settings"></el-tab-pane>
                         </el-tabs>
                     </div>
                 </div>
             </el-header>
-            <el-main class="page-main">
+            <el-main v-if="activeTab === 'document'" class="page-main">
                 <div class="tool">
                     <el-input style="width: 240px" v-model="searchName" size="large" placeholder="搜索文档名称"
-                        :prefix-icon="Search" clearable @clear="onClearSearch" />
-                    <el-button type="primary" size="default">添加文件</el-button>
+                        :prefix-icon="Search" clearable @clear="onClearSearch" @input="loadData" />
+                    <el-button type="primary" size="default" @click="handleCreateClick">添加文件</el-button>
                 </div>
                 <div class="table">
-                    <el-table :data="filteredData" >
+                    <el-table :data="documentList">
                         <el-table-column type="selection" width="40" />
-                        <el-table-column prop="id" label="" width="20" />
+                        <el-table-column type="index" label="" width="20" />
                         <el-table-column prop="name" label="名称" min-width="200" />
                         <el-table-column label="分段模式" width="120">
                             <template #default>
                                 <el-button size="small" class="segment-btn">通用</el-button>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="charCount" label="字符数" width="100" />
-                        <el-table-column prop="recallCount" label="召回次数" width="100" />
-                        <el-table-column prop="uploadTime" label="上传时间" width="180" sortable
-                            :sort-method="sortByUploadTime" />
+                        <el-table-column prop="word_count" label="字符数" width="100" />
+                        <el-table-column prop="hit_count" label="召回次数" width="100" />
+                        <el-table-column prop="created_at" label="上传时间" width="180" sortable
+                            :sort-method="sortByUploadTime" >
+                            <template #default="{ row }">
+                                {{ formatTime(row.created_at) }}
+                            </template>
+                        </el-table-column>
                         <el-table-column label="状态" width="100">
                             <template #default="{ row }">
                                 <span :class="['status-text', row.enabled ? 'status-available' : 'status-disabled']">
@@ -63,7 +68,7 @@
                             </template>
                         </el-table-column>
                         <el-table-column width="50">
-                            <template #default = "scope">
+                            <template #default="scope">
                                 <el-dropdown>
                                     <el-button link class="icon-btn">
                                         <el-icon :size="16">
@@ -89,7 +94,8 @@
                             </div>
                         </template>
                     </el-dialog>
-                    <el-dialog title="确定删除吗？" v-model="deleteDialogVisible" :before-close="handleDeleteClose" width="400px">
+                    <el-dialog title="确定删除吗？" v-model="deleteDialogVisible" :before-close="handleDeleteClose"
+                        width="400px">
                         <div class="delete-content">
                             <p class="warning-text">如果您需要稍后恢复处理，您将从您离开的地方继续</p>
                         </div>
@@ -102,105 +108,148 @@
                     </el-dialog>
                 </div>
             </el-main>
+            <el-main v-else-if="activeTab === 'recall'" class="page-main">
+                <HitTesting :datasetId='datasetId' :retrieval_model="datasetInfo.retrieval_model_dict" />
+            </el-main>
+            <el-main v-else-if="activeTab === 'settings'" class="page-main">
+                <DocumentSettings :datasetId='datasetId' :retrieval_model="datasetInfo.retrieval_model_dict" @refresh="loadDatasetInfo" />
+            </el-main>
         </el-container>
     </div>
 </template>
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, type TabsPaneContext } from 'element-plus'
 import { Search, List, MoreFilled } from '@element-plus/icons-vue'
+import apiService, { DocumentList } from '@/service/knowledge/use-document-list'
+import { Dataset } from '@/models/dataset';
+import HitTesting from '@/components/hitTesting.vue';
+import DocumentSettings from '@/components/documentSettings.vue';
 
+const route = useRoute()
+const router = useRouter()
 const activeTab = ref('document')
 const dialogFormVisible = ref(false)
 const deleteDialogVisible = ref(false)
-interface RowRename {
-  id: number;
-  name: string;
-  segmentMode: string;
-  charCount: string;
-  recallCount: number;
-  uploadTime: string;
-  enabled: boolean;
-}
-const currentRow = ref<RowRename | null>(null)
+const currentRow = ref<DocumentList | null>(null)
 const newName = ref('')
+const queryLoading = ref(false)
+const documentList = ref<DocumentList[]>([])
+const datasetId = ref((route.query.id as string) || (route.params.id as string) || '')
+const datasetLoading = ref(false)
+
+const datasetInfo = ref<Dataset>({
+    id: '',
+    name: '',
+    isOfficial: false,
+    imageUrl: '',
+    description: '',
+    documentNumber: 0,
+    characterNumber: 0,
+    // 下面这一坨先准备好的话，就不用在这里做初始化了
+    retrieval_model_dict: {
+        search_method: 'semantic_search',
+        reranking_enable: false,
+        reranking_mode: 'reranking_model',
+        reranking_model: {
+            reranking_provider_name: '',
+            reranking_model_name: ''
+        },
+        weights: {
+            weight_type: 'customized',
+            keyword_setting: {
+                keyword_weight: 0
+            },
+            vector_setting: {
+                vector_weight: 0,
+                embedding_model_name: '',
+                embedding_provider_name: ''
+            }
+        },
+        top_k: 0,
+        score_threshold_enabled: false,
+        score_threshold: 0
+    }
+})
+
 const handleTabClick = (tab: TabsPaneContext) => {
+    activeTab.value = tab.paneName
     console.log('切换到:', tab.paneName)
 }
-
-const getMockData = ref([
-    {
-        id: 1,
-        name: '产品技术白皮书.pdf',
-        segmentMode: '通用',
-        charCount: '15.2k',
-        recallCount: 5,
-        uploadTime: '2024-10-15 14:30:25',
-        enabled: true,
-    },
-    {
-        id: 2,
-        name: '用户操作手册.docx',
-        segmentMode: '通用',
-        charCount: '28.6k',
-        recallCount: 8,
-        uploadTime: '2024-10-14 09:15:42',
-        enabled: true,
-    },
-    {
-        id: 3,
-        name: 'API接口文档.md',
-        segmentMode: '通用',
-        charCount: '42.1k',
-        recallCount: 3,
-        uploadTime: '2024-10-12 11:22:33',
-        enabled: false,
-    },
-    {
-        id: 4,
-        name: '系统架构设计.pdf',
-        segmentMode: '通用',
-        charCount: '56.7k',
-        recallCount: 2,
-        uploadTime: '2024-10-13 16:48:09',
-        enabled: true,
-    },
-])
+const handleCreateClick = () => {
+    router.push({ name: 'create' })
+}
 
 const searchName = ref('')
 
-//搜索后的数据
-const filteredData = computed(() => {
-    if (!searchName.value.trim()) {
-        return getMockData.value
+// 获取知识库详情
+const loadDatasetInfo = async () => {
+    try {
+        datasetLoading.value = true
+
+        const response = await apiService.getDatasetById(datasetId.value)
+        datasetInfo.value = response
+
+        ElMessage.success('获取知识库id等信息成功')
+    } catch (error: any) {
+        ElMessage.error(error.message || '获取知识库id等信息失败')
+    } finally {
+        datasetLoading.value = false
     }
-    const keyword = searchName.value.trim().toLowerCase()
-    return getMockData.value.filter(item =>
-        item.name.toLowerCase().includes(keyword)
-    )
-})
+}
+
+const loadData = async () => {
+    try {
+        queryLoading.value = true
+        const queryParams = {
+            keyword: searchName.value
+        }
+        const response = await apiService.getDocumentList(datasetId.value, queryParams)
+
+        documentList.value = response.data || response
+        ElMessage.success('文档列表数据加载完成')
+    } catch (error: any) {
+        ElMessage.error('文档列表数据加载失败，接口调用错误')
+    } finally {
+        queryLoading.value = false
+    }
+}
+const formatTime = (timestamp:number) => {
+    if (!timestamp) return '-'
+    const msTimestamp = timestamp.toString().length === 10 ? timestamp * 1000  : timestamp
+    const date = new Date(msTimestamp)
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    
+    return `${year}-${month}-${day} ${hours}:${minutes}`
+}
 //清空搜索
 const onClearSearch = () => {
     searchName.value = ''
+    loadData()
 }
 //按时间排序
-const sortByUploadTime = (a: any, b: any) => {
-    const timeA = new Date(a.uploadTime).getTime()
-    const timeB = new Date(b.uploadTime).getTime()
+const sortByUploadTime = (a: DocumentList, b: DocumentList) => {
+    const timeA = new Date(a.created_at).getTime()
+    const timeB = new Date(b.created_at).getTime()
     return timeA - timeB
 }
 //重命名
-const handleRename = (row: RowRename) => {
+const handleRename = (row: DocumentList) => {
     currentRow.value = row;
     newName.value = row.name;
     dialogFormVisible.value = true;
 }
 const saveRename = () => {
-    if(!newName.value.trim()){
+    if (!newName.value.trim()) {
         ElMessage.warning('名称不能为空')
-        return 
+        return
     }
-    if(currentRow.value){
+    if (currentRow.value) {
         currentRow.value.name = newName.value.trim();
     }
     ElMessage.success('修改成功')
@@ -212,15 +261,15 @@ const handleClose = () => {
     dialogFormVisible.value = false;
 }
 //删除
-const handleDelete = (row: RowRename) => {
+const handleDelete = (row: DocumentList) => {
     currentRow.value = row;
     deleteDialogVisible.value = true;
 }
 const confirmDelete = () => {
     if (currentRow.value) {
-        const index = getMockData.value.findIndex(item => item.id === currentRow.value!.id)
+        const index = documentList.value.findIndex(item => item.id === currentRow.value!.id)
         if (index !== -1) {
-            getMockData.value.splice(index, 1)
+            documentList.value.splice(index, 1)
             ElMessage.success('删除成功')
         }
     }
@@ -231,6 +280,16 @@ const handleDeleteClose = () => {
     currentRow.value = null;
     deleteDialogVisible.value = false;
 }
+
+onMounted(() => {
+    //检查datasetId
+    if (!datasetId.value) {
+        ElMessage.warning('缺少知识库ID，请从知识库列表进入')
+        return
+    }
+    loadDatasetInfo()
+    loadData()
+})
 </script>
 <style scoped lang="less">
 .private-details-page {
@@ -253,15 +312,18 @@ const handleDeleteClose = () => {
             box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 
             .header-content {
-                display: flex;
                 position: relative;
+                display: flex;
                 align-items: center;
-                gap: 40px;
+                min-height: 60px;
+                padding-right: 20px;
 
                 .header-left {
                     display: flex;
                     align-items: center;
                     gap: 10px;
+                    max-width: calc(50% - 150px);
+                    min-width: 0;
 
                     .icon {
                         display: flex;
@@ -270,7 +332,7 @@ const handleDeleteClose = () => {
                         width: 60px;
                         height: 60px;
                         border-radius: 12px;
-                        background-color: #409eff;
+                        background-color: #b6b9bd;
                         flex-shrink: 0;
 
                         .icon-img {
@@ -282,27 +344,37 @@ const handleDeleteClose = () => {
                     }
 
                     .info {
+                        flex: 1;
+                        min-width: 0;
+                        overflow: hidden;
+
                         h3 {
                             margin: 0;
                             font-weight: 700;
                             font-size: 20px;
                             color: #303133;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
                         }
 
                         .introduction {
                             margin: 5px 0 0 0;
                             font-size: 14px;
                             color: #909399;
+                            word-wrap: break-word;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
                         }
                     }
                 }
 
                 .header-center {
                     position: absolute;
-                    top: 50%;
                     left: 50%;
-                    margin-top: -20px;
-                    margin-left: -130px;
+                    transform: translateX(-50%);
+                    display: flex;
+                    justify-content: center;
 
                     :deep(.custom-tabs) {
                         .el-tabs__header {

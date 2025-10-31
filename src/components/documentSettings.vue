@@ -1,0 +1,116 @@
+<!-- 知识库设置页面 -->
+<template>
+    <section class="setting">
+        <h2>知识库设置</h2>
+        <div class="form-item">
+            <label class="form-label">知识库名称</label>
+            <el-input v-model="localName" placeholder="输入知识库新名称" clearable />
+        </div>
+
+        <div class="form-item">
+            <label class="form-label">知识库描述</label>
+            <el-input v-model="localDescription" placeholder="输入知识库新描述" clearable />
+        </div>
+        <div class="form-item">
+            <label class="form-label">知识库类型</label>
+            <el-radio-group v-model="isOfficial">
+                <el-radio-button :value="true">官方</el-radio-button>
+                <el-radio-button :value="false">非官方</el-radio-button>
+            </el-radio-group>
+        </div>
+        <div class="form-actions">
+            <el-button type="primary" @click="handleSave" :loading="saveLoading">保存修改</el-button>
+        </div>
+    </section>
+</template>
+
+<script lang="ts" setup>
+import { ref, onMounted } from 'vue';
+import { ElMessage } from 'element-plus';
+import apiService from '@/service/knowledge/use-document-list';
+import { updateKnowledgeBase } from '@/service/datasets';
+
+const { datasetId } = defineProps(['datasetId'])
+
+const localName = ref<string>('')
+const localDescription = ref<string>('')
+const isOfficial = ref<boolean>()
+const saveLoading = ref<boolean>(false)
+
+const loadDatasetInfo = async () => {
+    try {
+        const response = await apiService.getDatasetById(datasetId)
+        localName.value = response.name
+        localDescription.value = response.description
+        isOfficial.value = response.isOfficial
+        if(isOfficial.value == undefined){
+            ElMessage.warning('isOfficial字段为空')
+        }
+    } catch (error: any) {
+        ElMessage.error('获取知识库信息失败')
+    }
+}
+
+const emit = defineEmits(['refresh'])
+
+const handleSave = async () => {
+    if (!localName.value.trim()) {
+        ElMessage.warning('知识库名称不能为空')
+        return
+    }
+
+    try {
+        saveLoading.value = true
+        await updateKnowledgeBase(datasetId, {
+            name: localName.value,
+            description: localDescription.value,
+            official: isOfficial.value
+        })
+        ElMessage.success('保存成功')
+        emit('refresh')
+    } catch (error: any) {
+        ElMessage.error(error.message || '保存失败')
+    } finally {
+        saveLoading.value = false
+    }
+}
+
+onMounted(() => {
+    loadDatasetInfo()
+})
+</script>
+
+<style lang="less" scoped>
+.setting {
+    position: relative;
+    padding: 20px;
+    height: 100%;
+
+    h2 {
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    .form-item {
+        margin-top: 24px;
+
+        .form-label {
+            display: block;
+            margin: 10px 0;
+            font-size: 22px;
+            font-weight: 500;
+        }
+
+    }
+.demo-tabs > .el-tabs__content {
+  padding: 32px;
+  color: #6b778c;
+  font-size: 32px;
+  font-weight: 600;
+}
+    .form-actions {
+        position: absolute;
+        bottom: 30px;
+    }
+}
+</style>

@@ -1,3 +1,4 @@
+import { RetrievalModel } from "@/models/dataset";
 import request from "./request";
 
 // 下面的这些参数后续具体再对下
@@ -84,6 +85,16 @@ export const uploadDocument = (data: FormData) => {
   return request.postForm(`/files/upload?source=datasets`, data);
 };
 
+// 上传插件
+export const uploadPlugin = (data: FormData) => {
+  return request.postForm(`/workspaces/current/plugin/upload/pkg`, data);
+};
+
+// 安装插件
+export const installPlugin = (data: any) => {
+  return request.post(`/workspaces/current/plugin/install/pkg`, data);
+};
+
 // 创建知识库
 export const initDataset = (body: {
   data_source: {
@@ -160,3 +171,43 @@ export const getPublicDatasetList = ({
 export const getFilesPreview = (id: string) => {
   return request.get(`/files/${id}/preview`);
 };
+
+export type DatasetHitTesting = {
+  query: string;
+  retrieval_model: RetrievalModel;
+};
+
+// 召回测试
+export const postDatasetHitTesting = (
+  datasetId: string,
+  data: DatasetHitTesting
+) => {
+  return request.post(`/datasets/${datasetId}/hit-testing`, data);
+};
+
+// 召回测试记录
+export const getDatasetHitTestingRecords = (
+  datasetId: string,
+  limit: number,
+  page: number
+) => {
+  return request.get(
+    `/datasets/${datasetId}/queries?limit=${limit}&page=${page}`
+  );
+};
+
+// 文档状态查询
+export const getIndexingStatus = (datasetId: string, batchId: string) => {
+  return request.get(`/datasets/${datasetId}/batch/${batchId}/indexing-status`);
+};
+
+// 测试页面
+// export const getDatasetSettings = (
+//   datasetId: string,
+//   introduction: string,
+// ) => {
+//   const rsc =
+//   return request.get{
+//     `/datasets/${datasetId}/settings?_rsc=${rsc}`
+//   }
+// }
