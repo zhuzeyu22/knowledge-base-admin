@@ -387,8 +387,9 @@
 import router from '@/router';
 import { ref } from 'vue'
 import { UploadFilled, Back } from '@element-plus/icons-vue'
-import type { UploadProps, UploadUserFile } from 'element-plus'
+import { ElMessage, type UploadProps, type UploadUserFile } from 'element-plus'
 import { initDataset, RetrievalModel, uploadDocument, UploadResponse } from '@/service/datasets';
+import { watch } from 'vue';
 
 const radio = ref('datasets')
 const fileList = ref<UploadUserFile[]>([])
@@ -468,6 +469,16 @@ const retrieval_model = ref<RetrievalModel>({
 const official = ref('official')
 
 const handleUploadChange: UploadProps['onChange'] = (uploadFile, uploadFiles) => {
+    const type = uploadFile.name.replace(/.*\./, '')
+    let regex = radio.value === 'datasets' ? [
+        'doc', 'docx', 'txt', 'pdf', 'html', 'markdown', 'xls', 'xlsx'
+    ] : ['csv']
+
+    if (!regex.find(x => x === type)) {
+        ElMessage.error('文件格式错误，请上传正确的文件格式')
+        uploadFiles.pop()
+        return
+    }
     const formData = new FormData()
     if (uploadFile.raw) {
         formData.append('file', uploadFile.raw)
