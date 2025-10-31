@@ -8,7 +8,7 @@
             <div class="knowledge-base-card-name">{{ dataset.name }}</div>
             <div class="knowledge-base-card-tags">
                 <el-tag type="info">{{ dataset.documentNumber }} 文档</el-tag>
-                <el-tag type="info">{{ (dataset.characterNumber / 1000).toFixed(1) }} 千字符</el-tag>
+                <el-tag type="info">{{ (dataset.word_count / 1000).toFixed(1) }} 千字符</el-tag>
             </div>
             <div class="knowledge-base-card-description">{{ dataset.description }}</div>
 
