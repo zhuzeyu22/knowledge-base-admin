@@ -5,7 +5,7 @@
                 <div class="header-content">
                     <div class="header-left">
                         <div class="icon">
-                            <img :src="datasetInfo.imageUrl" alt="知识库图标" class="icon-img" />
+                            <img :src="datasetInfo.imageUrl" onerror="this.style.display='none'"  class="icon-img" />
                         </div>
                         <div class="info" v-loading="datasetLoading">
                             <h3>{{ datasetInfo.name }}</h3>
@@ -111,19 +111,24 @@
             <el-main v-else-if="activeTab === 'recall'" class="page-main">
                 <HitTesting :datasetId='datasetId' :retrieval_model="datasetInfo.retrieval_model_dict" />
             </el-main>
+            <el-main v-else-if="activeTab === 'settings'" class="page-main">
+                <DocumentSettings :datasetId='datasetId' :retrieval_model="datasetInfo.retrieval_model_dict" @refresh="loadDatasetInfo" />
+            </el-main>
         </el-container>
     </div>
 </template>
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, type TabsPaneContext } from 'element-plus'
 import { Search, List, MoreFilled } from '@element-plus/icons-vue'
 import apiService, { DocumentList } from '@/service/knowledge/use-document-list'
 import { Dataset } from '@/models/dataset';
 import HitTesting from '@/components/hitTesting.vue';
+import DocumentSettings from '@/components/documentSettings.vue';
 
 const route = useRoute()
+const router = useRouter()
 const activeTab = ref('document')
 const dialogFormVisible = ref(false)
 const deleteDialogVisible = ref(false)
@@ -327,7 +332,7 @@ onMounted(() => {
                         width: 60px;
                         height: 60px;
                         border-radius: 12px;
-                        background-color: #409eff;
+                        background-color: #b6b9bd;
                         flex-shrink: 0;
 
                         .icon-img {

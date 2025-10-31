@@ -165,3 +165,14 @@ export const getDatasetHitTestingRecords = (
     `/datasets/${datasetId}/queries?limit=${limit}&page=${page}`
   );
 };
+
+// 测试页面
+// export const getDatasetSettings = (
+//   datasetId: string,
+//   introduction: string,
+// ) => {
+//   const rsc = 
+//   return request.get{
+//     `/datasets/${datasetId}/settings?_rsc=${rsc}`
+//   }
+// }
