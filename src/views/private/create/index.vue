@@ -8,7 +8,7 @@
             </el-button>
             <div>创建知识库</div>
         </el-header>
-        <el-main class="context-style" style="overflow: auto">
+        <el-main v-if="step !== 3" class="context-style" style="overflow: auto">
             <el-card class="wapper-style" body-style="height: 100%; display: flex; flex-direction: row;">
                 <el-col :span="11" style="display: flex; flex-direction: column;">
                     <div v-if="step === 1" style="flex-grow: 1">
@@ -263,10 +263,10 @@
                                                             :min="0" :max="1" :step="0.1" />
                                                         <el-col :span="12">语义{{
                                                             retrieval_model.weights.keyword_setting.keyword_weight
-                                                        }}</el-col>
+                                                            }}</el-col>
                                                         <el-col :span="12">{{
                                                             retrieval_model.weights.vector_setting.vector_weight
-                                                            }}关键词</el-col>
+                                                        }}关键词</el-col>
                                                     </el-row>
                                                     <el-row v-if="retrieval_model.reranking_enable"
                                                         style="width: 100%; margin-bottom: 10px;">
@@ -379,6 +379,9 @@
                 </el-col>
             </el-card>
         </el-main>
+        <el-main v-else-if="step == 3">
+            <CreateFinish :dataset="dataset" :files="fileList" />
+        </el-main>
     </el-container>
 </template>
 
@@ -390,6 +393,7 @@ import { UploadFilled, Back } from '@element-plus/icons-vue'
 import { ElMessage, type UploadProps, type UploadUserFile } from 'element-plus'
 import { initDataset, RetrievalModel, uploadDocument, UploadResponse } from '@/service/datasets';
 import { watch } from 'vue';
+import CreateFinish from '@/components/createFinish.vue'
 
 const radio = ref('datasets')
 const fileList = ref<UploadUserFile[]>([])
@@ -468,6 +472,8 @@ const retrieval_model = ref<RetrievalModel>({
 // unofficial
 const official = ref('official')
 
+const dataset = ref({})
+
 const handleUploadChange: UploadProps['onChange'] = (uploadFile, uploadFiles) => {
     const type = uploadFile.name.replace(/.*\./, '')
     let regex = radio.value === 'datasets' ? [
@@ -541,10 +547,8 @@ const handleInit = () => {
 
     initDataset(params).then(res => {
         console.log('res', res)
-        router.push({
-            name: 'details',
-            query: { id: res.dataset.id }
-        })
+        dataset.value = res
+        step.value = 3
     })
 }
 

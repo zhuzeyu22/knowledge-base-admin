@@ -166,12 +166,17 @@ export const getDatasetHitTestingRecords = (
   );
 };
 
+// 文档状态查询
+export const getIndexingStatus = (datasetId: string, batchId: string) => {
+  return request.get(`/datasets/${datasetId}/batch/${batchId}/indexing-status`);
+};
+
 // 测试页面
 // export const getDatasetSettings = (
 //   datasetId: string,
 //   introduction: string,
 // ) => {
-//   const rsc = 
+//   const rsc =
 //   return request.get{
 //     `/datasets/${datasetId}/settings?_rsc=${rsc}`
 //   }
