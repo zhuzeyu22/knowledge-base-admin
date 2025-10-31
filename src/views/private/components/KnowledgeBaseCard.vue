@@ -1,7 +1,10 @@
 <template>
     <el-card @click="goToDetails">
         <div class="knowledge-base-card">
-            <el-image class="knowledge-base-card-image" :src="dataset.imageUrl" fit="fill" />
+            <!-- <el-image class="knowledge-base-card-image" :src="dataset.imageUrl" fit="fill" /> -->
+            <el-icon class="knowledge-base-card-image">
+                <Folder style="width: 50px; height: auto;" />
+            </el-icon>
             <div class="knowledge-base-card-name">{{ dataset.name }}</div>
             <div class="knowledge-base-card-tags">
                 <el-tag type="info">{{ dataset.documentNumber }} 文档</el-tag>
