@@ -16,15 +16,17 @@
                             <el-radio-group v-model="radio" text-color="#626aef" fill="rgb(239, 240, 253)"
                                 style="margin-bottom: 10px;">
                                 <el-radio-button label="文档上传" value="datasets" />
-                                <el-radio-button label="问答对上传" value="qa_pairs" disabled />
+                                <el-radio-button label="问答对上传" value="qa_pairs" />
                             </el-radio-group>
                             <div style="padding: 10px; font-size: 14px;">
-                                支持上传多个文件, 支持扩展名:doc,.docx,.txt,.pdf,.html,.markdown,.xls,.xlsx,.csv
-                                最大上传文件数量为10个，每个文件不超过40MB
+                                {{ `支持上传多个文件,
+                                支持扩展名:${radio === 'datasets'
+                                        ? 'doc,.docx,.txt,.pdf,.html,.markdown,.xls,.xlsx,' : ''}.csv最大上传文件数量为10个，每个文件不超过40MB`
+                                }}
                             </div>
                             <el-upload v-model:file-list="fileList" style="width: 100%;" drag :auto-upload="false"
-                                accept=".doc,.docx,.txt,.pdf,.html,.markdown,.md,.xls,.xlsx,.csv" action="" :limit="10"
-                                :on-change="handleUploadChange" multiple>
+                                :accept="radio === 'datasets' ? '.doc,.docx,.txt,.pdf,.html,.markdown,.md,.xls,.xlsx,.csv' : '.csv'"
+                                action="" :limit="10" :on-change="handleUploadChange" multiple>
                                 <el-icon class="el-icon--upload"><upload-filled /></el-icon>
                                 <div class="el-upload__text">
                                     <el-col>
@@ -261,10 +263,10 @@
                                                             :min="0" :max="1" :step="0.1" />
                                                         <el-col :span="12">语义{{
                                                             retrieval_model.weights.keyword_setting.keyword_weight
-                                                            }}</el-col>
+                                                        }}</el-col>
                                                         <el-col :span="12">{{
                                                             retrieval_model.weights.vector_setting.vector_weight
-                                                        }}关键词</el-col>
+                                                            }}关键词</el-col>
                                                     </el-row>
                                                     <el-row v-if="retrieval_model.reranking_enable"
                                                         style="width: 100%; margin-bottom: 10px;">
@@ -358,7 +360,7 @@
                     <div style=" align-self: flex-end; display: flex; flex-direction: row-reverse; justify-content:
                                                         space-between; margin-top: 10px;">
                         <el-button style="align-self: flex-end;" v-if="step === 1" type="primary"
-                            @click="handleNext">下一步</el-button>
+                            :disabled="fileList.length === 0" @click="handleNext">下一步</el-button>
                         <el-button v-if="step === 2" type="primary" @click="handleInit">保存并处理</el-button>
                         <el-button v-if="step !== 1" type="primary" @click="handlePrev"
                             style="margin-right: 10px;">上一步</el-button>
@@ -512,7 +514,7 @@ const handleInit = () => {
                 }
             }
         },
-        doc_form: 'text_model',
+        doc_form: radio.value === 'datasets' ? 'text_model' : 'qa_model',
         doc_language: 'Chinese Simplified',
         embedding_model: embedding_model.value,
         embedding_model_provider: embedding_model_provider.value,
@@ -527,6 +529,10 @@ const handleInit = () => {
 
     initDataset(params).then(res => {
         console.log('res', res)
+        router.push({
+            name: 'details',
+            query: { id: res.dataset.id }
+        })
     })
 }
 
