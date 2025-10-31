@@ -41,7 +41,11 @@
                         <el-table-column prop="word_count" label="字符数" width="100" />
                         <el-table-column prop="hit_count" label="召回次数" width="100" />
                         <el-table-column prop="created_at" label="上传时间" width="180" sortable
-                            :sort-method="sortByUploadTime" />
+                            :sort-method="sortByUploadTime" >
+                            <template #default="{ row }">
+                                {{ formatTime(row.created_at) }}
+                            </template>
+                        </el-table-column>
                         <el-table-column label="状态" width="100">
                             <template #default="{ row }">
                                 <span :class="['status-text', row.enabled ? 'status-available' : 'status-disabled']">
@@ -206,7 +210,18 @@ const loadData = async () => {
         queryLoading.value = false
     }
 }
-
+const formatTime = (timestamp:number) => {
+    if (!timestamp) return '-'
+    const msTimestamp = timestamp.toString().length === 10 ? timestamp * 1000  : timestamp
+    const date = new Date(msTimestamp)
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    
+    return `${year}-${month}-${day} ${hours}:${minutes}`
+}
 //清空搜索
 const onClearSearch = () => {
     searchName.value = ''
