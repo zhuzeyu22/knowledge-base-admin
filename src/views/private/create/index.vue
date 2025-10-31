@@ -486,6 +486,7 @@ const handleUploadChange: UploadProps['onChange'] = (uploadFile, uploadFiles) =>
             res.value.push(response)
             console.log('File uploaded successfully:', response)
         }).catch(error => {
+            ElMessage.error(`文件上传失败${error}`)
             console.error('File upload failed:', error)
         })
     }
