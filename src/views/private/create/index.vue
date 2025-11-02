@@ -384,6 +384,15 @@
                                 </el-collapse>
                             </el-card>
                         </el-col>
+                        <el-col style="margin-bottom: 10px;">
+                            <div class="title">
+                                标签设置
+                            </div>
+                            <el-radio-group v-model="official" fill="#6cf">
+                                <el-radio-button label="官方" value="official" />
+                                <el-radio-button label="非官方" value="unofficial" />
+                            </el-radio-group>
+                        </el-col>
                     </div>
                     <div style=" align-self: flex-end; display: flex; flex-direction: row-reverse; justify-content:
                                                         space-between; margin-top: 10px;">
@@ -497,6 +506,7 @@ const res = ref<UploadResponse[]>([])
 const step = ref(1)
 
 const process_rule = ref('custom')
+
 const custom = ref({
     pre_processing_rules: [
         {
@@ -514,6 +524,7 @@ const custom = ref({
     },
 
 })
+
 const hierarchical = ref({
     parent_mode: 'paragraph',
     pre_processing_rules: [

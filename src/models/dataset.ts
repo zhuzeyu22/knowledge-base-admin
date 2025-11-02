@@ -1,7 +1,7 @@
 export type Dataset = {
   id: string;
   name: string;
-  isOfficial: boolean;
+  official: "official" | "unofficial";
   imageUrl: string;
   description: string;
   // 文档数量

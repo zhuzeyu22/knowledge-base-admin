@@ -13,9 +13,9 @@
         </div>
         <div class="form-item">
             <label class="form-label">知识库类型</label>
-            <el-radio-group v-model="isOfficial">
-                <el-radio-button :value="true">官方</el-radio-button>
-                <el-radio-button :value="false">非官方</el-radio-button>
+            <el-radio-group v-model="official">
+                <el-radio-button value="official">官方</el-radio-button>
+                <el-radio-button value="unofficial">非官方</el-radio-button>
             </el-radio-group>
         </div>
         <div class="form-actions">
@@ -34,7 +34,7 @@ const { datasetId } = defineProps(['datasetId'])
 
 const localName = ref<string>('')
 const localDescription = ref<string>('')
-const isOfficial = ref<boolean>()
+const official = ref<'official' | 'unofficial'>()
 const saveLoading = ref<boolean>(false)
 
 const loadDatasetInfo = async () => {
@@ -42,9 +42,9 @@ const loadDatasetInfo = async () => {
         const response = await apiService.getDatasetById(datasetId)
         localName.value = response.name
         localDescription.value = response.description
-        isOfficial.value = response.isOfficial
-        if(isOfficial.value == undefined){
-            ElMessage.warning('isOfficial字段为空')
+        official.value = response.official
+        if (official.value == undefined) {
+            ElMessage.warning('official字段为空')
         }
     } catch (error: any) {
         ElMessage.error('获取知识库信息失败')
@@ -64,7 +64,7 @@ const handleSave = async () => {
         await updateKnowledgeBase(datasetId, {
             name: localName.value,
             description: localDescription.value,
-            official: isOfficial.value
+            official: official.value
         })
         ElMessage.success('保存成功')
         emit('refresh')
@@ -102,12 +102,14 @@ onMounted(() => {
         }
 
     }
-.demo-tabs > .el-tabs__content {
-  padding: 32px;
-  color: #6b778c;
-  font-size: 32px;
-  font-weight: 600;
-}
+
+    .demo-tabs>.el-tabs__content {
+        padding: 32px;
+        color: #6b778c;
+        font-size: 32px;
+        font-weight: 600;
+    }
+
     .form-actions {
         position: absolute;
         bottom: 30px;
