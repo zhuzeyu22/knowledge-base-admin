@@ -6,6 +6,7 @@ const routes = [
   {
     path: "/",
     component: Layout,
+    redirect: "/private",
     children: [
       {
         path: "private",
@@ -63,6 +64,11 @@ const routes = [
         component: () => import("../test/testCreateFinish.vue"),
       },
       {
+        path: "segement",
+        name: "segement",
+        component: () => import("../test/testSegement.vue"),
+      },
+      {
         path: "plugins",
         name: "plugins",
         component: () => import("../views/plugins/index.vue"),
@@ -81,8 +87,12 @@ router.beforeEach((to, from) => {
   console.log("maasUser", maasUser);
   if (maasUser) {
     localStorage.setItem("maasUser", maasUser);
+    const cleanUrl =
+      window.location.origin + window.location.pathname + window.location.hash;
+    console.log("cleanUrl", cleanUrl);
+    window.location.replace(cleanUrl);
   }
   return true;
-})
+});
 
 export default router;

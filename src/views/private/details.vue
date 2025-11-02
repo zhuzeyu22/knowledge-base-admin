@@ -22,14 +22,14 @@
                     </div>
                 </div>
             </el-header>
-            <el-main v-if="activeTab === 'document'" class="page-main">
+            <el-main v-if="activeTab === 'document' && shouDocumentDetail === false" class="page-main">
                 <div class="tool">
                     <el-input style="width: 240px" v-model="searchName" size="large" placeholder="搜索文档名称"
                         :prefix-icon="Search" clearable @clear="onClearSearch" @input="loadData" />
                     <el-button type="primary" size="default" @click="handleCreateClick">添加文件</el-button>
                 </div>
                 <div class="table">
-                    <el-table :data="documentList">
+                    <el-table :data="documentList" @row-click="handleDocumentClick">
                         <el-table-column type="selection" width="40" />
                         <el-table-column type="index" label="" width="20" />
                         <el-table-column prop="name" label="名称" min-width="200" />
@@ -108,6 +108,9 @@
                     </el-dialog>
                 </div>
             </el-main>
+            <el-main v-else-if="activeTab === 'document' && shouDocumentDetail === true" class="page-main">
+                <SegementSetting :document='currentDocument' :datasetId='datasetId' @close='shouDocumentDetail = false' @update_status='handleUpdateDocumentStatus' @rename='handleDocumentRename' />
+            </el-main>
             <el-main v-else-if="activeTab === 'recall'" class="page-main">
                 <HitTesting :datasetId='datasetId' :retrieval_model="datasetInfo.retrieval_model_dict" />
             </el-main>
@@ -126,6 +129,9 @@ import apiService, { DocumentList } from '@/service/knowledge/use-document-list'
 import { Dataset } from '@/models/dataset';
 import HitTesting from '@/components/hitTesting.vue';
 import DocumentSettings from '@/components/documentSettings.vue';
+import SegementSetting from "@/components/documentSegementSetting.vue";
+import { patchDocumentStatus, postDocumentRename } from '@/service/document'
+import { Document } from '@/models/document';
 
 const route = useRoute()
 const router = useRouter()
@@ -173,12 +179,55 @@ const datasetInfo = ref<Dataset>({
     }
 })
 
+const shouDocumentDetail = ref(false)
+const currentDocument = ref<Document>({
+  id: '',
+  name: '',
+  created_at: 0,
+  created_by: '',
+  extension: '',
+  mime_type: '',
+  size: 0
+})
+
 const handleTabClick = (tab: TabsPaneContext) => {
     activeTab.value = tab.paneName
     console.log('切换到:', tab.paneName)
 }
 const handleCreateClick = () => {
     router.push({ name: 'create' })
+}
+                                                                                                                                                                
+const handleDocumentClick = (row: any, column: TableColumnCtx<T>, event: Event) => { 
+    console.log(row)
+    currentDocument.value = row
+    shouDocumentDetail.value = true
+}
+
+const handleUpdateDocumentStatus = (status: boolean)=>{
+    patchDocumentStatus(datasetInfo.value.id, status, currentDocument.value.id).then(async res=>{
+        ElMessage.success('修改成功')
+        await loadData()
+        const newDocument = documentList.value.find(item=>item.id === currentDocument.value.id)
+        if(newDocument){
+            currentDocument.value = newDocument
+        }
+    }).catch(err=>{
+        ElMessage.error('修改失败')
+    })
+}
+
+const handleDocumentRename = (name: string) => { 
+    postDocumentRename(datasetInfo.value.id, currentDocument.value.id, name).then(async res=>{
+        ElMessage.success('修改成功')
+        await loadData()
+        const newDocument = documentList.value.find(item=>item.id === currentDocument.value.id)
+        if(newDocument){
+            currentDocument.value = newDocument
+        }
+    }).catch(err=>{
+        ElMessage.error('修改失败')
+    })
 }
 
 const searchName = ref('')
