@@ -33,7 +33,7 @@
                         <el-table-column label="登录状态" min-width="100">
                             <template #default="scope">
                                 <span>
-                                    {{ scope.row.success ? '登陆成功' : '登陆失败' }}
+                                    {{ scope.row.success ? '登录成功' : '登录失败' }}
                                 </span>
                             </template>
                         </el-table-column>
