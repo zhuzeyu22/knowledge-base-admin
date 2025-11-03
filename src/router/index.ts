@@ -66,6 +66,9 @@ const routes = [
         path: "plugins",
         name: "plugins",
         component: () => import("../views/plugins/index.vue"),
+      },{
+        path:'/addfiles',
+        component: ()=>import("../views/private/addfiles.vue")
       },
     ],
   },

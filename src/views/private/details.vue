@@ -26,7 +26,7 @@
                 <div class="tool">
                     <el-input style="width: 240px" v-model="searchName" size="large" placeholder="搜索文档名称"
                         :prefix-icon="Search" clearable @clear="onClearSearch" @input="loadData" />
-                    <el-button type="primary" size="default" @click="handleCreateClick">添加文件</el-button>
+                    <el-button type="primary" size="default" @click="handleCreateClick">增加知识库和文档</el-button>
                 </div>
                 <div class="table">
                     <el-table :data="documentList">
@@ -118,7 +118,7 @@
     </div>
 </template>
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onActivated } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, type TabsPaneContext } from 'element-plus'
 import { Search, List, MoreFilled } from '@element-plus/icons-vue'
@@ -178,7 +178,13 @@ const handleTabClick = (tab: TabsPaneContext) => {
     console.log('切换到:', tab.paneName)
 }
 const handleCreateClick = () => {
-    router.push({ name: 'create' })
+    // 跳转到添加文件页面，并传递 datasetId
+    router.push({
+        path: '/addfiles',
+        query: {
+            id: datasetId.value
+        }
+    })
 }
 
 const searchName = ref('')
@@ -289,6 +295,13 @@ onMounted(() => {
     }
     loadDatasetInfo()
     loadData()
+})
+
+// 当页面被激活或从其他页面返回时，重新加载数据
+onActivated(() => {
+    if (datasetId.value) {
+        loadData()
+    }
 })
 </script>
 <style scoped lang="less">

@@ -427,17 +427,15 @@
                         style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
                         <div class="title">文件预览</div>
                     </el-row>
-                    <el-select v-model="previewFile" placeholder="请选择文件预览" style="width: 100%; margin-bottom: 10px;"
-                        :value="previewFile">
+                    <el-select v-model="previewFile" placeholder="请选择文件预览" style="width: 100%; margin-bottom: 10px;" >
                         <el-option v-for="value in res" :key="value.id" :label="value.name" :value="value.id" />
                     </el-select>
                     <!-- 文件内容预览 -->
                     <el-card v-if="!isSegmentPreview" shadow="never"
                         style="flex: 1; overflow: hidden; display: flex; flex-direction: column;"
                         body-style="flex: 1; overflow: auto; display: flex; flex-direction: column;">
-                        <div v-if="!previewFile"
-                            style="display: flex; justify-content: center; align-items: center; height: 100%; color: #909399;">
-                            请选择要预览的文件
+                        <div v-if="!previewFile" style="display: flex; justify-content: center; align-items: center; height: 100%; color: #909399;">
+                            请点击左侧预览按钮来进行预览
                         </div>
                         <div v-else
                             style="white-space: pre-wrap; word-break: break-word; line-height: 1.6; font-size: 14px;">
@@ -602,6 +600,12 @@ const handlePrev = () => {
 }
 const handleNext = () => {
     step.value += 1
+    // 从 step 1 进入 step 2 时，清空文件预览内容
+    if (step.value === 2) {
+        previewContent.value = ''
+        previewFile.value = null
+        showPreview.value = false
+    }
 }
 
 const handleCollapseProcessRule = (value: string) => {
@@ -710,9 +714,10 @@ const handlePreviewButton = () => {
 
 // 点击文件名显示预览
 const handleFileClick = (fileId: string) => {
-    showPreview.value = true // 显示预览模块
-    previewFile.value = fileId // 选中该文件
-    // fetchFilePreview 会通过 watch 自动调用
+    if(step.value===1){
+        showPreview.value = true // 显示预览模块
+        previewFile.value = fileId // 选中该文件
+    }
 }
 
 // 删除文件
@@ -758,8 +763,14 @@ watch(previewFile, (newFileId) => {
     if (newFileId) {
         // 在 step 1 时，只获取文件原始内容
         if (step.value === 1) {
-            fetchFilePreview(newFileId)
-        }
+            fetchFilePreview(newFileId).then(response => {
+                //previewContent.value = response.content
+                console.log(response);
+            }).catch(error => {
+                console.error('获取文件预览失败:', error)
+                previewContent.value = '加载失败，请重试'
+            })
+        } 
         // 在 step 2 时，获取分段预览
         else if (step.value === 2) {
             const params: IndexingEstimateParams = {
@@ -912,22 +923,5 @@ watch(previewFile, (newFileId) => {
     }
 }
 
-.segment-item {
-    border: 1px solid #e4e7ed;
-    transition: all 0.3s ease;
 
-    &:hover {
-        border-color: #409EFF;
-    }
-
-    :deep(.el-card__header) {
-        padding: 12px 16px;
-        background-color: #f5f7fa;
-        border-bottom: 1px solid #e4e7ed;
-    }
-
-    :deep(.el-card__body) {
-        padding: 16px;
-    }
-}
 </style>
