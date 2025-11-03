@@ -29,7 +29,7 @@
                     <el-button type="primary" size="default" @click="handleCreateClick">添加文件</el-button>
                 </div>
                 <div class="table">
-                    <el-table :data="documentList" @row-click="handleDocumentClick">
+                    <el-table :data="documentList" @cell-click="handleDocumentClick">
                         <el-table-column type="selection" width="40" />
                         <el-table-column type="index" label="" width="20" />
                         <el-table-column prop="name" label="名称" min-width="200" />
@@ -198,10 +198,12 @@ const handleCreateClick = () => {
     router.push({ name: 'create' })
 }
                                                                                                                                                                 
-const handleDocumentClick = (row: any, column: TableColumnCtx<T>, event: Event) => { 
-    console.log(row)
-    currentDocument.value = row
-    shouDocumentDetail.value = true
+const handleDocumentClick = (row: any, column: TableColumnCtx<T>, cell: HTMLTableCellElement, event: Event) => { 
+    // console.log(row, column)
+    if(column.label === '名称'){
+        currentDocument.value = row
+        shouDocumentDetail.value = true
+    }
 }
 
 const handleUpdateDocumentStatus = (status: boolean)=>{
