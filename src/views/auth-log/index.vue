@@ -71,7 +71,7 @@ const formInline = reactive({
     authorizer:'',
     authorizedUser:''
 })
-
+const currentQueryParams = ref<AuthQueryParams>({})
 //模拟数据（匹配API接口字段）
 const getMockData = [
     { permissionId: 1, tenantName: 'user10', datasetId: '001', authorizerName: 'admin21', hasPermission: true, createdAt: '2024-12-01 09:30' },
@@ -152,20 +152,29 @@ const onQuery = async () => {
     //时间范围
     if (formInline.date && formInline.date.length === 2) {
         const [startDate, endDate] = formInline.date
-        queryParams.startTime = startDate
-        queryParams.endTime = endDate
+        // 格式化日期为 YYYY-MM-DD HH:mm:ss 格式
+        const formatDateTime = (date: Date, isEnd = false) => {
+            const year = date.getFullYear()
+            const month = String(date.getMonth() + 1).padStart(2, '0')
+            const day = String(date.getDate()).padStart(2, '0')
+            const time = isEnd ? '23:59:59' : '00:00:00'
+            return `${year}-${month}-${day} ${time}`
+        }
+        queryParams.startTime = formatDateTime(startDate, false)
+        queryParams.endTime = formatDateTime(endDate, true)
     }
 
     //授权人
     if (formInline.authorizer.trim()) {
-        queryParams.authorizerName = formInline.authorizer
+        queryParams.authorizerName = formInline.authorizer.trim()
     }
 
     //被授权人
     if (formInline.authorizedUser.trim()) {
-        queryParams.tenantName = formInline.authorizedUser
+        queryParams.tenantName = formInline.authorizedUser.trim()
     }
 
+    currentQueryParams.value = queryParams
     currentPage.value = 1
     await loadAuthLogs(queryParams)
 }
@@ -177,17 +186,18 @@ const onReset = () => {
     formInline.authorizedUser = ''
     currentPage.value = 1
     pageSize.value = 10
+    currentQueryParams.value = {}
     loadAuthLogs()
     ElMessage.info('已重置查询条件')
 }
 const handleSizeChange = (val:number) => {
     pageSize.value = val
-    currentPage.value = 1
-    loadAuthLogs()
+    currentPage.value = 1 
+    loadAuthLogs(currentQueryParams.value)
 }
 const handleCurrentChange =(val:number) => {
     currentPage.value = val
-    loadAuthLogs()
+    loadAuthLogs(currentQueryParams.value)
 }
 </script>
 <style scoped lang="less">

@@ -103,6 +103,7 @@ const formInline = reactive({
     date: [],
 })
 
+const currentQueryParams = ref<ConversationQueryParams>({})
 
 //模拟数据
 const getMockData = [
@@ -224,14 +225,21 @@ const onQuery = async () => {
     //时间范围
     if (formInline.date && formInline.date.length === 2) {
         const [startDate, endDate] = formInline.date
-        queryParams.startTime = startDate
-        queryParams.endTime = endDate
+        // 格式化日期为 YYYY-MM-DD HH:mm:ss 格式
+        const formatDateTime = (date: Date, isEnd = false) => {
+            const year = date.getFullYear()
+            const month = String(date.getMonth() + 1).padStart(2, '0')
+            const day = String(date.getDate()).padStart(2, '0')
+            const time = isEnd ? '23:59:59' : '00:00:00'
+            return `${year}-${month}-${day} ${time}`
+        }
+        queryParams.startTime = formatDateTime(startDate, false)
+        queryParams.endTime = formatDateTime(endDate, true)
     }
 
-    //重置到第一页
+    currentQueryParams.value = queryParams
     currentPage.value = 1
 
-    //调用api查询
     await loadConversationLogs(queryParams)
 }
 
@@ -243,7 +251,7 @@ const onReset = () => {
     //重置分页
     currentPage.value = 1
     pageSize.value = 10
-    
+    currentQueryParams.value = {}
     loadConversationLogs()
     ElMessage.info('已重置查询条件')
 }
@@ -266,14 +274,16 @@ const onDetail = async (row: any) => {
 //分页大小改变
 const handleSizeChange = (val: number) => {
     pageSize.value = val
-    currentPage.value = 1 // 改变每页条数时，重置到第一页
-    loadConversationLogs()
+    currentPage.value = 1 
+    // 使用保存的查询参数
+    loadConversationLogs(currentQueryParams.value)
 }
 
 //当前页改变
 const handleCurrentChange = (val: number) => {
     currentPage.value = val
-    loadConversationLogs()
+    // 使用保存的查询参数
+    loadConversationLogs(currentQueryParams.value)
 }
 </script>
 <style scoped lang="less">
