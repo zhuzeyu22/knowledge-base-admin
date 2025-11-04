@@ -28,7 +28,7 @@
                 @preview="handlePreviewButton"
               />
             </el-col>
-            <el-col style="margin-bottom: 10px">
+            <!-- <el-col style="margin-bottom: 10px">
               <Embedding
                 v-model:embedding_model="datasetInfo.embedding_model"
                 :disabled="true"
@@ -39,7 +39,7 @@
                 v-model:retrieval_model="datasetInfo.retrieval_model_dict"
                 :disabled="true"
               ></Retrieval>
-            </el-col>
+            </el-col> -->
           </div>
           <div
             style="
