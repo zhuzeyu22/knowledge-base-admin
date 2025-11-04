@@ -36,9 +36,9 @@
                   `支持上传多个文件,
                                 支持扩展名:${
                                   radio === "datasets"
-                                    ? "doc,.docx,.txt,.pdf,.html,.markdown,.xls,.xlsx,"
+                                    ? "doc,.docx,.txt,.pdf,.html,.markdown,"
                                     : ""
-                                }.csv最大上传文件数量为10个，每个文件不超过40MB`
+                                }.xls,.xlsx,.csv最大上传文件数量为10个，每个文件不超过40MB`
                 }}
               </div>
               <el-upload
@@ -49,7 +49,7 @@
                 :accept="
                   radio === 'datasets'
                     ? '.doc,.docx,.txt,.pdf,.html,.markdown,.md,.xls,.xlsx,.csv'
-                    : '.csv'
+                    : '.xls,.xlsx,.csv'
                 "
                 action=""
                 :limit="10"
@@ -963,7 +963,7 @@ const handleUploadChange: UploadProps["onChange"] = (
   let regex =
     radio.value === "datasets"
       ? ["doc", "docx", "txt", "pdf", "html", "markdown", "xls", "xlsx", "csv"]
-      : ["csv"];
+      : ["csv", "xls", "xlsx"];
 
   if (!regex.find((x) => x === type)) {
     ElMessage.error("文件格式错误，请上传正确的文件格式");
