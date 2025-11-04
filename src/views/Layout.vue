@@ -7,7 +7,7 @@
                     <el-menu-item index="2" @click="$router.push('/public')">共享知识库</el-menu-item>
                     <el-menu-item index="4" @click="$router.push('/stat')">数据统计</el-menu-item>
                     <el-menu-item index="5" @click="$router.push('/conversation-log')">对话记录</el-menu-item>
-                    <el-menu-item index="6" @click="$router.push('/login-log')">登陆记录</el-menu-item>
+                    <el-menu-item index="6" @click="$router.push('/login-log')">登录记录</el-menu-item>
                     <el-menu-item index="7" @click="$router.push('/auth-log')">授权记录</el-menu-item>
                     <el-menu-item index="8" @click="$router.push('/logout')">退出登录</el-menu-item>
                 </el-menu>

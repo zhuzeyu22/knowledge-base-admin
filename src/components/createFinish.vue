@@ -16,16 +16,24 @@
                     <div>
                         {{ status ? '嵌入已完成' : '嵌入处理中' }}
                     </div>
-                    <div v-for="file in dataset.documents"
-                        style="display: flex; justify-content: space-between; align-items: center">
-                        <div>{{ file.name }}
-                        </div>
-                        <div>
-                            {{indexingStatus.find(item => item.id === file.id)?.indexing_status == 'completed' ? '处理完成'
-                                : '处理中...'}}
+                    <div style="flex-grow: 1;">
+                        <div v-for="file in dataset.documents"
+                            style="display: flex; justify-content: space-between; align-items: center">
+                            <div>{{ file.name }}
+                            </div>
+                            <div style="display: flex; ">
+                                {{indexingStatus.find(item => item.id === file.id)?.indexing_status == 'completed' ?
+                                    '处理完成'
+                                    : '处理中...'}}
+                                <el-icon
+                                    v-if="indexingStatus.find(item => item.id === file.id)?.indexing_status == 'completed'">
+                                    <SuccessFilled style="color: green;" />
+                                </el-icon>
+                            </div>
                         </div>
                     </div>
-                    <el-button :disabled="!status" type="primary" @click="handleClick()">前往文档</el-button>
+                    <el-button style="align-self: flex-end;" type="primary"
+                        @click="handleClick()">前往文档</el-button>
                 </div>
             </el-col>
             <el-col :span="2" style="height: 100%;">

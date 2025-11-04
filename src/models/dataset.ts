@@ -1,7 +1,7 @@
 export type Dataset = {
   id: string;
   name: string;
-  isOfficial: boolean;
+  official: "official" | "unofficial";
   imageUrl: string;
   description: string;
   // 文档数量
@@ -80,3 +80,61 @@ export type DataSource = {
 //     score_threshold: 0.5;
 //   };
 // };
+
+
+export enum RETRIEVE_TYPE {
+  oneWay = 'single',
+  multiWay = 'multiple',
+}
+
+export enum RerankingModeEnum {
+  RerankingModel = 'reranking_model',
+  WeightedScore = 'weighted_score',
+}
+
+export enum WeightedScoreEnum {
+  SemanticFirst = 'semantic_first',
+  KeywordFirst = 'keyword_first',
+  Customized = 'customized',
+}
+
+
+export enum MetadataFilteringModeEnum {
+  disabled = 'disabled',
+  automatic = 'automatic',
+  manual = 'manual',
+}
+
+export type DatasetConfigs = {
+  retrieval_model: RETRIEVE_TYPE
+  reranking_model: {
+    reranking_provider_name: string
+    reranking_model_name: string
+  }
+  top_k: number
+  score_threshold_enabled: boolean
+  score_threshold: number | null | undefined
+  datasets: {
+    datasets: {
+      enabled: boolean
+      id: string
+    }[]
+  }
+  reranking_mode?: RerankingModeEnum
+  weights?: {
+    weight_type: WeightedScoreEnum
+    vector_setting: {
+      vector_weight: number
+      embedding_provider_name: string
+      embedding_model_name: string
+    }
+    keyword_setting: {
+      keyword_weight: number
+    }
+  }
+  reranking_enable?: boolean
+  // 下面的可能用不到，先去掉了，原结构参考 dify web 目录里面的
+  // metadata_filtering_mode?: MetadataFilteringModeEnum
+  // metadata_filtering_conditions?: MetadataFilteringConditions
+  // metadata_model_config?: NodeModelConfig
+}
