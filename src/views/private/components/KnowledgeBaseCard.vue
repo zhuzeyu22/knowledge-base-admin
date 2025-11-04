@@ -36,7 +36,6 @@
 <script lang="ts" setup>
 import { MoreFilled } from '@element-plus/icons-vue'
 import { Dataset } from '@/models/dataset';
-import { defineProps } from 'vue';
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 

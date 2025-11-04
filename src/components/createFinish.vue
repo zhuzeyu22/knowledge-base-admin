@@ -32,7 +32,7 @@
                             </div>
                         </div>
                     </div>
-                    <el-button :disabled="!status" style="align-self: flex-end;" type="primary"
+                    <el-button style="align-self: flex-end;" type="primary"
                         @click="handleClick()">前往文档</el-button>
                 </div>
             </el-col>

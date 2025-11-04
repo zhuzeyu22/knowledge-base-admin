@@ -59,7 +59,6 @@
 <script setup lang="ts">
 import {
   computed,
-  defineModel,
   ref,
   nextTick,
   watch,

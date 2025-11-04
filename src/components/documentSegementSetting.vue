@@ -115,7 +115,7 @@ import { ref, onMounted, computed } from "vue";
 import { MoreFilled } from "@element-plus/icons-vue";
 import { getSegmentList, deleteSegment } from "@/service/segement";
 import { ElMessage, ElMessageBox } from "element-plus";
-import UpdateSegement from "@/components/UpdateSegement.vue";
+import UpdateSegement from "@/components/updateSegement.vue";
 
 const { document, datasetId } = defineProps(["document", "datasetId"]);
 const emit = defineEmits(["close", "update_status", "rename"]);
