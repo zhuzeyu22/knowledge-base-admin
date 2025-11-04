@@ -7,37 +7,37 @@ type CreateDocumentReq = {
 };
 
 //分段设置的传的body数据类型
-type PreProcessingRule={
-  id:string,
-  enabled:boolean,
-}
-type Segmentation={
-  separator:string,
-  max_tokens:number,
-  chunk_overlap:number,
-} 
-type Rules={
-  pre_processing_rules:PreProcessingRule[];
-  segmentation:Segmentation;
-}
-type ProcessRule={
-  mode:string;
-  rules:Rules;
-}
-type FileInfoList={
-  file_ids:string[];
-}
-type InfoList={
-  data_source_type:string;
-  file_info_list:FileInfoList;
-}
+type PreProcessingRule = {
+  id: string;
+  enabled: boolean;
+};
+type Segmentation = {
+  separator: string;
+  max_tokens: number;
+  chunk_overlap: number;
+};
+type Rules = {
+  pre_processing_rules: PreProcessingRule[];
+  segmentation: Segmentation;
+};
+type ProcessRule = {
+  mode: string;
+  rules: Rules;
+};
+type FileInfoList = {
+  file_ids: string[];
+};
+type InfoList = {
+  data_source_type: string;
+  file_info_list: FileInfoList;
+};
 export type IndexingEstimateParams = {
-  doc_form:string,
-  doc_language:string,
-  indexing_technique:string,
-  info_list:InfoList,
-  process_rule:ProcessRule
-}
+  doc_form: string;
+  doc_language: string;
+  indexing_technique: string;
+  info_list: InfoList;
+  process_rule: ProcessRule;
+};
 
 // finna 原本的 dataset list ， 不用这个
 // 使用新的 getKnowledgeBaseList
@@ -211,3 +211,12 @@ export const getIndexingStatus = (datasetId: string, batchId: string) => {
 //     `/datasets/${datasetId}/settings?_rsc=${rsc}`
 //   }
 // }
+
+//获取embedding模型列表
+export const getEmbeddingList = () => {
+  return request.get(`/workspaces/current/models/model-types/text-embedding`);
+};
+//获取rerank模型列表
+export const getRerankList = () => {
+  return request.get(`/workspaces/current/models/model-types/rerank`)
+}

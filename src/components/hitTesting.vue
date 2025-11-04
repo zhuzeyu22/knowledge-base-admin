@@ -118,6 +118,7 @@ const updateRecords = async () => {
 const handleHitTesting = async () => {
     postDatasetHitTesting(datasetId, { query: query.value, retrieval_model }).then(res => {
         records.value = res.records
+        updateRecords()
     })
 }
 
