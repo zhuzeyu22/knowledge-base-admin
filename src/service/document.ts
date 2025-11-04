@@ -43,7 +43,7 @@ export const postDocumentRename = (
 // 删除文档
 export const deleteDocument = (datasetId: string, documentId: string) => {
   return request.delete(
-    `/datasets/${datasetId}/documents/?document_id=${documentId}`
+    `/datasets/${datasetId}/documents/${documentId}`
   );
 };
 // https://www.finna.com.cn/console/api/datasets/4fe11447-421e-4bda-a7c9-d86b1d47e41f/documents?document_id=420c5dde-23cc-4e6e-bb2f-f16765e1743c

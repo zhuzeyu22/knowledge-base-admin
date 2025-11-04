@@ -215,6 +215,7 @@ import {
   getDocumentMetaData,
   patchDocumentStatus,
   postDocumentRename,
+  deleteDocument,
 } from "@/service/document";
 import { Document } from "@/models/document";
 
@@ -235,7 +236,7 @@ const datasetLoading = ref(false);
 const datasetInfo = ref<Dataset>({
   id: "",
   name: "",
-  isOfficial: false,
+  official: false,
   imageUrl: "",
   description: "",
   documentNumber: 0,
@@ -409,16 +410,28 @@ const handleRename = (row: DocumentList) => {
   newName.value = row.name;
   dialogFormVisible.value = true;
 };
-const saveRename = () => {
+const saveRename = async () => {
   if (!newName.value.trim()) {
     ElMessage.warning("名称不能为空");
     return;
   }
-  if (currentRow.value) {
-    currentRow.value.name = newName.value.trim();
+  if (!currentRow.value) {
+    ElMessage.warning("未选中任何文档");
+    return;
   }
-  ElMessage.success("修改成功");
-  dialogFormVisible.value = false;
+  try {
+    await postDocumentRename(
+      datasetId.value,
+      currentRow.value.id,
+      newName.value.trim()
+    );
+    ElMessage.success("修改成功");
+    await loadData(); 
+  } catch (error: any) {
+    ElMessage.error('修改失败');
+  } finally {
+    dialogFormVisible.value = false;
+  }
 };
 const handleClose = () => {
   newName.value = "";
@@ -430,18 +443,21 @@ const handleDelete = (row: DocumentList) => {
   currentRow.value = row;
   deleteDialogVisible.value = true;
 };
-const confirmDelete = () => {
-  if (currentRow.value) {
-    const index = documentList.value.findIndex(
-      (item) => item.id === currentRow.value!.id
-    );
-    if (index !== -1) {
-      documentList.value.splice(index, 1);
-      ElMessage.success("删除成功");
-    }
+const confirmDelete = async () => {
+  if (!currentRow.value) {
+    ElMessage.warning("未选中任何文档");
+    return;
   }
-  deleteDialogVisible.value = false;
-  currentRow.value = null;
+  try {
+    await deleteDocument(datasetId.value, currentRow.value.id);
+    ElMessage.success("删除成功");
+    await loadData(); 
+  } catch (error: any) {
+    ElMessage.error('删除失败');
+  } finally {
+    deleteDialogVisible.value = false;
+    currentRow.value = null;
+  }
 };
 const handleDeleteClose = () => {
   currentRow.value = null;
@@ -480,7 +496,7 @@ onMounted(() => {
   loadData();
 });
 
-// 当页面被激活或从其他页面返回时，重新加载数据
+//页面被激活或从其他页面返回时，重新加载数据
 onActivated(() => {
     if (datasetId.value) {
         loadData()
