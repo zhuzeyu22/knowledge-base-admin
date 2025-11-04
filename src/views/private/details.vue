@@ -445,11 +445,20 @@ const handleDeleteClose = () => {
 // 打开分段设置页面
 const handleSegementClick = (row: DocumentList) => {
   getDocumentMetaData(datasetId.value, row.id).then((res) => {
-    res.document_process_rule.rules.segmentation.separator =
-      res.document_process_rule.rules.segmentation.separator.replaceAll(
-        "\n",
-        "\\n"
-      );
+    if (res.document_process_rule.rules.segmentation.separator) {
+      res.document_process_rule.rules.segmentation.separator =
+        res.document_process_rule.rules.segmentation.separator.replaceAll(
+          "\n",
+          "\\n"
+        );
+    }
+    if (res.document_process_rule.rules.segmentation.delimiter) {
+      res.document_process_rule.rules.segmentation.delimiter =
+        res.document_process_rule.rules.segmentation.delimiter.replaceAll(
+          "\n",
+          "\\n"
+        );
+    }
     documentSettingDetail.value = res;
     showSegementSetting.value = true;
   });
