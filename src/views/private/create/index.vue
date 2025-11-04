@@ -180,7 +180,7 @@
                             <div class="title">
                                 Embedding 模型
                             </div>
-                            <el-select v-model="embedding_model" @change="handleEmbeddingModelChange">
+                            <el-select v-model="embedding_model" @change="handleEmbeddingModelChange" disabled>
                                 <el-option
                                 v-for="item in embedding_model_options"
                                 :key="item.value"
@@ -209,7 +209,7 @@
                                             </el-row>
                                             <el-row v-if="retrieval_model.reranking_enable"
                                                 style="width: 100%; margin-bottom: 10px;">
-                                                <el-select v-model="rerank_model" @change="handleRerankModelChange" >
+                                                <el-select v-model="rerank_model" @change="handleRerankModelChange" disabled>
                                                     <el-option
                                                     v-for="item in rerank_model_options"
                                                     :key="item.value"
@@ -258,7 +258,7 @@
                                             </el-row>
                                             <el-row v-if="retrieval_model.reranking_enable"
                                                 style="width: 100%; margin-bottom: 10px;">
-                                                <el-select v-model="rerank_model" @change="handleRerankModelChange" >
+                                                <el-select v-model="rerank_model" @change="handleRerankModelChange" disabled>
                                                     <el-option
                                                     v-for="item in rerank_model_options"
                                                     :key="item.value"
@@ -363,7 +363,7 @@
                                                     </el-row>
                                                     <el-row v-if="retrieval_model.reranking_enable"
                                                         style="width: 100%; margin-bottom: 10px;">
-                                                        <el-select v-model="rerank_model" @change="handleRerankModelChange">
+                                                        <el-select v-model="rerank_model" @change="handleRerankModelChange" disabled>
                                                             <el-option
                                                             v-for="item in rerank_model_options"
                                                             :key="item.value"
