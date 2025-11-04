@@ -180,7 +180,14 @@
                             <div class="title">
                                 Embedding 模型
                             </div>
-                            <el-input v-model="embedding_model" disabled></el-input>
+                            <el-select v-model="embedding_model" @change="handleEmbeddingModelChange">
+                                <el-option
+                                v-for="item in embedding_model_options"
+                                :key="item.value"
+                                :label="item.label"
+                                :value="item.value"
+                                ></el-option>
+                            </el-select>
                         </el-col>
                         <el-col style="margin-bottom: 10px;">
                             <div class="title">
@@ -202,8 +209,14 @@
                                             </el-row>
                                             <el-row v-if="retrieval_model.reranking_enable"
                                                 style="width: 100%; margin-bottom: 10px;">
-                                                <el-input v-model="retrieval_model.reranking_model.reranking_model_name"
-                                                    disabled></el-input>
+                                                <el-select v-model="rerank_model" @change="handleRerankModelChange" >
+                                                    <el-option
+                                                    v-for="item in rerank_model_options"
+                                                    :key="item.value"
+                                                    :label="item.label"
+                                                    :value="item.value"
+                                                    ></el-option>
+                                                </el-select>
                                             </el-row>
                                             <el-row>
                                                 <el-row style="width: 100%;" :gutter="20">
@@ -245,8 +258,14 @@
                                             </el-row>
                                             <el-row v-if="retrieval_model.reranking_enable"
                                                 style="width: 100%; margin-bottom: 10px;">
-                                                <el-input v-model="retrieval_model.reranking_model.reranking_model_name"
-                                                    disabled></el-input>
+                                                <el-select v-model="rerank_model" @change="handleRerankModelChange" >
+                                                    <el-option
+                                                    v-for="item in rerank_model_options"
+                                                    :key="item.value"
+                                                    :label="item.label"
+                                                    :value="item.value"
+                                                    ></el-option>
+                                                </el-select>
                                             </el-row>
                                             <el-row>
                                                 <el-row style="width: 100%;" :gutter="20">
@@ -344,8 +363,14 @@
                                                     </el-row>
                                                     <el-row v-if="retrieval_model.reranking_enable"
                                                         style="width: 100%; margin-bottom: 10px;">
-                                                        <el-input v-model="retrieval_model.reranking_model_name"
-                                                            disabled></el-input>
+                                                        <el-select v-model="rerank_model" @change="handleRerankModelChange">
+                                                            <el-option
+                                                            v-for="item in rerank_model_options"
+                                                            :key="item.value"
+                                                            :label="item.label"
+                                                            :value="item.value"
+                                                            ></el-option>
+                                                        </el-select>
                                                     </el-row>
                                                     <el-row>
                                                         <el-row style="width: 100%;" :gutter="20">
@@ -485,10 +510,10 @@
 <script setup lang="ts">
 
 import router from '@/router';
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { UploadFilled, Back, Document, Delete } from '@element-plus/icons-vue'
 import { ElMessage, type UploadProps, type UploadUserFile } from 'element-plus'
-import { initDataset, RetrievalModel, uploadDocument, UploadResponse, getFilesPreview, fetchFileIndexingEstimate, type IndexingEstimateParams } from '@/service/datasets';
+import { initDataset, RetrievalModel, uploadDocument, UploadResponse, getFilesPreview, fetchFileIndexingEstimate, type IndexingEstimateParams, getEmbeddingList, getRerankList } from '@/service/datasets';
 import CreateFinish from '@/components/createFinish.vue'
 
 const radio = ref('datasets')
@@ -547,9 +572,77 @@ const hierarchical = ref({
 })
 
 const indexing_technique = ref('high_quality')
-const embedding_model = ref('text-embedding-v1')
-const embedding_model_provider = ref('langgenius/tongyi/tongyi')
 
+const embedding_model = ref('')
+const embedding_model_provider = ref('')
+const embedding_model_options = ref<any[]>([])
+
+const getEmbeddingModel = async () => {
+    try {
+        const res = await getEmbeddingList()
+
+        embedding_model_options.value = [];
+        
+        res.data.forEach(providerItem => {
+            providerItem.models.forEach(model =>{
+                embedding_model_options.value.push({
+                    value:model.model,
+                    label:model.label.zh_Hans,//中文标签
+                    provider:providerItem.provider
+                })
+            })
+        });
+        if(embedding_model_options.value.length > 0 ){
+            embedding_model.value = embedding_model_options.value[0].value
+            embedding_model_provider.value = embedding_model_options.value[0].provider
+        }
+    } catch (error) {
+        ElMessage.error('获取Embedding模型选项失败')
+    }
+}
+const handleEmbeddingModelChange = (value: string) => {
+    const selectedModel = embedding_model_options.value.find(item => item.value === value)
+    if (selectedModel) {
+        embedding_model_provider.value = selectedModel.provider
+    }
+}
+
+const rerank_model = ref('')
+const rerank_model_provider = ref('')
+const rerank_model_options = ref<any>([])
+const getRerankModel = async () => {
+    try{
+        const res = await getRerankList()
+        rerank_model_options.value = [];
+        res.data.forEach(providerItem => {
+            providerItem.models.forEach(model => {
+                rerank_model_options.value.push({
+                    value:model.model,
+                    label:model.label.zh_Hans,
+                    provider:providerItem.provider
+                })
+            })
+        })
+        if(rerank_model_options.value.length > 0){
+            rerank_model.value = rerank_model_options.value[0].value
+            rerank_model_provider.value = rerank_model_options.value[0].provider
+            // 同步初始值到 retrieval_model
+            retrieval_model.value.reranking_model.reranking_model_name = rerank_model_options.value[0].value
+            retrieval_model.value.reranking_model.reranking_provider_name = rerank_model_options.value[0].provider
+        }
+    } catch(error){
+        ElMessage.error('获取rerank模型选项失败')
+    }
+}
+const handleRerankModelChange = ( value:string ) => {
+    const selectedModel = rerank_model_options.value.find(item => item.value === value)
+    if(selectedModel){
+        rerank_model_provider.value = selectedModel.provider
+        // 同步更新到 retrieval_model
+        retrieval_model.value.reranking_model.reranking_model_name = value
+        retrieval_model.value.reranking_model.reranking_provider_name = selectedModel.provider
+    }
+}
 const retrieval_model = ref<RetrievalModel>({
     search_method: 'semantic_search',
     top_k: 5,
@@ -812,6 +905,10 @@ watch(previewFile, (newFileId) => {
     }
 })
 
+onMounted(() => {
+    getEmbeddingModel()
+    getRerankModel()
+})
 
 </script>
 
