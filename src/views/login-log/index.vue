@@ -67,6 +67,9 @@ const formInline = reactive({
     date: [],
 })
 
+// 保存当前查询参数
+const currentQueryParams = ref<LoginQueryParams>({})
+
 //模拟数据（匹配API接口字段）
 const getMockData = [
     { loginId: 'login001', userName: 'user001', loginAt: '2024-12-01 09:30', loginMethod: 'password', success: true },
@@ -127,14 +130,6 @@ const loadLoginLogs = async (params: LoginQueryParams = {}) => {
     }
 }
 
-// 格式化日期为 YYYY-MM-DD 格式
-const formatDate = (date: Date): string => {
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    return `${year}-${month}-${day}`
-}
-
 onMounted(() =>{
     loadLoginLogs()
 })
@@ -153,13 +148,26 @@ const onQuery = async () => {
     if(formInline.user.trim()){
         queryParams.userName = formInline.user.trim()
     }
+    
     //date
     if(formInline.date && formInline.date.length === 2){
         const [startDate, endDate] = formInline.date
-        // 转换日期为字符串格式 YYYY-MM-DD
-        queryParams.loginStartTime = formatDate(startDate)
-        queryParams.loginEndTime = formatDate(endDate)
+        
+        // 格式化日期为 YYYY-MM-DD HH:mm:ss 格式
+        const formatDateTime = (date: Date, isEnd = false) => {
+            const year = date.getFullYear()
+            const month = String(date.getMonth() + 1).padStart(2, '0')
+            const day = String(date.getDate()).padStart(2, '0')
+            const time = isEnd ? '23:59:59' : '00:00:00'
+            return `${year}-${month}-${day} ${time}`
+        }
+        
+        queryParams.loginStartTime = formatDateTime(startDate, false)
+        queryParams.loginEndTime = formatDateTime(endDate, true)
     }
+
+    // 保存查询参数
+    currentQueryParams.value = queryParams
 
     //重置到第一页
     currentPage.value = 1
@@ -173,6 +181,8 @@ const onReset = () => {
     formInline.date = []
     currentPage.value = 1
     pageSize.value = 10
+    // 清空查询参数
+    currentQueryParams.value = {}
     loadLoginLogs()
     ElMessage.info('已重置查询条件')
 }
@@ -181,13 +191,15 @@ const onReset = () => {
 const handleSizeChange = (val: number) => {
     pageSize.value = val
     currentPage.value = 1 // 改变每页条数时，重置到第一页
-    loadLoginLogs()
+    // 使用保存的查询参数
+    loadLoginLogs(currentQueryParams.value)
 }
 
 //当前页改变
 const handleCurrentChange = (val: number) => {
     currentPage.value = val
-    loadLoginLogs()
+    // 使用保存的查询参数
+    loadLoginLogs(currentQueryParams.value)
 }
 </script>
 <style scoped lang="less">

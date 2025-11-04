@@ -211,3 +211,12 @@ export const getIndexingStatus = (datasetId: string, batchId: string) => {
 //     `/datasets/${datasetId}/settings?_rsc=${rsc}`
 //   }
 // }
+
+//获取embedding模型列表
+export const getEmbeddingList = () => {
+  return request.get(`/workspaces/current/models/model-types/text-embedding`);
+};
+//获取rerank模型列表
+export const getRerankList = () => {
+  return request.get(`/workspaces/current/models/model-types/rerank`)
+}

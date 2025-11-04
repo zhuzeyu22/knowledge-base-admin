@@ -5,6 +5,7 @@
       v-model="retrieval_model.search_method"
       accordion
       :before-collapse="handleCollapseSearchMethod"
+      :disabled="disabled"
     >
       <el-collapse-item title="向量检索" name="semantic_search">
         <el-row style="width: 100%; margin-bottom: 10px">
@@ -22,6 +23,7 @@
             <el-switch
               v-model="retrieval_model.reranking_enable"
               style="margin-right: 10px"
+              :disabled="disabled"
             />
             <div>Rerank 模型</div>
           </el-row>
@@ -38,7 +40,10 @@
             <el-row style="width: 100%" :gutter="20">
               <el-col :span="12">Top K</el-col>
               <el-col :span="12">
-                <el-switch v-model="retrieval_model.score_threshold_enabled" />
+                <el-switch
+                  v-model="retrieval_model.score_threshold_enabled"
+                  :disabled="disabled"
+                />
                 Score 阈值
               </el-col>
             </el-row>
@@ -49,6 +54,7 @@
                   :min="1"
                   :max="10"
                   :step="1"
+                  :disabled="disabled"
                 />
                 <el-slider
                   class="slider-style"
@@ -57,12 +63,15 @@
                   :min="1"
                   :max="10"
                   :step="1"
+                  :disabled="disabled"
                 />
               </el-col>
               <el-col :span="12">
                 <el-input-number
                   v-model="retrieval_model.score_threshold"
-                  :disabled="!retrieval_model.score_threshold_enabled"
+                  :disabled="
+                    !retrieval_model.score_threshold_enabled || disabled
+                  "
                   :min="0"
                   :max="1"
                   :step="0.01"
@@ -71,7 +80,9 @@
                   class="slider-style"
                   v-model="retrieval_model.score_threshold"
                   size="small"
-                  :disabled="!retrieval_model.score_threshold_enabled"
+                  :disabled="
+                    !retrieval_model.score_threshold_enabled || disabled
+                  "
                   :min="0"
                   :max="1"
                   :step="0.01"
@@ -97,6 +108,7 @@
             <el-switch
               v-model="retrieval_model.reranking_enable"
               style="margin-right: 10px"
+              :disabled="disabled"
             />
             <div>Rerank 模型</div>
           </el-row>
@@ -113,7 +125,10 @@
             <el-row style="width: 100%" :gutter="20">
               <el-col :span="12">Top K</el-col>
               <el-col :span="12">
-                <el-switch v-model="retrieval_model.score_threshold_enabled" />
+                <el-switch
+                  v-model="retrieval_model.score_threshold_enabled"
+                  :disabled="disabled"
+                />
                 Score 阈值
               </el-col>
             </el-row>
@@ -124,6 +139,7 @@
                   :min="1"
                   :max="10"
                   :step="1"
+                  :disabled="disabled"
                 />
                 <el-slider
                   class="slider-style"
@@ -132,12 +148,15 @@
                   :min="1"
                   :max="10"
                   :step="1"
+                  :disabled="disabled"
                 />
               </el-col>
               <el-col :span="12">
                 <el-input-number
                   v-model="retrieval_model.score_threshold"
-                  :disabled="!retrieval_model.score_threshold_enabled"
+                  :disabled="
+                    !retrieval_model.score_threshold_enabled || disabled
+                  "
                   :min="0"
                   :max="1"
                   :step="0.01"
@@ -146,7 +165,9 @@
                   class="slider-style"
                   v-model="retrieval_model.score_threshold"
                   size="small"
-                  :disabled="!retrieval_model.score_threshold_enabled"
+                  :disabled="
+                    !retrieval_model.score_threshold_enabled || disabled
+                  "
                   :min="0"
                   :max="1"
                   :step="0.01"
@@ -161,7 +182,11 @@
           同时执行全文检索和向量检索，并应用重排序步骤，从两类查询结果中选择匹配用户问题的最佳结果，用户可以选择设置权重或配置重新排序模型。
         </el-row>
         <el-row>
-          <el-tabs v-model="retrieval_model.reranking_mode" type="border-card">
+          <el-tabs
+            v-model="retrieval_model.reranking_mode"
+            type="border-card"
+            :disabled="disabled"
+          >
             <el-tab-pane name="weighted_score" label="权重设置">
               <div>
                 通过调整分配的权重，重新排序策略确定是优先进行语义匹配还是关键字匹配。
@@ -183,6 +208,7 @@
                   :min="0"
                   :max="1"
                   :step="0.1"
+                  :disabled="disabled"
                 />
                 <el-col :span="12"
                   >语义{{
@@ -210,6 +236,7 @@
                   <el-col :span="12">
                     <el-switch
                       v-model="retrieval_model.score_threshold_enabled"
+                      :disabled="disabled"
                     />
                     Score 阈值
                   </el-col>
@@ -221,6 +248,7 @@
                       :min="1"
                       :max="10"
                       :step="1"
+                      :disabled="disabled"
                     />
                     <el-slider
                       class="slider-style"
@@ -234,7 +262,9 @@
                   <el-col :span="12">
                     <el-input-number
                       v-model="retrieval_model.score_threshold"
-                      :disabled="!retrieval_model.score_threshold_enabled"
+                      :disabled="
+                        !retrieval_model.score_threshold_enabled || disabled
+                      "
                       :min="0"
                       :max="1"
                       :step="0.01"
@@ -243,7 +273,9 @@
                       class="slider-style"
                       v-model="retrieval_model.score_threshold"
                       size="small"
-                      :disabled="!retrieval_model.score_threshold_enabled"
+                      :disabled="
+                        !retrieval_model.score_threshold_enabled || disabled
+                      "
                       :min="0"
                       :max="1"
                       :step="0.01"
@@ -268,6 +300,7 @@
                 <el-switch
                   v-model="retrieval_model.reranking_enable"
                   style="margin-right: 10px"
+                  :disabled="disabled"
                 />
                 <div>Rerank 模型</div>
               </el-row>
@@ -286,6 +319,7 @@
                   <el-col :span="12">
                     <el-switch
                       v-model="retrieval_model.score_threshold_enabled"
+                      :disabled="disabled"
                     />
                     Score 阈值
                   </el-col>
@@ -297,6 +331,7 @@
                       :min="1"
                       :max="10"
                       :step="1"
+                      :disabled="disabled"
                     />
                     <el-slider
                       class="slider-style"
@@ -305,12 +340,15 @@
                       :min="1"
                       :max="10"
                       :step="1"
+                      :disabled="disabled"
                     />
                   </el-col>
                   <el-col :span="12">
                     <el-input-number
                       v-model="retrieval_model.score_threshold"
-                      :disabled="!retrieval_model.score_threshold_enabled"
+                      :disabled="
+                        !retrieval_model.score_threshold_enabled || disabled
+                      "
                       :min="0"
                       :max="1"
                       :step="0.01"
@@ -319,7 +357,9 @@
                       class="slider-style"
                       v-model="retrieval_model.score_threshold"
                       size="small"
-                      :disabled="!retrieval_model.score_threshold_enabled"
+                      :disabled="
+                        !retrieval_model.score_threshold_enabled || disabled
+                      "
                       :min="0"
                       :max="1"
                       :step="0.01"
@@ -336,11 +376,24 @@
 </template>
 
 <script setup lang="ts">
-
 const retrieval_model = defineModel("retrieval_model");
+const { disabled } = defineProps({
+  disabled: {
+    type: Boolean,
+    required: false,
+    defaulel: false,
+  },
+});
 
 const handleCollapseSearchMethod = (value: string) => {
   return value !== retrieval_model.search_method;
 };
-
 </script>
+
+<style lang="less" scoped>
+.title {
+  margin-bottom: 10px;
+  font-size: 16px;
+  font-weight: 600;
+}
+</style>

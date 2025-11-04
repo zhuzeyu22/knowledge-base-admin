@@ -199,7 +199,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onActivated } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ElMessage, type TabsPaneContext } from "element-plus";
 import { Search, List, MoreFilled } from "@element-plus/icons-vue";
@@ -451,25 +451,34 @@ const handleDeleteClose = () => {
 // 打开分段设置页面
 const handleSegementClick = (row: DocumentList) => {
   getDocumentMetaData(datasetId.value, row.id).then((res) => {
-    res.document_process_rule.rules.segmentation.separator =
-      res.document_process_rule.rules.segmentation.separator.replaceAll(
-        "\n",
-        "\\n"
-      );
+    if (res.document_process_rule.rules.segmentation.separator) {
+      res.document_process_rule.rules.segmentation.separator =
+        res.document_process_rule.rules.segmentation.separator.replaceAll(
+          "\n",
+          "\\n"
+        );
+    }
+    if (res.document_process_rule.rules.segmentation.delimiter) {
+      res.document_process_rule.rules.segmentation.delimiter =
+        res.document_process_rule.rules.segmentation.delimiter.replaceAll(
+          "\n",
+          "\\n"
+        );
+    }
     documentSettingDetail.value = res;
     showSegementSetting.value = true;
   });
 };
 
 onMounted(() => {
-    //检查datasetId
-    if (!datasetId.value) {
-        ElMessage.warning('缺少知识库ID，请从知识库列表进入')
-        return
-    }
-    loadDatasetInfo()
-    loadData()
-})
+  //检查datasetId
+  if (!datasetId.value) {
+    ElMessage.warning("缺少知识库ID，请从知识库列表进入");
+    return;
+  }
+  loadDatasetInfo();
+  loadData();
+});
 
 // 当页面被激活或从其他页面返回时，重新加载数据
 onActivated(() => {

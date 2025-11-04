@@ -28,6 +28,18 @@
                 @preview="handlePreviewButton"
               />
             </el-col>
+            <!-- <el-col style="margin-bottom: 10px">
+              <Embedding
+                v-model:embedding_model="datasetInfo.embedding_model"
+                :disabled="true"
+              ></Embedding>
+            </el-col>
+            <el-col style="margin-bottom: 10px">
+              <Retrieval
+                v-model:retrieval_model="datasetInfo.retrieval_model_dict"
+                :disabled="true"
+              ></Retrieval>
+            </el-col> -->
           </div>
           <div
             style="
@@ -79,8 +91,8 @@ import {
 import { RetrievalModel } from "@/models/dataset";
 import SegementSetting from "./segement/index.vue";
 // import IndexingTechnique from "./indexingTechnique.vue";
-// import Embedding from "./embedding .vue";
-// import Retrieval from "./retrieval.vue";
+import Embedding from "./embedding .vue";
+import Retrieval from "./retrieval.vue";
 import Preview from "./preview.vue";
 import { postDocumentSettings } from "@/service/document";
 

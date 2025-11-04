@@ -6,3 +6,11 @@
 <script setup lang="ts">
 const embedding_model = defineModel('embedding_model');
 </script>
+
+<style lang="less" scoped>
+.title {
+  margin-bottom: 10px;
+  font-size: 16px;
+  font-weight: 600;
+}
+</style>
