@@ -1194,6 +1194,13 @@ const fetchFilePreview = async (fileId: string) => {
 
 //点击预览按钮
 const handlePreviewButton = () => {
+  // 增加参数校验
+  if(custom.value?.segmentation?.max_tokens && custom.value.segmentation.max_tokens < custom.value.segmentation.chunk_overlap){
+    console.log('custom.segmentation.max_tokens',custom.value.segmentation.max_tokens)
+    ElMessage.warning('分段最大长度应大于分段重叠长度')
+    return
+  }
+
   if (res.value.length > 0) {
     // 根据当前选择的 process_rule 模式获取对应的配置
     const currentRules = custom.value;
@@ -1304,6 +1311,14 @@ watch(previewFile, (newFileId) => {
     }
     // 在 step 2 时，获取分段预览
     else if (step.value === 2) {
+      
+      // 增加参数校验
+      if(custom?.segmentation?.max_tokens && custom.segmentation.max_tokens < custom.segmentation.chunk_overlap){
+        console.log('custom.segmentation.max_tokens',custom.segmentation.max_tokens)
+        ElMessage.warning('分段最大长度应大于分段重叠长度')
+        return
+      }
+
       const params: IndexingEstimateParams = {
         doc_form: "text_model",
         doc_language: "English",

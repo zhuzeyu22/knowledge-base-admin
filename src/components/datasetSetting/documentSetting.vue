@@ -149,6 +149,20 @@ const handleSave = () => {
 
 //点击预览按钮
 const handlePreviewButton = () => {
+  // 增加参数校验
+  if (
+    documentSetting?.value?.document_process_rule?.rules?.segmentation?.max_tokens &&
+    documentSetting.value.document_process_rule.rules.segmentation.max_tokens <
+      documentSetting.value.document_process_rule.rules.segmentation.chunk_overlap
+  ) {
+    console.log(
+      "documentSetting.value.document_process_rule.rules.segmentation.max_tokens",
+      documentSetting.value.document_process_rule.rules.segmentation.max_tokens
+    );
+    ElMessage.warning("分段最大长度应大于分段重叠长度");
+    return;
+  }
+
   // console.log("documentSetting", documentSetting);
   if (documentSetting.value.data_source_info.upload_file) {
     // 根据当前选择的 process_rule 模式获取对应的配置
@@ -202,8 +216,8 @@ watch(previewFile, (newFileId) => {
         },
       },
       process_rule: {
-        mode: documentSetting.value.document_process_rule.rules,
-        rules: documentSetting.value.document_process_rule.mode,
+        mode: documentSetting.value.document_process_rule.mode,
+        rules: documentSetting.value.document_process_rule.rules,
       },
     };
 
