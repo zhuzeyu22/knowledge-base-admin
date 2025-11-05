@@ -351,17 +351,34 @@ const handleDocumentRename = (name: string) => {
 
 //可用禁用状态改变
 const handleSwitchChange = async (row: DocumentList) => {
+  const oldValue = row.enabled; 
   try {
     await patchDocumentStatus(datasetInfo.value.id, row.enabled, row.id);
     ElMessage.success("修改成功");
     
+    const newStatus = row.enabled ? "available" : "disabled";
+    const targetDoc = documentList.value.find(item => item.id === row.id);
+    if (targetDoc) {
+      targetDoc.enabled = row.enabled;
+      targetDoc.display_status = newStatus;
+    }
+  
     if (currentDocument.value.id === row.id) {
-      currentDocument.value.display_status = row.enabled ? "available" : "disabled";
+      currentDocument.value.display_status = newStatus;
       currentDocument.value.enabled = row.enabled;
+    }
+    
+    if (documentSettingDetail.value && documentSettingDetail.value.id === row.id) {
+      documentSettingDetail.value.display_status = newStatus;
+      documentSettingDetail.value.enabled = row.enabled;
     }
   } catch (error: any) {
     ElMessage.error("修改失败");
-    row.enabled = !row.enabled;
+    row.enabled = oldValue;
+    const targetDoc = documentList.value.find(item => item.id === row.id);
+    if (targetDoc) {
+      targetDoc.enabled = oldValue;
+    }
   }
 }
 const searchName = ref("");
