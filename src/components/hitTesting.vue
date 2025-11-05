@@ -42,12 +42,12 @@
                 <el-col :span="2" style="height: 100%;">
                 </el-col>
                 <el-col :span="11" style="height: 100%;">
-                    <div class="right-wrapper">
+                    <div class="right-wrapper" v-loading='segmentLoading'>
                         <div class="title">召回段落
                             <span>{{ records.length }} </span>
                         </div>
                         <el-card v-for="(item, index) in records" :key="index" class="card-item"
-                            @click="handleSegementClick(item)">
+                            @click="handleSegementClick(item)" >
                             <!-- <template #header> -->
                             <div style="display: flex; justify-content: space-between">
                                 <div>Chunk-{{ item.segment.position }}·{{ item.segment.word_count }} 字符</div>
@@ -102,6 +102,8 @@ const query = ref<string>('')
 const detailVisible = ref(false)
 const detail = ref({})
 
+const segmentLoading = ref(false)
+
 const updateRecords = async () => {
     getDatasetHitTestingRecords(datasetId, limit.value, page.value)
         .then((res) => {
@@ -116,9 +118,12 @@ const updateRecords = async () => {
 }
 
 const handleHitTesting = async () => {
+    segmentLoading.value = true
     postDatasetHitTesting(datasetId, { query: query.value, retrieval_model }).then(res => {
         records.value = res.records
         updateRecords()
+    }).finally(() => {
+        segmentLoading.value = false
     })
 }
 
