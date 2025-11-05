@@ -959,12 +959,14 @@ const getEmbeddingModel = async () => {
 
         embedding_model_options.value = [];
         
-        res.data.forEach(providerItem => {
-            providerItem.models.forEach(model =>{
-                embedding_model_options.value.push({
-                    value:model.model,
-                    label:model.label.zh_Hans,//中文标签
-                    provider:providerItem.provider
+        res.data.data.forEach(outerArray => {
+            outerArray.forEach(providerItem => {
+                providerItem.models.forEach(model => {
+                    embedding_model_options.value.push({
+                        value: model.model,
+                        label: model.label.zh_Hans, // 中文标签
+                        provider: providerItem.provider
+                    })
                 })
             })
         });
@@ -992,15 +994,17 @@ const getRerankModel = async () => {
     try{
         const res = await getRerankList()
         rerank_model_options.value = [];
-        res.data.forEach(providerItem => {
-            providerItem.models.forEach(model => {
-                rerank_model_options.value.push({
-                    value:model.model,
-                    label:model.label.zh_Hans,
-                    provider:providerItem.provider
+        res.data.data.forEach(outerArray => {
+            outerArray.forEach(providerItem => {
+                providerItem.models.forEach(model => {
+                    embedding_model_options.value.push({
+                        value: model.model,
+                        label: model.label.zh_Hans, 
+                        provider: providerItem.provider
+                    })
                 })
             })
-        })
+        });
         if(rerank_model_options.value.length > 0){
             rerank_model.value = rerank_model_options.value[0].value
             rerank_model_provider.value = rerank_model_options.value[0].provider

@@ -1,5 +1,5 @@
 <template>
-    <div class="stat-page">
+    <div class="stat-page" v-loading="loading" element-loading-text="加载数据中...">
         <el-container class="container">
             <!-- 标题 -->
             <el-header class="page-header">
@@ -159,6 +159,9 @@ const getMockCardData = (): StatCard[] => [
 ];
 const cardData = ref<StatCard[]>(getMockCardData());
 
+//loading状态
+const loading = ref<boolean>(false);
+
 //图表
 const userChart = ref<HTMLDivElement | null>(null);
 const trendChart = ref<HTMLDivElement | null>(null);
@@ -278,6 +281,7 @@ const topDocsSorted = computed(() =>
 
 //加载数据
 const loadAllData = async (startDate?: Date, endDate?: Date) => {
+    loading.value = true;
     try {
         //确定日期范围
         const [sDate, eDate] = startDate && endDate
@@ -373,6 +377,8 @@ const loadAllData = async (startDate?: Date, endDate?: Date) => {
         initUserChart();
         initDocumentChart();
         initTrendChart(startDate, endDate);
+    } finally {
+        loading.value = false;
     }
 };
 
