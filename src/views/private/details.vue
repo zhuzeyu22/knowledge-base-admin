@@ -104,7 +104,10 @@
             </el-table-column>
             <el-table-column label="操作" width="80">
               <template #default="{ row }">
-                <el-switch v-model="row.enabled" />
+                <el-switch 
+                v-model="row.enabled" 
+                @change="handleSwitchChange(row)"
+                />
               </template>
             </el-table-column>
             <el-table-column width="55">
@@ -346,6 +349,21 @@ const handleDocumentRename = (name: string) => {
     });
 };
 
+//可用禁用状态改变
+const handleSwitchChange = async (row: DocumentList) => {
+  try {
+    await patchDocumentStatus(datasetInfo.value.id, row.enabled, row.id);
+    ElMessage.success("修改成功");
+    
+    if (currentDocument.value.id === row.id) {
+      currentDocument.value.display_status = row.enabled ? "available" : "disabled";
+      currentDocument.value.enabled = row.enabled;
+    }
+  } catch (error: any) {
+    ElMessage.error("修改失败");
+    row.enabled = !row.enabled;
+  }
+}
 const searchName = ref("");
 
 // 获取知识库详情

@@ -13,30 +13,25 @@
         {{ dataset.description }}
       </div>
 
-      <div class="knowledge-base-card-label">
-        {{ dataset.official == "official" ? "官方" : "非官方" }}
-      </div>
-      <div class="knowledge-base-card-operate" @click.stop>
-        <el-dropdown trigger="click" placement="bottom-end">
-          <el-icon style="cursor: pointer">
-            <MoreFilled />
-          </el-icon>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item @click="updateUserDialogVisible = true"
-                >共享</el-dropdown-item
-              >
-              <el-dropdown-item @click="handleDeleteClick" divided
-                >删除</el-dropdown-item
-              >
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
-      </div>
-    </div>
-  </el-card>
-  <el-dialog v-model="updateUserDialogVisible" title="添加成员" width="800">
-  </el-dialog>
+            <div class="knowledge-base-card-label">{{ dataset.official == 'official' ? '官方' : '非官方' }}</div>
+            <div class="knowledge-base-card-operate" @click.stop>
+                <el-dropdown trigger="click" placement="bottom-end">
+                    <el-icon style="cursor: pointer">
+                        <MoreFilled />
+                    </el-icon>
+                    <template #dropdown>
+                        <el-dropdown-menu>
+                            <!-- <el-dropdown-item @click="updateUserDialogVisible = true">共享</el-dropdown-item> -->
+                            <el-dropdown-item @click="handleDeleteClick" divided>删除</el-dropdown-item>
+                        </el-dropdown-menu>
+                    </template>
+                </el-dropdown>
+            </div>
+        </div>
+    </el-card>
+    <el-dialog v-model="updateUserDialogVisible" title="添加成员" width="800">
+
+    </el-dialog>
 </template>
 
 <script lang="ts" setup>
