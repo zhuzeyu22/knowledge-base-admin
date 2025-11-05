@@ -120,6 +120,22 @@ const handleCancle = () => {
 };
 
 const handleSave = () => {
+  // 增加参数校验
+  if (
+    documentSetting?.value?.document_process_rule?.rules?.segmentation
+      ?.max_tokens &&
+    documentSetting.value.document_process_rule.rules.segmentation.max_tokens <
+      documentSetting.value.document_process_rule.rules.segmentation
+        .chunk_overlap
+  ) {
+    console.log(
+      "documentSetting.value.document_process_rule.rules.segmentation.max_tokens",
+      documentSetting.value.document_process_rule.rules.segmentation.max_tokens
+    );
+    ElMessage.warning("分段最大长度应大于分段重叠长度");
+    return;
+  }
+
   console.log("documentSetting", documentSetting);
   const params = {
     original_document_id: documentSetting.value.id,
@@ -151,9 +167,11 @@ const handleSave = () => {
 const handlePreviewButton = () => {
   // 增加参数校验
   if (
-    documentSetting?.value?.document_process_rule?.rules?.segmentation?.max_tokens &&
+    documentSetting?.value?.document_process_rule?.rules?.segmentation
+      ?.max_tokens &&
     documentSetting.value.document_process_rule.rules.segmentation.max_tokens <
-      documentSetting.value.document_process_rule.rules.segmentation.chunk_overlap
+      documentSetting.value.document_process_rule.rules.segmentation
+        .chunk_overlap
   ) {
     console.log(
       "documentSetting.value.document_process_rule.rules.segmentation.max_tokens",

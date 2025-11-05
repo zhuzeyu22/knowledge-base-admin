@@ -11,11 +11,13 @@
     <el-col :span="8"
       ><el-input-number
         v-model="custom.segmentation.max_tokens"
+        :min="50"
       ></el-input-number
     ></el-col>
     <el-col :span="8"
       ><el-input-number
         v-model="custom.segmentation.chunk_overlap"
+        :min="50"
       ></el-input-number
     ></el-col>
   </el-row>
