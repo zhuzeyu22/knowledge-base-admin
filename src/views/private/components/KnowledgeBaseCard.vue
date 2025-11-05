@@ -1,10 +1,7 @@
 <template>
     <el-card @click="goToDetails">
         <div class="knowledge-base-card">
-            <!-- <el-image class="knowledge-base-card-image" :src="dataset.imageUrl" fit="fill" /> -->
-            <el-icon class="knowledge-base-card-image">
-                <Folder style="width: 50px; height: auto;" />
-            </el-icon>
+            <div class='knowledge-base-card-background'></div> 
             <div class="knowledge-base-card-name">{{ dataset.name }}</div>
             <div class="knowledge-base-card-tags">
                 <el-tag type="info">{{ dataset.documentNumber }} 文档</el-tag>
@@ -12,7 +9,7 @@
             </div>
             <div class="knowledge-base-card-description">{{ dataset.description }}</div>
 
-            <div class="knowledge-base-card-label">{{ dataset.isOfficial ? '官方' : '非官方' }}</div>
+            <div class="knowledge-base-card-label">{{ dataset.official == 'official' ? '官方' : '非官方' }}</div>
             <div class="knowledge-base-card-operate" @click.stop>
                 <el-dropdown trigger="click" placement="bottom-end">
                     <el-icon style="cursor: pointer">
@@ -98,6 +95,16 @@ const data: TreeNode[] = [
     height: 200px;
     flex-grow: 1;
     align-items: center;
+}
+
+.knowledge-base-card-background {
+    background-image: url('@/assets/know-title-icon.png');
+    width: 60px;
+    height: 60px;
+    margin: 12px;
+    border-radius: 8px;
+    background-size: cover;
+    background-position: center;
 }
 
 .knowledge-base-card-image {

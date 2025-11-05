@@ -5,11 +5,12 @@
         <div class="header-content">
           <div class="header-left">
             <div class="icon">
-              <img
+              <div class="icon-img"></div>
+              <!-- <img
                 :src="datasetInfo.imageUrl"
                 onerror="this.style.display='none'"
                 class="icon-img"
-              />
+              /> -->
             </div>
             <div class="info" v-loading="datasetLoading">
               <h3>{{ datasetInfo.name }}</h3>
@@ -29,11 +30,11 @@
           </div>
         </div>
       </el-header>
-      <el-main v-if="shouDocumentDetail === true" class="page-main">
+      <el-main v-if="showDocumentDetail === true" class="page-main">
         <SegementSetting
           :document="currentDocument"
           :datasetId="datasetId"
-          @close="shouDocumentDetail = false"
+          @close="showDocumentDetail = false"
           @update_status="handleUpdateDocumentStatus"
           @rename="handleDocumentRename"
         />
@@ -236,7 +237,7 @@ const datasetLoading = ref(false);
 const datasetInfo = ref<Dataset>({
   id: "",
   name: "",
-  official: false,
+  official: "official",
   imageUrl: "",
   description: "",
   documentNumber: 0,
@@ -267,7 +268,7 @@ const datasetInfo = ref<Dataset>({
   },
 });
 
-const shouDocumentDetail = ref(false);
+const showDocumentDetail = ref(false);
 const currentDocument = ref<Document>({
   id: "",
   name: "",
@@ -283,17 +284,19 @@ const showSegementSetting = ref(false);
 const documentSettingDetail = ref<Document | null>(null);
 
 const handleTabClick = (tab: TabsPaneContext) => {
+  showDocumentDetail.value = false;
+  showSegementSetting.value = false;
   activeTab.value = tab.paneName;
   console.log("切换到:", tab.paneName);
 };
 const handleCreateClick = () => {
-    // 跳转到添加文件页面，并传递 datasetId
-    router.push({
-        path: '/addfiles',
-        query: {
-            id: datasetId.value
-        }
-    })
+  // 跳转到添加文件页面，并传递 datasetId
+  router.push({
+    path: "/addfiles",
+    query: {
+      id: datasetId.value,
+    },
+  });
 };
 
 const handleDocumentClick = (
@@ -305,7 +308,7 @@ const handleDocumentClick = (
   // console.log(row, column)
   if (column.label === "名称") {
     currentDocument.value = row;
-    shouDocumentDetail.value = true;
+    showDocumentDetail.value = true;
   }
 };
 
@@ -426,9 +429,9 @@ const saveRename = async () => {
       newName.value.trim()
     );
     ElMessage.success("修改成功");
-    await loadData(); 
+    await loadData();
   } catch (error: any) {
-    ElMessage.error('修改失败');
+    ElMessage.error("修改失败");
   } finally {
     dialogFormVisible.value = false;
   }
@@ -451,9 +454,9 @@ const confirmDelete = async () => {
   try {
     await deleteDocument(datasetId.value, currentRow.value.id);
     ElMessage.success("删除成功");
-    await loadData(); 
+    await loadData();
   } catch (error: any) {
-    ElMessage.error('删除失败');
+    ElMessage.error("删除失败");
   } finally {
     deleteDialogVisible.value = false;
     currentRow.value = null;
@@ -498,10 +501,10 @@ onMounted(() => {
 
 //页面被激活或从其他页面返回时，重新加载数据
 onActivated(() => {
-    if (datasetId.value) {
-        loadData()
-    }
-})
+  if (datasetId.value) {
+    loadData();
+  }
+});
 </script>
 <style scoped lang="less">
 .private-details-page {
@@ -544,14 +547,17 @@ onActivated(() => {
             width: 60px;
             height: 60px;
             border-radius: 12px;
-            background-color: #b6b9bd;
+            // background-color: #b6b9bd;
             flex-shrink: 0;
 
             .icon-img {
               width: 100%;
               height: 100%;
               border-radius: 12px;
-              object-fit: cover;
+              // object-fit: cover;
+              background-image: url('@/assets/know-title-icon.png');
+              background-size: cover;
+              background-position: center;
             }
           }
 

@@ -40,13 +40,7 @@ service.interceptors.response.use(
   },
   (error) => {
     if (error.response.status === 401) {
-      const certifiedName = localStorage.getItem("maasUser");
-      console.log("401 certify", certifiedName);
-      if (!certifiedName) {
-        goUnifiedlogin();
-      } else {
-        accessUnitlogin();
-      }
+      accessUnitlogin();
     } else {
       return Promise.reject(error);
     }
