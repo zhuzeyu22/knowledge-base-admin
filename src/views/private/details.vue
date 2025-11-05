@@ -29,11 +29,11 @@
           </div>
         </div>
       </el-header>
-      <el-main v-if="shouDocumentDetail === true" class="page-main">
+      <el-main v-if="showDocumentDetail === true" class="page-main">
         <SegementSetting
           :document="currentDocument"
           :datasetId="datasetId"
-          @close="shouDocumentDetail = false"
+          @close="showDocumentDetail = false"
           @update_status="handleUpdateDocumentStatus"
           @rename="handleDocumentRename"
         />
@@ -267,7 +267,7 @@ const datasetInfo = ref<Dataset>({
   },
 });
 
-const shouDocumentDetail = ref(false);
+const showDocumentDetail = ref(false);
 const currentDocument = ref<Document>({
   id: "",
   name: "",
@@ -283,6 +283,8 @@ const showSegementSetting = ref(false);
 const documentSettingDetail = ref<Document | null>(null);
 
 const handleTabClick = (tab: TabsPaneContext) => {
+  showDocumentDetail.value = false;
+  showSegementSetting.value = false;
   activeTab.value = tab.paneName;
   console.log("切换到:", tab.paneName);
 };
@@ -305,7 +307,7 @@ const handleDocumentClick = (
   // console.log(row, column)
   if (column.label === "名称") {
     currentDocument.value = row;
-    shouDocumentDetail.value = true;
+    showDocumentDetail.value = true;
   }
 };
 
