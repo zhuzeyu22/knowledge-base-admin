@@ -236,7 +236,7 @@ const datasetLoading = ref(false);
 const datasetInfo = ref<Dataset>({
   id: "",
   name: "",
-  official: false,
+  official: 'official',
   imageUrl: "",
   description: "",
   documentNumber: 0,

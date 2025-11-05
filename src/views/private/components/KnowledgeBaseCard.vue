@@ -12,7 +12,7 @@
             </div>
             <div class="knowledge-base-card-description">{{ dataset.description }}</div>
 
-            <div class="knowledge-base-card-label">{{ dataset.isOfficial ? '官方' : '非官方' }}</div>
+            <div class="knowledge-base-card-label">{{ dataset.official == 'official' ? '官方' : '非官方' }}</div>
             <div class="knowledge-base-card-operate" @click.stop>
                 <el-dropdown trigger="click" placement="bottom-end">
                     <el-icon style="cursor: pointer">
