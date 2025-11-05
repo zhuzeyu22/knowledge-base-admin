@@ -148,8 +148,14 @@ export const initDataset = (body: {
 };
 
 // 查询个人知识库列表
-export const getPrivateDatasetList = (page: number, limit: number) => {
-  return request.get(`/datasets?page=${page}&limit=${limit}&include_all=false`);
+export const getPrivateDatasetList = (
+  page: number,
+  limit: number,
+  keyword: string = ""
+) => {
+  return request.get(
+    `/datasets?page=${page}&limit=${limit}&include_all=false&keyword=${keyword || ''}`
+  );
 };
 
 // 查询共享知识库列表
@@ -218,5 +224,11 @@ export const getEmbeddingList = () => {
 };
 //获取rerank模型列表
 export const getRerankList = () => {
-  return request.get(`/workspaces/current/models/model-types/rerank`)
-}
+  return request.get(`/workspaces/current/models/model-types/rerank`);
+};
+
+// 删除知识库
+export const deleteDataset = (datasetId: string) => {
+  return request.delete(`/datasets/${datasetId}`);
+};
+// https://www.finna.com.cn/console/api/datasets/c808edbf-c7bf-4f0b-a10c-9beeafa83108

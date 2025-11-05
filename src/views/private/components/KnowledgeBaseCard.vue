@@ -1,159 +1,198 @@
 <template>
-    <el-card @click="goToDetails">
-        <div class="knowledge-base-card">
-            <div class='knowledge-base-card-background'></div> 
-            <div class="knowledge-base-card-name">{{ dataset.name }}</div>
-            <div class="knowledge-base-card-tags">
-                <el-tag type="info">{{ dataset.documentNumber }} 文档</el-tag>
-                <el-tag type="info">{{ (dataset.word_count / 1000).toFixed(1) }} 千字符</el-tag>
-            </div>
-            <div class="knowledge-base-card-description">{{ dataset.description }}</div>
+  <el-card @click="goToDetails">
+    <div class="knowledge-base-card">
+      <div class="knowledge-base-card-background"></div>
+      <div class="knowledge-base-card-name">{{ dataset.name }}</div>
+      <div class="knowledge-base-card-tags">
+        <el-tag type="info">{{ dataset.documentNumber }} 文档</el-tag>
+        <el-tag type="info"
+          >{{ (dataset.word_count / 1000).toFixed(1) }} 千字符</el-tag
+        >
+      </div>
+      <div class="knowledge-base-card-description">
+        {{ dataset.description }}
+      </div>
 
-            <div class="knowledge-base-card-label">{{ dataset.official == 'official' ? '官方' : '非官方' }}</div>
-            <div class="knowledge-base-card-operate" @click.stop>
-                <el-dropdown trigger="click" placement="bottom-end">
-                    <el-icon style="cursor: pointer">
-                        <MoreFilled />
-                    </el-icon>
-                    <template #dropdown>
-                        <el-dropdown-menu>
-                            <el-dropdown-item @click="updateUserDialogVisible = true">共享</el-dropdown-item>
-                            <el-dropdown-item divided>删除</el-dropdown-item>
-                        </el-dropdown-menu>
-                    </template>
-                </el-dropdown>
-            </div>
-        </div>
-    </el-card>
-    <el-dialog v-model="updateUserDialogVisible" title="添加成员" width="800">
-
-    </el-dialog>
+      <div class="knowledge-base-card-label">
+        {{ dataset.official == "official" ? "官方" : "非官方" }}
+      </div>
+      <div class="knowledge-base-card-operate" @click.stop>
+        <el-dropdown trigger="click" placement="bottom-end">
+          <el-icon style="cursor: pointer">
+            <MoreFilled />
+          </el-icon>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item @click="updateUserDialogVisible = true"
+                >共享</el-dropdown-item
+              >
+              <el-dropdown-item @click="handleDeleteClick" divided
+                >删除</el-dropdown-item
+              >
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+      </div>
+    </div>
+  </el-card>
+  <el-dialog v-model="updateUserDialogVisible" title="添加成员" width="800">
+  </el-dialog>
 </template>
 
 <script lang="ts" setup>
-import { MoreFilled } from '@element-plus/icons-vue'
-import { Dataset } from '@/models/dataset';
-import { ref, computed, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { MoreFilled } from "@element-plus/icons-vue";
+import { Dataset } from "@/models/dataset";
+import { ref, computed, watch } from "vue";
+import { useRouter } from "vue-router";
+import { ElMessage, ElMessageBox } from "element-plus";
+import { deleteDataset } from "@/service/datasets";
+const emit = defineEmits(["delete"]);
 
 const props = defineProps<{
-    dataset: Dataset;
-}>()
+  dataset: Dataset;
+}>();
 
-const router = useRouter()
-const updateUserDialogVisible = ref(false)
+const router = useRouter();
+const updateUserDialogVisible = ref(false);
 
 // 跳转到详情页
 const goToDetails = () => {
-    router.push({
-        name: 'details',
-        query: { id: props.dataset.id }
-    })
-}
+  router.push({
+    name: "details",
+    query: { id: props.dataset.id },
+  });
+};
 // 定义节点类型
 interface TreeNode {
-    id: number | string
-    label: string
-    children?: TreeNode[]
-    disabled?: boolean
+  id: number | string;
+  label: string;
+  children?: TreeNode[];
+  disabled?: boolean;
 }
 
 const data: TreeNode[] = [
-    {
+  {
+    id: 1,
+    label: "节点1",
+    children: [
+      {
+        id: 2,
+        label: "节点1-1",
+        children: [],
+      },
+      {
+        id: 3,
+        label: "节点1-2",
+        children: [],
+      },
+    ],
+  },
+  {
+    id: 4,
+    label: "节点2",
+    children: [],
+  },
+];
 
-        id: 1,
-        label: '节点1',
-        children: [
-            {
-                id: 2,
-                label: '节点1-1',
-                children: []
-            },
-            {
-                id: 3,
-                label: '节点1-2',
-                children: []
-            }
-        ]
-    },
+const handleDeleteClick = () => {
+  ElMessageBox.confirm(
+    "删除知识库是不可逆的。用户将无法再访问您的知识库,所有的提示配置和日志将被永久删除。",
+    "要删除知识库吗？",
     {
-        id: 4,
-        label: '节点2',
-        children: []
+      confirmButtonText: "我确定",
+      cancelButtonText: "取消",
+      type: "warning",
     }
-]
-
+  )
+    .then(() => {
+      deleteDataset(props.dataset.id).then(() => {
+        ElMessage({
+          type: "success",
+          message: "删除成功",
+        });
+        // updateData();
+        emit("delete");
+      });
+    })
+    .catch(() => {
+      ElMessage({
+        type: "info",
+        message: "已取消",
+      });
+    });
+  console.log("删除");
+};
 </script>
 
 <style scoped>
 .knowledge-base-card {
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    width: 200px;
-    flex-shrink: 0;
-    height: 200px;
-    flex-grow: 1;
-    align-items: center;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 200px;
+  flex-shrink: 0;
+  height: 200px;
+  flex-grow: 1;
+  align-items: center;
 }
 
 .knowledge-base-card-background {
-    background-image: url('@/assets/know-title-icon.png');
-    width: 60px;
-    height: 60px;
-    margin: 12px;
-    border-radius: 8px;
-    background-size: cover;
-    background-position: center;
+  background-image: url("@/assets/know-title-icon.png");
+  width: 60px;
+  height: 60px;
+  margin: 12px;
+  border-radius: 8px;
+  background-size: cover;
+  background-position: center;
 }
 
 .knowledge-base-card-image {
-    width: 70px;
-    height: 70px;
-    margin-bottom: 4px;
-    border-radius: 8px;
+  width: 70px;
+  height: 70px;
+  margin-bottom: 4px;
+  border-radius: 8px;
 }
 
 .knowledge-base-card-name {
-    font-size: 15px;
-    font-weight: bold;
-    margin-bottom: 4px;
+  font-size: 15px;
+  font-weight: bold;
+  margin-bottom: 4px;
 }
 
 .knowledge-base-card-tags {
-    margin-bottom: 4px;
+  margin-bottom: 4px;
 }
 
 .knowledge-base-card-description {
-    font-size: 12px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 4;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
 }
 
 .knowledge-base-card-label {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    font-size: 12px;
-    background-color: #3b82f6;
-    color: white;
-    padding: 1px 12px;
-    border-radius: 3px;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  font-size: 12px;
+  background-color: #3b82f6;
+  color: white;
+  padding: 1px 12px;
+  border-radius: 3px;
 }
 
 .knowledge-base-card-operate {
-    position: absolute;
-    top: 0px;
-    right: 0px;
+  position: absolute;
+  top: 0px;
+  right: 0px;
 }
 
 .dialog-content {
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-    margin-top: 20px;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  margin-top: 20px;
 }
 </style>

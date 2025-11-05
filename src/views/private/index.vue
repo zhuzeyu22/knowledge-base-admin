@@ -8,7 +8,7 @@
             class="context-style" style="overflow: auto">
             <el-space wrap :size="16">
                 <CreateCard />
-                <KnowledgeBaseCard v-for="item in datasetList" :key="item.id" :dataset="item" />
+                <KnowledgeBaseCard v-for="item in datasetList" :key="item.id" :dataset="item" @delete='reload' />
             </el-space>
         </el-main>
     </el-container>
@@ -31,12 +31,14 @@ const total = ref(1)
 
 const handleSearchChange = () => {
     console.log('Search changed:', search.value)
+    reload()
 }
 
 const getTotal = () => {
     getPrivateDatasetList(
         page.value,
         limit.value,
+        search.value,
     ).then((res) => {
         total.value = res.total
     })
@@ -50,10 +52,17 @@ const load = () => {
     getPrivateDatasetList(
         page.value,
         limit.value,
+        search.value,
     ).then((res) => {
         datasetList.value.push(...res.data)
         loading.value = false
     })
+}
+
+const reload = () => {
+    datasetList.value = []
+    page.value = 1
+    load()
 }
 
 load()
