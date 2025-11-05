@@ -64,7 +64,7 @@
             @input="loadData"
           />
           <el-button type="primary" size="default" @click="handleCreateClick"
-            >增加知识库和文档</el-button
+            >添加文件</el-button
           >
         </div>
         <div class="table">
