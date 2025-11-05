@@ -2,7 +2,8 @@ import axios from "axios";
 import { accessUnitlogin, goUnifiedlogin } from "../utils/auth";
 
 const service = axios.create({
-  timeout: 5000,
+  // 5 分钟，回归测试查询比较慢
+  timeout: 5 * 60 * 1000,
 });
 
 service.interceptors.request.use(
