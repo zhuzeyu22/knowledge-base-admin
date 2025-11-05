@@ -1,7 +1,7 @@
 <template>
     <el-card class="create-card-wrap">
         <div class="create-card">
-            <el-image class="background" />
+            <div class='create-card-background'></div> 
             <div class="content">
                 <div class="description">导入您自己的文本数据，支持包括但不限于PDF、Word、csv等主流文档格式。</div>
                 <el-button type="primary" plain @click="handleCreateClick">创建知识库</el-button>
@@ -25,7 +25,13 @@ const handleCreateClick = () => {
         padding: 0px !important;
     }
 }
-
+.create-card-background{
+    background-image: url('@/assets/know-background.png');
+    width: 100%;
+    height: 60%;
+    background-size: cover;
+    background-position: center;
+}
 .create-card {
     display: flex;
     flex-direction: column;
