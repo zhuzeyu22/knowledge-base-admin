@@ -64,7 +64,7 @@
             @input="loadData"
           />
           <el-button type="primary" size="default" @click="handleCreateClick"
-            >添加文件</el-button
+            >增加知识库和文档</el-button
           >
         </div>
         <div class="table">
@@ -297,7 +297,7 @@ const handleCreateClick = () => {
       id: datasetId.value,
     },
   });
-};
+}
 
 const handleDocumentClick = (
   row: any,
