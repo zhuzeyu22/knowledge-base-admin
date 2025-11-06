@@ -54,7 +54,7 @@ const handleUploadChange: UploadProps["onChange"] = (uploadFile,uploadFiles) => 
   const type = uploadFile.name.replace(/.*\./, "");
   let regex =
     radio.value === "datasets"
-      ? ["doc", "docx", "txt", "pdf", "html", "markdown", "xls", "xlsx", "csv"]
+      ? ["doc", "docx", "txt", "pdf", "html", "markdown", "md", "xls", "xlsx", "csv"]
       : ["csv", "xls", "xlsx"];
 
   if (!regex.find((x) => x === type)) {
@@ -186,10 +186,10 @@ const formatFileSize = (bytes: number): string => {
                                 <el-radio-button label="问答对上传" value="qa_pairs" />
                             </el-radio-group>
                             <div style="padding: 10px; font-size: 14px;">
-                                支持 PDF、DOC、DOCX、TXT 、HTML、MARKDOWN、XLS、XLSX、CSV文件格式，最大上传文件数量为10个，单个文件大小不超过 40MB
+                                {{  radio === "datasets" ? '支持 PDF、DOC、DOCX、TXT 、HTML、MARKDOWN、XLS、XLSX、CSV文件格式，最大上传文件数量为10个，单个文件大小不超过 40MB' : '支持 XLS、XLSX、CSV文件格式，最大上传文件数量为10个，单个文件大小不超过 40MB' }}
                             </div>
                             <el-upload v-model:file-list="fileList" style="width: 100%;" drag :auto-upload="false"
-                                :accept="radio === 'datasets' ? '.doc,.docx,.txt,.pdf,.html,.markdown,.md,.xls,.xlsx,.csv' : '.csv'"
+                                :accept="radio === 'datasets' ? '.pdf,.doc,.docx,.txt,.html,.markdown,.md,.xls,.xlsx,.csv' : '.csv,.xls,.xlsx,'"
                                 action=""  :on-change="handleUploadChange" :on-exceed="handleExceed"  multiple :show-file-list="false">
                                 <el-icon class="el-icon--upload"><upload-filled /></el-icon>
                                 <div class="el-upload__text">
