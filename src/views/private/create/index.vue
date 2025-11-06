@@ -32,25 +32,14 @@
                 <el-radio-button label="问答对上传" value="qa_pairs" />
               </el-radio-group>
               <div style="padding: 10px; font-size: 14px">
-                {{
-                  `支持上传多个文件,
-                                支持扩展名:${
-                                  radio === "datasets"
-                                    ? "doc,.docx,.txt,.pdf,.html,.markdown,"
-                                    : ""
-                                }.xls,.xlsx,.csv最大上传文件数量为10个，每个文件不超过40MB`
-                }}
+                {{  radio === "datasets" ? '支持 PDF、DOC、DOCX、TXT 、HTML、MARKDOWN、XLS、XLSX、CSV文件格式，最大上传文件数量为10个，单个文件大小不超过 40MB' : '支持 XLS、XLSX、CSV文件格式，最大上传文件数量为10个，单个文件大小不超过 40MB' }}
               </div>
               <el-upload
                 v-model:file-list="fileList"
                 style="width: 100%"
                 drag
                 :auto-upload="false"
-                :accept="
-                  radio === 'datasets'
-                    ? '.doc,.docx,.txt,.pdf,.html,.markdown,.md,.xls,.xlsx,.csv'
-                    : '.xls,.xlsx,.csv'
-                "
+                :accept="radio === 'datasets' ? '.pdf,.doc,.docx,.txt,.html,.markdown,.md,.xls,.xlsx,.csv' : '.csv,.xls,.xlsx,'"
                 action=""
                 :on-change="handleUploadChange"
                 :on-exceed="handleExceed"
@@ -260,15 +249,15 @@
               </el-card>
             </el-col>
             <!-- <el-col>
-                            <div class="title">
-                                索引方式
-                            </div>
-                            <el-collapse v-model="indexing_technique" accordion
-                                :before-collapse="handleCollapseIndexingTechnique">
-                                <el-collapse-item title="高质量" name="high_quality">
-                                </el-collapse-item>
-                            </el-collapse>
-                        </el-col> -->
+                <div class="title">
+                    索引方式
+                </div>
+                <el-collapse v-model="indexing_technique" accordion
+                    :before-collapse="handleCollapseIndexingTechnique">
+                    <el-collapse-item title="高质量" name="high_quality">
+                    </el-collapse-item>
+                </el-collapse>
+            </el-col> -->
             <el-col style="margin-bottom: 10px">
               <div class="title">Embedding 模型</div>
               <el-select
@@ -1129,7 +1118,7 @@ const handleUploadChange: UploadProps["onChange"] = (
   const type = uploadFile.name.replace(/.*\./, "");
   let regex =
     radio.value === "datasets"
-      ? ["doc", "docx", "txt", "pdf", "html", "markdown", "xls", "xlsx", "csv"]
+      ? ["pdf", "doc", "docx", "txt", "html", "markdown","md", "xls", "xlsx", "csv"]
       : ["csv", "xls", "xlsx"];
 
   if (!regex.find((x) => x === type)) {
