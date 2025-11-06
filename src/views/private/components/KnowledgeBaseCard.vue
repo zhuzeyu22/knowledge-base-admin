@@ -97,6 +97,7 @@ const handleDeleteClick = () => {
       confirmButtonText: "我确定",
       cancelButtonText: "取消",
       type: "warning",
+      confirmButtonClass: "my-confirm-btn"
     }
   )
     .then(() => {
@@ -189,5 +190,16 @@ const handleDeleteClick = () => {
   flex-direction: row;
   gap: 10px;
   margin-top: 20px;
+}
+</style>
+
+<style>
+/*MessageBox样式,不用scoped */
+.my-confirm-btn:focus,
+.my-confirm-btn:active,
+.my-confirm-btn:hover {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
 }
 </style>

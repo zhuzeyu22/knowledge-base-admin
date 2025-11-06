@@ -71,7 +71,11 @@
           <el-table :data="documentList" @cell-click="handleDocumentClick">
             <el-table-column type="selection" width="40" />
             <el-table-column type="index" label="" width="20" />
-            <el-table-column prop="name" label="名称" min-width="200" />
+            <el-table-column prop="name" label="名称" min-width="200" >
+              <template #default="{ row }">
+                <span class="name-hover">{{ row.name }}</span>
+              </template>
+            </el-table-column>
             <el-table-column label="分段模式" width="120">
               <template #default>
                 <el-button size="small" class="segment-btn">通用</el-button>
@@ -309,7 +313,7 @@ const handleDocumentClick = (
   event: Event
 ) => {
   // console.log(row, column)
-  if (column.label === "名称") {
+  if (column.label === "名称" || column.label === "分段模式") {
     currentDocument.value = row;
     showDocumentDetail.value = true;
   }
@@ -390,10 +394,8 @@ const loadDatasetInfo = async () => {
 
     const response = await apiService.getDatasetById(datasetId.value);
     datasetInfo.value = response;
-
-    ElMessage.success("获取知识库id等信息成功");
   } catch (error: any) {
-    ElMessage.error(error.message || "获取知识库id等信息失败");
+    ElMessage.error("获取知识库id等信息失败");
   } finally {
     datasetLoading.value = false;
   }
@@ -720,6 +722,9 @@ onActivated(() => {
             &:hover {
               color: #409eff;
             }
+          }
+          .name-hover {
+            cursor: pointer;
           }
         }
       }
