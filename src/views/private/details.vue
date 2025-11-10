@@ -68,7 +68,12 @@
           >
         </div>
         <div class="table">
-          <el-table :data="documentList" @cell-click="handleDocumentClick">
+          <el-table 
+          ref="tableRef"
+          :data="documentList" 
+          @cell-click="handleDocumentClick" 
+          @selection-change="handleSelectionChange"
+          >
             <el-table-column type="selection" width="40" />
             <el-table-column type="index" label="" width="20" />
             <el-table-column prop="name" label="名称" min-width="200" >
@@ -150,6 +155,21 @@
               </template>
             </el-table-column>
           </el-table>
+          <div class="toolbar" v-if="selectedRows.length > 0">
+            
+            <el-button type="default" @click="handleBatchEnable" class="btn">
+              <el-icon><CircleCheck /></el-icon>  启用
+            </el-button>
+            <el-button type="default" @click="handleBatchDisable" class="btn">
+              <el-icon><CircleClose /></el-icon>  禁用
+            </el-button>
+            <el-button type="danger" @click="handleBatchDelete" class="btn" style="color : #E05F57">
+              <el-icon> <Delete /> </el-icon>  删除
+            </el-button>
+            <el-button type="default" @click="handleCancelSelection" class="btn">
+              <el-icon><Remove /></el-icon>  取消
+            </el-button>
+          </div>
           <el-dialog
             title="重命名"
             v-model="dialogFormVisible"
@@ -209,8 +229,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onActivated } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { ElMessage, type TabsPaneContext } from "element-plus";
-import { Search, List, MoreFilled } from "@element-plus/icons-vue";
+import { ElMessage, ElMessageBox, type TabsPaneContext } from "element-plus";
+import { Search, List, MoreFilled, CircleCheck, CircleClose, Delete, Remove  } from "@element-plus/icons-vue";
 import apiService, {
   DocumentList,
 } from "@/service/knowledge/use-document-list";
@@ -318,6 +338,14 @@ const handleDocumentClick = (
     showDocumentDetail.value = true;
   }
 };
+
+const selectedRows = ref<any>([]);
+const tableRef = ref();
+
+const handleSelectionChange = (rows: DocumentList) => {
+  selectedRows.value = rows;
+}
+
 
 const handleUpdateDocumentStatus = (status: boolean) => {
   patchDocumentStatus(datasetInfo.value.id, status, currentDocument.value.id)
@@ -502,6 +530,75 @@ const confirmDelete = async () => {
 const handleDeleteClose = () => {
   currentRow.value = null;
   deleteDialogVisible.value = false;
+};
+
+const handleBatchEnable = async () => {
+  try {
+    const promises = selectedRows.value
+      .filter((row: DocumentList) => row.id)
+      .map((row: DocumentList) => 
+        patchDocumentStatus(datasetInfo.value.id, true, row.id as string)
+      );
+    
+    await Promise.all(promises);
+
+    ElMessage.success('启用成功');
+    await loadData();
+    handleCancelSelection();
+  } catch (error: any) {
+    ElMessage.error('批量启用失败');
+  }
+};
+
+const handleBatchDisable = async () => {
+  try {
+    const promises = selectedRows.value
+      .filter((row: DocumentList) => row.id)
+      .map((row: DocumentList) => 
+        patchDocumentStatus(datasetInfo.value.id, false, row.id as string)
+      );
+    
+    await Promise.all(promises);
+    ElMessage.success('禁用成功');
+    await loadData();
+    handleCancelSelection();
+  } catch (error: any) {
+    ElMessage.error('批量禁用失败');
+  }
+};
+
+const handleBatchDelete = async () => {
+  ElMessageBox.confirm(
+    `确定要删除选中的 ${selectedRows.value.length} 个文档吗？删除后将无法恢复。`,
+    '批量删除确认',
+    {
+      confirmButtonText: '确定删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+      confirmButtonClass: 'el-button--danger'
+    }
+  ).then(async () => {
+    try {
+      const promises = selectedRows.value
+        .filter((row: DocumentList) => row.id)
+        .map((row: DocumentList) => 
+          deleteDocument(datasetInfo.value.id, row.id as string)
+        );
+      
+      await Promise.all(promises);
+      ElMessage.success('删除成功');
+      await loadData();
+      handleCancelSelection();
+    } catch (error: any) {
+      ElMessage.error("批量删除失败");
+    }
+  }).catch(() => {
+  });
+};
+
+const handleCancelSelection = () => {
+  tableRef.value?.clearSelection();
+  selectedRows.value = [];
 };
 
 // 打开分段设置页面
@@ -727,6 +824,23 @@ onActivated(() => {
             cursor: pointer;
           }
         }
+        .toolbar {
+          position: fixed;
+          bottom: 100px;
+          left: 50%;
+          transform: translate(-50%, 0%);
+          min-width: 200px;
+          border: 1px solid #409EFF;
+          border-radius: 5px;
+          background: #F5F7FF;
+
+          padding: 10px;
+          .btn {
+            padding: 10px;
+            background: #F5F7FF;
+            border: 0px;
+          }
+        }
       }
     }
   }
@@ -751,5 +865,15 @@ onActivated(() => {
     color: #606266;
     font-size: 15px;
   }
+}
+
+</style>
+<style>
+.el-button--danger:focus,
+.el-button--danger:active,
+.el-button--danger:hover {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
 }
 </style>
