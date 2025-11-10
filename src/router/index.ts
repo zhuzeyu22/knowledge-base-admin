@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory } from "vue-router";
 import Layout from "../views/Layout.vue";
 import { getQueryParam } from "../utils/params";
+import { accessUnitlogin } from "@/utils/auth";
 
 const routes = [
   {
@@ -72,9 +73,10 @@ const routes = [
         path: "plugins",
         name: "plugins",
         component: () => import("../views/plugins/index.vue"),
-      },{
-        path:'/addfiles',
-        component: ()=>import("../views/private/addfiles.vue")
+      },
+      {
+        path: "/addfiles",
+        component: () => import("../views/private/addfiles.vue"),
       },
     ],
   },
@@ -85,17 +87,14 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach((to, from) => {
-  const maasUser = getQueryParam("certifiedName");
-  console.log("maasUser", maasUser);
-  if (maasUser) {
-    localStorage.setItem("maasUser", maasUser);
+router.beforeEach(async (to, from) => {
+  const code = getQueryParam("code");
+  if (code) {
+    await accessUnitlogin()
     const cleanUrl =
       window.location.origin + window.location.pathname + window.location.hash;
-    console.log("cleanUrl", cleanUrl);
     window.location.replace(cleanUrl);
   }
-  return true;
 });
 
 export default router;
