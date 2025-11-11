@@ -41,6 +41,7 @@
   <div>
     <el-col :span="11">
       <el-table :data="segementList" @selection-change="handleSelectionChange">
+        <el-table-column type="selection" width="30"/>
         <el-table-column :label="`${total} 分段`">
           <template #default="scope">
             <el-row>
@@ -80,6 +81,20 @@
           </template>
         </el-table-column>
       </el-table>
+      <div class="toolbar" v-if="selectedRows.length > 0">
+        <el-button type="default" class="btn">
+              <el-icon><CircleCheck /></el-icon>  启用
+            </el-button>
+            <el-button type="default" class="btn">
+              <el-icon><CircleClose /></el-icon>  禁用
+            </el-button>
+            <el-button type="danger" class="btn" style="color : #E05F57">
+              <el-icon> <Delete /> </el-icon>  删除
+            </el-button>
+            <el-button type="default" class="btn">
+              <el-icon><Remove /></el-icon>  取消
+            </el-button>
+      </div>
       <el-pagination
         layout="prev, pager, next"
         :total="total"
@@ -114,7 +129,7 @@
 import { ref, onMounted, computed } from "vue";
 import { MoreFilled } from "@element-plus/icons-vue";
 import { getSegmentList, deleteSegment } from "@/service/segement";
-import { ElMessage, ElMessageBox } from "element-plus";
+import { ElMessage, ElMessageBox, rowContextKey } from "element-plus";
 import UpdateSegement from "@/components/updateSegement.vue";
 
 const { document, datasetId } = defineProps(["document", "datasetId"]);
@@ -148,8 +163,11 @@ const handleRenameEnsure = () => {
 
 const handleDeleteClick = () => {};
 
+const selectedRows = ref<any>([]);
 // 段落编辑
-const handleSelectionChange = () => {};
+const handleSelectionChange = (rows:any) => {
+  selectedRows.value = rows;
+};
 
 const updateData = () => {
   getSegmentList(datasetId, document.id, page.value, limit.value).then(
@@ -233,5 +251,23 @@ const handleUpdateSegementClick = (row) => {
   flex-direction: row-reverse;
   gap: 16px;
   margin-top: 16px;
+}
+.toolbar {
+  position: fixed;
+bottom: 100px;
+  left: 35%;
+  transform: translate(-50%, 0%);
+  min-width: 200px;
+  border: 1px solid #409EFF;
+  border-radius: 5px;
+  background: #F5F7FF;
+
+  padding: 5px;
+
+  .btn {
+    padding: 10px;
+    background: #F5F7FF;
+    border: 0px;
+  }
 }
 </style>

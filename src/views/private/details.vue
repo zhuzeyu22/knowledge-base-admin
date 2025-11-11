@@ -156,7 +156,6 @@
             </el-table-column>
           </el-table>
           <div class="toolbar" v-if="selectedRows.length > 0">
-            
             <el-button type="default" @click="handleBatchEnable" class="btn">
               <el-icon><CircleCheck /></el-icon>  启用
             </el-button>
@@ -834,7 +833,7 @@ onActivated(() => {
           border-radius: 5px;
           background: #F5F7FF;
 
-          padding: 10px;
+          padding: 5px;
           .btn {
             padding: 10px;
             background: #F5F7FF;

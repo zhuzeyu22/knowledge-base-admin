@@ -71,3 +71,13 @@ export const patchSegment = (
 };
 
 // https://www.finna.com.cn/console/api/datasets/4fe11447-421e-4bda-a7c9-d86b1d47e41f/documents/56b39d78-d5ae-47c0-ac6b-4ca4ec3005f7/segments/56e6e0a2-8ea1-4ef4-8342-ce7af730316f
+
+//修改分段状态
+
+export const patchSegementStatus = (
+  // datasetId: string,
+  // status: boolean,
+  // segmentId: string
+) => {
+  
+}
