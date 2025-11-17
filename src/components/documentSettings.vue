@@ -18,6 +18,10 @@
                 <el-radio-button value="unofficial">非官方</el-radio-button>
             </el-radio-group>
         </div>
+        <div class="form-item">
+            <label class="form-label">知识库存储路径</label>
+            <el-input v-model="storagePath" placeholder="知识库存储路径" clearable/>
+        </div>
         <div class="form-actions">
             <el-button type="primary" @click="handleSave" :loading="saveLoading">保存修改</el-button>
         </div>
@@ -35,6 +39,7 @@ const { datasetId } = defineProps(['datasetId'])
 const localName = ref<string>('')
 const localDescription = ref<string>('')
 const official = ref<'official' | 'unofficial'>()
+const storagePath = ref<string>('')
 const saveLoading = ref<boolean>(false)
 
 const loadDatasetInfo = async () => {
@@ -43,6 +48,7 @@ const loadDatasetInfo = async () => {
         localName.value = response.name
         localDescription.value = response.description
         official.value = response.official
+        storagePath.value = response.path
         if (official.value == undefined) {
             ElMessage.warning('official字段为空')
         }
@@ -65,6 +71,7 @@ const handleSave = async () => {
             name: localName.value,
             description: localDescription.value,
             official: official.value
+            // patch:storagePath.value
         })
         ElMessage.success('保存成功')
         emit('refresh')
