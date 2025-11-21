@@ -20,7 +20,7 @@
         </div>
         <div class="form-item">
             <label class="form-label">知识库存储路径</label>
-            <el-input v-model="storagePath" placeholder="知识库存储路径" clearable/>
+            <el-input v-model="storagePath" placeholder="知识库存储路径" disabled/>
         </div>
         <div class="form-actions">
             <el-button type="primary" @click="handleSave" :loading="saveLoading">保存修改</el-button>

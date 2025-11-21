@@ -195,7 +195,7 @@
           >
             <div class="delete-content">
               <p class="warning-text">
-                如果您需要稍后恢复处理，您将从您离开的地方继续
+                请确定是否删除所选的知识
               </p>
             </div>
             <template #footer>
@@ -313,7 +313,6 @@ const handleTabClick = (tab: TabsPaneContext) => {
   showDocumentDetail.value = false;
   showSegementSetting.value = false;
   activeTab.value = tab.paneName;
-  console.log("切换到:", tab.paneName);
 };
 const handleCreateClick = () => {
   // 跳转到添加文件页面，并传递 datasetId
