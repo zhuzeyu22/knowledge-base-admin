@@ -156,6 +156,11 @@
             </el-table-column>
           </el-table>
           <div class="toolbar" v-if="selectedRows.length > 0">
+            <div class="selected">
+              <span class="selected-number" disabled>{{ selectedRows.length }}</span>
+              <span class="selected-text"> 已选择</span>
+            </div>
+            
             <el-button type="default" @click="handleBatchEnable" class="btn">
               <el-icon><CircleCheck /></el-icon>  启用
             </el-button>
@@ -823,16 +828,35 @@ onActivated(() => {
           }
         }
         .toolbar {
+          display: flex;
           position: fixed;
           bottom: 100px;
           left: 50%;
           transform: translate(-50%, 0%);
-          min-width: 200px;
           border: 1px solid #409EFF;
           border-radius: 5px;
           background: #F5F7FF;
-
+          align-items: center;
           padding: 5px;
+          .selected{
+            display: flex;
+            display: inline-block;
+            align-items: center;
+            padding: 0 10px;
+            border-right: 1px solid #a6a6a6;
+            font-size: 14px;
+            .selected-number{
+              padding: 2px 6px;
+              border-radius: 5px;
+              color: #fff;
+              background-color: #409eff;
+            }
+            .selected-text{
+            color:#606266;
+            font-weight: 500;
+          }
+          }
+          
           .btn {
             padding: 10px;
             background: #F5F7FF;
