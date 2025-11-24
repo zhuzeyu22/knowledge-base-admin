@@ -155,7 +155,7 @@
               </template>
             </el-table-column>
           </el-table>
-          <div class="toolbar" v-if="selectedRows.length > 0">
+          <div class="toolbar" v-if="selectedRows.length > 0" ref="toolbarRef"> 
             <div class="selected">
               <span class="selected-number" disabled>{{ selectedRows.length }}</span>
               <span class="selected-text"> 已选择</span>
@@ -231,7 +231,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, onMounted, onActivated } from "vue";
+import { ref, onMounted, onActivated, onUnmounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ElMessage, ElMessageBox, type TabsPaneContext } from "element-plus";
 import { Search, List, MoreFilled, CircleCheck, CircleClose, Delete, Remove  } from "@element-plus/icons-vue";
@@ -362,7 +362,7 @@ const handleUpdateDocumentStatus = (status: boolean) => {
         currentDocument.value = newDocument;
       }
     })
-    .catch((err) => {
+    .catch((error) => {
       ElMessage.error("修改失败");
     });
 };
@@ -388,7 +388,7 @@ const handleDocumentRename = (name: string) => {
 const handleSwitchChange = async (row: DocumentList) => {
   const oldValue = row.enabled; 
   try {
-    await patchDocumentStatus(datasetInfo.value.id, row.enabled, row.id);
+    await patchDocumentStatus(datasetInfo.value.id, row.enabled, row.id as string);
     ElMessage.success("修改成功");
     
     const newStatus = row.enabled ? "available" : "disabled";
@@ -603,6 +603,19 @@ const handleCancelSelection = () => {
   tableRef.value?.clearSelection();
   selectedRows.value = [];
 };
+const toolbarRef = ref();
+const handleClickOutside = (event: MouseEvent) => {
+  const toolbar = toolbarRef.value;
+  if (toolbar && selectedRows.value.length > 0) {
+    // 检查点击是否在工具栏内
+    const isClickInsideToolbar = toolbar.contains(event.target as Node);
+    
+    // 如果点击不在工具栏内，清空选择
+    if (!isClickInsideToolbar) {
+      handleCancelSelection();
+    }
+  }
+};
 
 // 打开分段设置页面
 const handleSegementClick = (row: DocumentList) => {
@@ -634,6 +647,7 @@ onMounted(() => {
   }
   loadDatasetInfo();
   loadData();
+  document.addEventListener('click', handleClickOutside);
 });
 
 //页面被激活或从其他页面返回时，重新加载数据
@@ -642,6 +656,9 @@ onActivated(() => {
     loadData();
   }
 });
+onUnmounted(() =>{
+  document.removeEventListener('click', handleClickOutside);
+})
 </script>
 <style scoped lang="less">
 .private-details-page {
@@ -838,6 +855,7 @@ onActivated(() => {
           background: #F5F7FF;
           align-items: center;
           padding: 5px;
+          z-index:101;
           .selected{
             display: flex;
             display: inline-block;

@@ -346,7 +346,7 @@ const handleUpdateSegementClick = (row) => {
 }
 .toolbar {
   position: fixed;
-bottom: 100px;
+  bottom: 100px;
   left: 35%;
   transform: translate(-50%, 0%);
   min-width: 200px;
