@@ -1,6 +1,6 @@
 import { createRouter, createWebHashHistory } from "vue-router";
-import Layout from "../views/Layout.vue";
-import { getQueryParam } from "../utils/params";
+import Layout from "@/views/Layout.vue";
+import { getQueryParam } from "@/utils/params";
 import { accessUnitlogin } from "@/utils/auth";
 
 const routes = [
@@ -79,7 +79,10 @@ const routes = [
         component: () => import("../views/private/addfiles.vue"),
       },
     ],
-  },
+  },{
+    path: "/signin",
+    component: () => import("../views/signin/index.vue"),
+  }
 ];
 
 const router = createRouter({

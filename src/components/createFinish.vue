@@ -36,7 +36,7 @@
                                 " style="margin-left: 16px;">
                                     <SuccessFilled style="color: green" />
                                 </el-icon>
-                                <el-progress v-else type="dashboard" :width="20" style="margin-left: 16px;"
+                                <el-progress v-else type="dashboard" :width="16" style="margin-left: 16px;"
                                     :percentage="file.percentage" status="success">
                                 </el-progress>
                             </div>
