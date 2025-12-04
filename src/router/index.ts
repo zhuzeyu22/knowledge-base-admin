@@ -12,76 +12,76 @@ const routes = [
       {
         path: "private",
         name: "private",
-        component: () => import("../views/private/index.vue"),
+        component: () => import("@/views/private/index.vue"),
       },
       {
         path: "create",
         name: "create",
-        component: () => import("../views/private/create/index.vue"),
+        component: () => import("@/views/private/create/index.vue"),
       },
       {
         path: "details",
         name: "details",
-        component: () => import("../views/private/details.vue"),
+        component: () => import("@/views/private/details.vue"),
       },
       {
         path: "public",
         name: "public",
-        component: () => import("../views/public/index.vue"),
+        component: () => import("@/views/public/index.vue"),
       },
       {
         path: "stat",
         name: "stat",
-        component: () => import("../views/stat/index.vue"),
+        component: () => import("@/views/stat/index.vue"),
       },
       {
         path: "conversation-log",
         name: "conversation-log",
-        component: () => import("../views/conversation-log/index.vue"),
+        component: () => import("@/views/conversation-log/index.vue"),
       },
       {
         path: "login-log",
         name: "login-log",
-        component: () => import("../views/login-log/index.vue"),
+        component: () => import("@/views/login-log/index.vue"),
       },
       {
         path: "auth-log",
         name: "auth-log",
-        component: () => import("../views/auth-log/index.vue"),
+        component: () => import("@/views/auth-log/index.vue"),
       },
       {
         path: "logout",
         name: "logout",
-        component: () => import("../views/logout/index.vue"),
+        component: () => import("@/views/logout/index.vue"),
       },
       {
         path: "hitTesting",
         name: "hitTesting",
-        component: () => import("../test/testHitTesting.vue"),
+        component: () => import("@/test/testHitTesting.vue"),
       },
       {
         path: "createFinish",
         name: "createFinish",
-        component: () => import("../test/testCreateFinish.vue"),
+        component: () => import("@/test/testCreateFinish.vue"),
       },
       {
         path: "segement",
         name: "segement",
-        component: () => import("../test/testSegement.vue"),
+        component: () => import("@/test/testSegement.vue"),
       },
       {
         path: "plugins",
         name: "plugins",
-        component: () => import("../views/plugins/index.vue"),
+        component: () => import("@/views/plugins/index.vue"),
       },
       {
         path: "/addfiles",
-        component: () => import("../views/private/addfiles.vue"),
+        component: () => import("@/views/private/addfiles.vue"),
       },
     ],
   },{
     path: "/signin",
-    component: () => import("../views/signin/index.vue"),
+    component: () => import("@/views/signin/index.vue"),
   }
 ];
 
