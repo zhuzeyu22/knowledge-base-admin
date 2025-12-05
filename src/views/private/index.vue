@@ -5,7 +5,7 @@
             <el-input placeholder="请输入内容" v-model="search" class="search-style" clearable @input="handleSearchChange" />
         </el-header>
         <el-main v-infinite-scroll="load" :infinite-scroll-disabled="loading" :infinite-scroll-distance="10"
-            class="context-style" style="overflow: auto">
+            class="context-style" style="overflow: auto" v-loading="loading" elment-loading-text="数据加载中...">
             <el-space wrap :size="16">
                 <CreateCard />
                 <KnowledgeBaseCard v-for="item in datasetList" :key="item.id" :dataset="item" @delete='reload' />
