@@ -1,6 +1,11 @@
 import request from "./request";
 
-// https://www.finna.com.cn/console/api/workspaces/current
+// 获取当前工作空间（租户）信息
 export const getWorkspaceCurrent = () => {
   return request.get(`/workspaces/current`);
+};
+
+// 获取当前用户信息
+export const getAccountProfile = () => {
+  return request.get(`/account/profile`);
 };
