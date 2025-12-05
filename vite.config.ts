@@ -6,6 +6,7 @@ import path from "path";
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd());
 
+  console.log("mode", mode); // ✅ 可读取
   console.log("后端代理地址", env.VITE_SERVER_PROXY_BASE_URL); // ✅ 可读取
   console.log("登录代理地址", {
     [env.VITE_SSO_LOGIN_URL]: {
@@ -46,6 +47,21 @@ export default defineConfig(({ mode }) => {
           target: env.VITE_SERVER_PROXY_SSO_LOGIN_URL,
           changeOrigin: true,
           rewrite: (path) => path.replace(env.VITE_SSO_LOGIN_URL, ""),
+          configure: (proxy, options) => {
+            proxy.on("proxyReq", (proxyReq, req, res) => {
+              console.log("proxy", req.url);
+              // 直接响应 302，不转发请求
+              res.writeHead(302, {
+                Location:
+                  env.VITE_SERVER_PROXY_SSO_LOGIN_URL +
+                  req.url +
+                  (mode == "production" ? "&client_id=KNOW" : ""),
+              });
+              res.end();
+              // 中断代理
+              req.destroy();
+            });
+          },
         },
       },
     },

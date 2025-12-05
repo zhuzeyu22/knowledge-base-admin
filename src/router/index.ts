@@ -79,10 +79,11 @@ const routes = [
         component: () => import("@/views/private/addfiles.vue"),
       },
     ],
-  },{
+  },
+  {
     path: "/signin",
     component: () => import("@/views/signin/index.vue"),
-  }
+  },
 ];
 
 const router = createRouter({
@@ -93,7 +94,7 @@ const router = createRouter({
 router.beforeEach(async (to, from) => {
   const code = getQueryParam("code");
   if (code) {
-    await accessUnitlogin()
+    await accessUnitlogin();
     const cleanUrl =
       window.location.origin + window.location.pathname + window.location.hash;
     window.location.replace(cleanUrl);
