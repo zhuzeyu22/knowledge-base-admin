@@ -4,7 +4,7 @@
             <el-aside width="200px">
                 <el-menu style="height: 100%;">
                     <el-menu-item index="1" @click="$router.push('/private')">个人知识库</el-menu-item>
-                    <!-- <el-menu-item index="2" @click="$router.push('/public')">共享知识库</el-menu-item> -->
+                    <el-menu-item index="2" @click="$router.push('/public')">共享知识库</el-menu-item>
                     <el-menu-item v-if="showStat" index="4" @click="$router.push('/stat')">数据统计</el-menu-item>
                     <el-menu-item v-if="showConversationLog" index="5"
                         @click="$router.push('/conversation-log')">对话记录</el-menu-item>
@@ -25,10 +25,12 @@ import { getAccountProfile, getWorkspaceCurrent } from "@/service/workspace";
 import { computed, onBeforeMount, ref } from "vue";
 import { Permission, hasPermission } from "@/utils/permission";
 const permissions = ref([]);
+
 const showStat = computed(() => hasPermission(permissions.value, Permission.STAT_MENU_BUTTON_VISIBLE));
 const showConversationLog = computed(() => hasPermission(permissions.value, Permission.CONVERSATION_LOG_MENU_BUTTON_VISIBLE));
 const showLoginLog = computed(() => hasPermission(permissions.value, Permission.LOGIN_LOG_MENU_BUTTON_VISIBLE));
 const showAuthLog = computed(() => hasPermission(permissions.value, Permission.AUTH_LOG_MENU_BUTTON_VISIBLE));
+
 onBeforeMount(async () => {
     const { id: userId } = await getAccountProfile();
     localStorage.setItem("authId", userId);

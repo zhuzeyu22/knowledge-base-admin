@@ -248,16 +248,6 @@
                 </el-collapse>
               </el-card>
             </el-col>
-            <!-- <el-col>
-                <div class="title">
-                    索引方式
-                </div>
-                <el-collapse v-model="indexing_technique" accordion
-                    :before-collapse="handleCollapseIndexingTechnique">
-                    <el-collapse-item title="高质量" name="high_quality">
-                    </el-collapse-item>
-                </el-collapse>
-            </el-col> -->
             <el-col style="margin-bottom: 10px">
               <div class="title">Embedding 模型</div>
               <el-select

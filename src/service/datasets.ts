@@ -159,6 +159,7 @@ export const getPrivateDatasetList = (
 };
 
 // 查询共享知识库列表
+// todo 这个接口有问题，下个版本调试
 export const getPublicDatasetList = ({
   include_all = false,
   page = 1,
@@ -168,7 +169,7 @@ export const getPublicDatasetList = ({
   page: number;
   limit: number;
 }) => {
-  return request.get("/datasets/share", {
+  return request.get("/datasets", {
     params: { page, limit, include_all },
   });
 };

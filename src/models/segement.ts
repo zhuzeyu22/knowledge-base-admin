@@ -1,3 +1,4 @@
+// 知识库-文档-分段 数据结构
 export type Segment = {
   id: string;
   position: number;

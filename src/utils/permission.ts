@@ -10,5 +10,8 @@ export enum Permission {
   STAT_MENU_BUTTON_VISIBLE = "stat_menu-button_visible",
 }
 export const hasPermission = (permissions: string[], isHas: string) => {
+  if (import.meta.env.MODE !== "production") {
+    return true;
+  }
   return Boolean(permissions.find((p) => p === isHas));
 };

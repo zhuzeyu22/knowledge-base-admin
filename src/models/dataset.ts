@@ -1,3 +1,4 @@
+// 知识库 数据结构
 export type Dataset = {
   id: string;
   name: string;

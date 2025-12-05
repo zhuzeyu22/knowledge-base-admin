@@ -16,7 +16,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import KnowledgeBaseCard from './components/KnowledgeBaseCard.vue'
+import KnowledgeBaseCard from '@/components/KnowledgeBaseCard.vue'
 import { Dataset } from '@/models/dataset';
 import CreateCard from './components/createCard.vue';
 import { getPrivateDatasetList } from '@/service/datasets';
