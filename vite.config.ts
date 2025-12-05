@@ -7,13 +7,9 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd());
 
   console.log("mode", mode); // ✅ 可读取
-  console.log("后端代理地址", env.VITE_SERVER_PROXY_BASE_URL); // ✅ 可读取
-  console.log("登录代理地址", {
-    [env.VITE_SSO_LOGIN_URL]: {
-      target: env.VITE_SERVER_PROXY_SSO_LOGIN_URL,
-      changeOrigin: true,
-    },
-  }); // ✅ 可读取
+  console.log("后端代理地址", `[ ${env.VITE_SERVER_PROXY_BASE_URL} ]`); // ✅ 可读取
+  console.log("登录代理地址", `[ ${env.VITE_SSO_LOGIN_URL} ]`); // ✅ 可读取
+  console.log("登录重定向至", `[ ${env.VITE_SERVER_PROXY_SSO_LOGIN_URL} ]`); // ✅ 可读取
 
   return {
     plugins: [vue()],
@@ -49,7 +45,6 @@ export default defineConfig(({ mode }) => {
           rewrite: (path) => path.replace(env.VITE_SSO_LOGIN_URL, ""),
           configure: (proxy, options) => {
             proxy.on("proxyReq", (proxyReq, req, res) => {
-              console.log("proxy", req.url);
               // 直接响应 302，不转发请求
               res.writeHead(302, {
                 Location:

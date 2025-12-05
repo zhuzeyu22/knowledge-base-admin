@@ -10,7 +10,7 @@
                             <el-input v-model="form.email" />
                         </el-form-item>
                         <el-form-item label="密码">
-                            <el-input v-model="form.password" type="password" />
+                            <el-input v-model="form.pw" type="password" />
                         </el-form-item>
                         <el-form-item>
                             <div style="width: 100%; display: flex;flex-direction: row-reverse;">
@@ -35,11 +35,11 @@ const router = useRouter();
 // do not use same name with ref
 const form = reactive({
     email: '',
-    password: ''
+    pw: ''
 })
 
 const onSubmit = async () => {
-    const res = await postLogin(form.email, form.password)
+    const res = await postLogin(form.email, form.pw)
     if (res.result === 'success') {
         localStorage.setItem('console_token', res.data.access_token)
         localStorage.setItem('refresh_token', res.data.refresh_token)
