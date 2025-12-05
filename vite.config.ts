@@ -5,8 +5,14 @@ import path from "path";
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd());
-  
-  console.log('当前环境变量:', env.VITE_SERVER_PROXY_BASE_URL); // ✅ 可读取
+
+  console.log("后端代理地址", env.VITE_SERVER_PROXY_BASE_URL); // ✅ 可读取
+  console.log("登录代理地址", {
+    [env.VITE_SSO_LOGIN_URL]: {
+      target: env.VITE_SERVER_PROXY_SSO_LOGIN_URL,
+      changeOrigin: true,
+    },
+  }); // ✅ 可读取
 
   return {
     plugins: [vue()],
@@ -36,9 +42,10 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
         },
         // 生产环境配置
-        "/idp/oauth2/authorize": {
-          target: env.VITE_SERVER_PROXY_BASE_URL,
+        [env.VITE_SSO_LOGIN_URL]: {
+          target: env.VITE_SERVER_PROXY_SSO_LOGIN_URL,
           changeOrigin: true,
+          rewrite: (path) => path.replace(env.VITE_SSO_LOGIN_URL, ""),
         },
       },
     },

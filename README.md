@@ -30,5 +30,21 @@ pnpm run dev
 - pnpm run prod
 - pnpm run build:prod
 
-# 备注
+# 注意事项
 - 20251205 目前使用 temp 和 prod 环境
+
+# 备注
+登录统一使用 VITE_SSO_LOGIN_URL 访问
+在 nginx 配置重定向至正确的 url
+开发环境使用 https://ai.bobfintech.com.cn/iam/login
+生产环境使用 http://10.51.228.125:8080
+需要注意配置，参数 client_id=KNOW 这里的 KNOW 取实际使用的 id
+
+```
+# nginx 配置参考
+location /idp/oauth2/authorize {
+    set $args "$args$client_id=KNOW"
+    return 302 http://10.51.228.125:8080/idp/oauth2/authorize?$args;
+}
+
+```
