@@ -104,18 +104,19 @@
                 <span
                   :class="[
                     'status-text',
-                    row.enabled ? 'status-available' : 'status-disabled',
+                    row.display_status === 'error' ? 'status-error' : row.enabled ? 'status-available' : 'status-disabled',
                   ]"
                 >
-                  {{ row.enabled ? "可用" : "已禁用" }}
+                  {{ row.display_status === 'error' ? '错误' : row.enabled ? "可用" : "已禁用" }}
                 </span>
               </template>
             </el-table-column>
             <el-table-column label="操作" width="80">
               <template #default="{ row }">
                 <el-switch 
-                v-model="row.enabled" 
-                @change="handleSwitchChange(row)"
+                :model-value="row.enabled" 
+                @update:model-value="(newVal) => handleSwitchChange(row, newVal)"
+                :disabled="row.display_status === 'error'"
                 />
               </template>
             </el-table-column>
@@ -155,14 +156,18 @@
               </template>
             </el-table-column>
           </el-table>
-          <div class="toolbar" v-if="selectedRows.length > 0">
+          <div class="toolbar" v-if="selectedRows.length > 0" ref="toolbarRef">
+            <div class="selected">
+              <span class="selected-number" disabled>{{ selectedRows.length }}</span>
+              <span class="selected-text">已选择</span>
+            </div>
             <el-button type="default" @click="handleBatchEnable" class="btn">
               <el-icon><CircleCheck /></el-icon>  启用
             </el-button>
             <el-button type="default" @click="handleBatchDisable" class="btn">
               <el-icon><CircleClose /></el-icon>  禁用
             </el-button>
-            <el-button type="danger" @click="handleBatchDelete" class="btn" style="color : #E05F57">
+            <el-button type="default" @click="handleBatchDelete" class="btn" style="color : #E05F57">
               <el-icon> <Delete /> </el-icon>  删除
             </el-button>
             <el-button type="default" @click="handleCancelSelection" class="btn">
@@ -226,7 +231,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, onMounted, onActivated } from "vue";
+import { ref, onMounted, onActivated, onUnmounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ElMessage, ElMessageBox, type TabsPaneContext } from "element-plus";
 import { Search, List, MoreFilled, CircleCheck, CircleClose, Delete, Remove  } from "@element-plus/icons-vue";
@@ -313,7 +318,6 @@ const handleTabClick = (tab: TabsPaneContext) => {
   showDocumentDetail.value = false;
   showSegementSetting.value = false;
   activeTab.value = tab.paneName;
-  console.log("切换到:", tab.paneName);
 };
 const handleCreateClick = () => {
   // 跳转到添加文件页面，并传递 datasetId
@@ -338,25 +342,21 @@ const handleDocumentClick = (
   }
 };
 
-const selectedRows = ref<any>([]);
-const tableRef = ref();
 
-const handleSelectionChange = (rows: DocumentList) => {
-  selectedRows.value = rows;
-}
-
-
-const handleUpdateDocumentStatus = (status: boolean) => {
-  patchDocumentStatus(datasetInfo.value.id, status, currentDocument.value.id)
+const handleUpdateDocumentStatus = (docId: string, status: boolean) => {
+  patchDocumentStatus(datasetInfo.value.id, status, docId)
     .then(async (res) => {
       ElMessage.success("修改成功");
-      await loadData();
-      const newDocument = documentList.value.find(
+      // await loadData();
+      const targetDoc = documentList.value.find(
         (item) => item.id === currentDocument.value.id
       );
-      if (newDocument) {
-        currentDocument.value = newDocument;
+      if (targetDoc) {
+        targetDoc.enabled = status;
+        targetDoc.display_status = status ? "available" : "disabled";
       }
+      currentDocument.value.enabled = status;
+      currentDocument.value.display_status = status ? "available" : "disabled";
     })
     .catch((err) => {
       ElMessage.error("修改失败");
@@ -381,22 +381,26 @@ const handleDocumentRename = (name: string) => {
 };
 
 //可用禁用状态改变
-const handleSwitchChange = async (row: DocumentList) => {
+const handleSwitchChange = async (row: DocumentList, currentValue: boolean) => {
+  if(row.display_status == 'error'){
+    row.enabled = !row.enabled;
+    ElMessage.error("修改状态不可用");
+  }
   const oldValue = row.enabled; 
   try {
-    await patchDocumentStatus(datasetInfo.value.id, row.enabled, row.id);
+    await patchDocumentStatus(datasetInfo.value.id, currentValue, row.id);
     ElMessage.success("修改成功");
     
-    const newStatus = row.enabled ? "available" : "disabled";
+    const newStatus = currentValue ? "available" : "disabled";
     const targetDoc = documentList.value.find(item => item.id === row.id);
     if (targetDoc) {
-      targetDoc.enabled = row.enabled;
+      targetDoc.enabled = currentValue;
       targetDoc.display_status = newStatus;
     }
   
     if (currentDocument.value.id === row.id) {
       currentDocument.value.display_status = newStatus;
-      currentDocument.value.enabled = row.enabled;
+      currentDocument.value.enabled = currentValue;
     }
     
     if (documentSettingDetail.value && documentSettingDetail.value.id === row.id) {
@@ -422,7 +426,7 @@ const loadDatasetInfo = async () => {
     const response = await apiService.getDatasetById(datasetId.value);
     datasetInfo.value = response;
   } catch (error: any) {
-    ElMessage.error("获取知识库id等信息失败");
+    ElMessage.error(error.message || "获取知识库id等信息失败");
   } finally {
     datasetLoading.value = false;
   }
@@ -531,6 +535,28 @@ const handleDeleteClose = () => {
   deleteDialogVisible.value = false;
 };
 
+// 打开分段设置页面
+const handleSegementClick = (row: DocumentList) => {
+  getDocumentMetaData(datasetId.value, row.id).then((res) => { 
+    if( res.dataset_process_rule.rules.segmentation.separator){
+      res.dataset_process_rule.rules.segmentation.separator = 
+      res.dataset_process_rule.rules.segmentation.separator.replaceAll('\n','\\n')
+    }
+    if(res.document_process_rule.rules.segmentation.delimiter){
+      res.document_process_rule.rules.segmentation.delimiter = 
+      res.document_process_rule.rules.segmentation.delimiter.replaceAll('\n','\\n')
+    }
+    documentSettingDetail.value = res;
+    showSegementSetting.value = true;
+  });
+}
+
+const selectedRows = ref([]);
+const tableRef = ref();
+const handleSelectionChange = (rows:DocumentList[]) => {
+  selectedRows.value = rows; 
+};
+
 const handleBatchEnable = async () => {
   try {
     const promises = selectedRows.value
@@ -600,26 +626,14 @@ const handleCancelSelection = () => {
   selectedRows.value = [];
 };
 
-// 打开分段设置页面
-const handleSegementClick = (row: DocumentList) => {
-  getDocumentMetaData(datasetId.value, row.id).then((res) => {
-    if (res.document_process_rule.rules.segmentation.separator) {
-      res.document_process_rule.rules.segmentation.separator =
-        res.document_process_rule.rules.segmentation.separator.replaceAll(
-          "\n",
-          "\\n"
-        );
-    }
-    if (res.document_process_rule.rules.segmentation.delimiter) {
-      res.document_process_rule.rules.segmentation.delimiter =
-        res.document_process_rule.rules.segmentation.delimiter.replaceAll(
-          "\n",
-          "\\n"
-        );
-    }
-    documentSettingDetail.value = res;
-    showSegementSetting.value = true;
-  });
+
+const toolbarRef = ref();
+const handleClickOutside = ( event: MouseEvent) => { 
+  const toolbar = toolbarRef.value;
+  if ( toolbar && selectedRows.value.length > 0 && !toolbar.contains(event.target as Node) ) {
+    handleCancelSelection();
+  }
+
 };
 
 onMounted(() => {
@@ -630,6 +644,7 @@ onMounted(() => {
   }
   loadDatasetInfo();
   loadData();
+  document.addEventListener("click", handleClickOutside);
 });
 
 //页面被激活或从其他页面返回时，重新加载数据
@@ -637,6 +652,10 @@ onActivated(() => {
   if (datasetId.value) {
     loadData();
   }
+});
+
+onUnmounted(() => {
+  document.removeEventListener("click", handleClickOutside);
 });
 </script>
 <style scoped lang="less">
@@ -803,6 +822,10 @@ onActivated(() => {
             font-weight: 500;
           }
 
+          .status-error {
+            color: #f87006;
+          }
+
           .status-available {
             color: #67c23a;
           }
@@ -824,16 +847,37 @@ onActivated(() => {
           }
         }
         .toolbar {
+          display: flex;
           position: fixed;
           bottom: 100px;
           left: 50%;
           transform: translate(-50%, 0%);
-          min-width: 200px;
           border: 1px solid #409EFF;
           border-radius: 5px;
           background: #F5F7FF;
-
+          align-items: center;
           padding: 5px;
+          z-index: 101;
+          .selected {
+            display: inline-block;
+            align-items: center;
+            padding: 0 10px;
+            border-right: 1px solid #a6a6a6;
+            font-size: 14px;
+          }
+
+          .selected-number {
+            padding: 2px 6px;
+            border-radius: 5px;
+            color: #fff;
+            background-color: #409eff;
+          }
+
+          .selected-text {
+            color: #606266;
+            font-weight: 500;
+          }
+
           .btn {
             padding: 10px;
             background: #F5F7FF;
@@ -866,13 +910,4 @@ onActivated(() => {
   }
 }
 
-</style>
-<style>
-.el-button--danger:focus,
-.el-button--danger:active,
-.el-button--danger:hover {
-  outline: none !important;
-  box-shadow: none !important;
-  border: none !important;
-}
 </style>
