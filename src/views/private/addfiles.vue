@@ -80,9 +80,6 @@ const handleUploadChange: UploadProps["onChange"] = (uploadFile, uploadFiles) =>
                 // 按序号排序，确保显示顺序正确
                 res.value.sort((a, b) => (a.sequence || 0) - (b.sequence || 0));
                 console.log("File uploaded successfully:", response);
-                if (res.value.length === 10) {
-                    ElMessage.warning('上传文件达到限制')
-                }
             })
             .catch((error) => {
                 // 上传失败，减少上传中计数
@@ -103,8 +100,9 @@ const handleNext = async () => {
     try {
         // 准备导入数据
         const file_ids = res.value.map(file => file.id)
-
         const importData = {
+            doc_form: radio.value === 'datasets' ? 'text_model' : 'qa_model',
+            doc_language: 'Chinese Simplified',
             data_source: {
                 type: 'upload_file',
                 info_list: {
