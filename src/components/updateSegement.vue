@@ -6,9 +6,29 @@
       </el-col>
       <el-col :span="6"> {{ content.length }} 字符 </el-col>
     </el-row>
-    <el-row style="margin-bottom: 16px">
+    <el-row style="margin-bottom: 16px" v-if="docForm === 'text_model'">
       <el-input
         v-model="content"
+        style="width: 100%"
+        :rows="20"
+        type="textarea"
+        placeholder="请输入文本"
+      >
+      </el-input>
+    </el-row>
+    <el-row style="margin-bottom: 16px" v-if="docForm === 'qa_model'">
+      <h2 style="padding: 10px;">问题：</h2>
+      <el-input
+        v-model="content"
+        style="width: 100%"
+        :rows="20"
+        type="textarea"
+        placeholder="请输入文本"
+      >
+      </el-input>
+      <h2 style="padding: 10px;">答案：</h2>
+      <el-input
+        v-model="newSegement.answer"
         style="width: 100%"
         :rows="20"
         type="textarea"
@@ -67,21 +87,24 @@ import {
 } from "vue";
 import { patchSegment, createSegment } from "@/service/segement";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { Segment } from "@/models/segement";
 
 const visible = defineModel({ default: false });
 const emit = defineEmits(["update_data"]);
-const { segement, documentId, datasetId } = defineProps({
+const { segement, documentId, datasetId, docForm } = defineProps({
   segement: { required: false },
   documentId: String,
   datasetId: String,
+  docForm: String,
 });
 const newData = {
   id: "",
   position: 0,
   word_count: 0,
+  answer: "",
   keywords: [],
 };
-const newSegement = ref<Segment>(newData);
+const newSegement = ref<Partial<Segment>>(newData);
 const isNew = computed(() => newSegement.value.id == "");
 const content = ref("");
 const inputTag = ref("");
@@ -95,7 +118,7 @@ watch(
       newSegement.value = val;
       content.value = val.content;
     } else {
-      newSegement.value = newData;
+      newSegement.value = { ...newData };
       content.value = "";
     }
   }
@@ -110,14 +133,15 @@ const handleUpdateSegement = () => {
         ElMessage.success("创建成功");
         emit("update_data");
         visible.value = false;
+        newSegement.value = { ...newData };
+        content.value = "";
       })
       .catch((err) => {
-        console.log(err);
         ElMessage.error("创建失败");
       });
   } else {
-    patchSegment(datasetId, documentId, newSegement.value.id, content.value, [
-      ...newSegement.value.keywords,
+    patchSegment(datasetId, documentId, newSegement.value.id, content.value, newSegement.value.answer, [
+      ...newSegement.value.keywords || [],
     ])
       .then(() => {
         ElMessage.success("更新成功");
@@ -125,8 +149,7 @@ const handleUpdateSegement = () => {
         visible.value = false;
       })
       .catch((err) => {
-        console.log(err);
-        ElMessage.error("更新失败");
+        ElMessage.error("更新失败，文档为禁用状态");
       });
   }
 };
@@ -137,8 +160,15 @@ const handleCloseTag = (value: string) => {
   );
 };
 const handleInputConfirm = () => {
-  if (inputTag.value) {
+  if (newSegement.value.keywords == null ) {
+    newSegement.value.keywords =[]
+  }
+
+  if(inputTag.value && !newSegement.value.keywords.includes(inputTag.value)){
     newSegement.value.keywords.push(inputTag.value);
+  } else {
+    ElMessage.error("不支持重复添加相同标签");
+    inputVisible.value = false;
   }
   inputTag.value = "";
 };
@@ -151,8 +181,6 @@ const showInput = () => {
 };
 
 onMounted(() => {
-  console.log(segement);
-  console.log(newSegement);
 });
 </script>
 

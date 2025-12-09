@@ -5,7 +5,7 @@ export type Segment = {
   document_id: string;
   content: string;
   sign_content: string;
-  answer: string | null;
+  answer?: string | null;
   word_count: number;
   tokens: number;
   keywords: string[];
