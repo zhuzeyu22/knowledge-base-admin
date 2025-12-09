@@ -46,11 +46,12 @@ export const createSegment = (
   datasetId: string,
   documentId: string,
   content: string,
+  answer?: string,
   keywords: string[]
 ) => {
   return request.post(
     `/datasets/${datasetId}/documents/${documentId}/segment`,
-    { content, keywords }
+    { content, answer, keywords }
   );
 };
 // https://www.finna.com.cn/console/api/datasets/4fe11447-421e-4bda-a7c9-d86b1d47e41f/documents/56b39d78-d5ae-47c0-ac6b-4ca4ec3005f7/segment
@@ -62,11 +63,12 @@ export const patchSegment = (
   documentId: string,
   segmentId: string,
   content: string,
+  answer?: string,
   keywords: string[]
 ) => {
   return request.patch(
     `/datasets/${datasetId}/documents/${documentId}/segments/${segmentId}`,
-    { content, keywords }
+    { content, answer, keywords }
   );
 };
 

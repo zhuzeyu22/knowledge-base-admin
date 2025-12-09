@@ -5,6 +5,7 @@ import { rsaEncrypt } from "./encrypt";
 export function goUnifiedlogin() {
   const urlParams = location.protocol + "//" + location.host + "";
   const encodestr: string = encodeURIComponent(urlParams);
+  // 这里后续做开发环境的登陆跳转对接
   location.href = `${
     import.meta.env.VITE_SSO_LOGIN_URL
   }?redirectUrl=${encodestr}&respoense_type=code&state=${Date.now()}`;

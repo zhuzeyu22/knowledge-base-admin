@@ -157,7 +157,7 @@ export const apiService = {
 
     //对话记录
     async getConversationLogs(params: ConversationQueryParams = {}): Promise<ConversationListResponse> {
-        return request.post('/statistics/conversation-list', params,{ headers: { 'Content-Type': 'application/json' }})
+        return request.post('/statistics/conversation-list', params)
     },
     async getConversationDetail(id: string): Promise<ConversationDetailResponse> {
         return request.post(`/statistics/conversation-list/${id}`)
