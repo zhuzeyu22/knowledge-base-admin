@@ -13,34 +13,43 @@
                         <div class="title">知识库名称: {{ dataset.dataset.name }}</div>
                     </div>
                     <el-divider></el-divider>
-                    <div>
+                    <div style='margin-bottom: 10px; font-weight: bold;' :class="status == '嵌入发生错误' ? 'warning' : ''">
                         {{ status }}
                     </div>
                     <div style="flex-grow: 1">
-                        <div v-for="file in statusList" style="
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-              ">
-                            <div>{{ file.name }}</div>
-                            <div style="display: flex">
-                                {{
-                                    file.indexing_status == "completed"
-                                        ? "处理完成"
-                                        : file.indexing_status == "error"
-                                            ? "处理失败"
-                                            : "处理中..."
-                                }}
-                                <el-icon v-if="
-                                    file.indexing_status == 'completed'
-                                " style="margin-left: 16px;">
-                                    <SuccessFilled style="color: green" />
-                                </el-icon>
-                                <el-progress v-else type="dashboard" :width="16" style="margin-left: 16px;"
-                                    :percentage="file.percentage" status="success">
-                                </el-progress>
-                            </div>
-                        </div>
+                        <section v-for="file in statusList" style="
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                        ">
+                            <el-row>
+                                <el-col :span="12">{{ file.name }}</el-col>
+                                <el-col :span="12" style="display: flex; flex-direction: row-reverse;"
+                                    :class="file.indexing_status == 'error' ? 'warning' : ''">
+                                    <el-icon v-if="
+                                        file.indexing_status == 'completed'
+                                    " style="margin-left: 16px;">
+                                        <SuccessFilled style="color: green" />
+                                    </el-icon>
+                                    <el-progress v-else type="dashboard" :width="16" style="margin-left: 16px;"
+                                        :percentage="file.percentage" status="success">
+                                    </el-progress>
+                                    <div>
+                                        {{
+                                            file.indexing_status == "completed"
+                                                ? "处理完成"
+                                                : file.indexing_status == "error"
+                                                    ? "处理失败"
+                                                    : "处理中..."
+                                        }}
+                                    </div>
+                                </el-col>
+                            </el-row>
+                            <el-row v-if="file.indexing_status == 'error'" class="warning"
+                                style="margin-top: 4px; font-size: 10px;">
+                                {{ file.error }}
+                            </el-row>
+                        </section>
                     </div>
                     <el-button style="align-self: flex-end" type="primary" @click="handleClick()">前往文档</el-button>
                 </div>
@@ -61,6 +70,7 @@ enum IndexingStatus {
     Indexing = "indexing",
     Completed = "completed",
     Error = "error",
+    Splitting = "splitting"
 }
 
 type FileStatus = {
@@ -70,6 +80,7 @@ type FileStatus = {
     total_segments: number
     completed_segments: number
     percentage: number
+    error?: string
 }
 
 const { dataset } = defineProps(["dataset"]);
@@ -77,7 +88,6 @@ const { dataset } = defineProps(["dataset"]);
 const statusList = ref<FileStatus[]>([]);
 
 onBeforeMount(() => {
-    console.log("dataset", dataset);
     statusList.value = dataset.documents.map((file: { id: any; name: any; }) => {
         return {
             id: file.id,
@@ -94,10 +104,10 @@ onBeforeMount(() => {
 const status = computed(() => {
     if (statusList.value.find((x) => x.indexing_status == IndexingStatus.Error)) {
         return '嵌入发生错误'
-    } else if (statusList.value.find((x) => x.indexing_status == IndexingStatus.Parsing || x.indexing_status == IndexingStatus.Indexing)) {
-        return '嵌入处理中'
-    } else {
+    } else if (statusList.value.find((x) => x.indexing_status == IndexingStatus.Completed)) {
         return '嵌入已完成'
+    } else {
+        return '嵌入处理中'
     }
 });
 
@@ -106,13 +116,11 @@ onMounted(() => {
 });
 const updateStatus = () => {
     getIndexingStatus(dataset.dataset.id, dataset.batch).then((res) => {
-        console.log("res", res);
-
         statusList.value = statusList.value.map(s => {
             const find = res.data.find(x => x.id == s.id)
-
-            if (find && find.total_segments != 0) {
-                find.percentage = (find.completed_segments * 100 / find.total_segments).toFixed(2)
+            find.percentage = 0
+            if (find && Number(find.total_segments) != 0) {
+                find.percentage = (Number(find.completed_segments) * 100 / Number(find.total_segments)).toFixed(2)
             }
 
             return {
@@ -120,8 +128,6 @@ const updateStatus = () => {
                 ...find,
             }
         })
-
-        console.log('statusList', statusList.value)
 
         if (status.value == '嵌入处理中') {
             setTimeout(() => {
@@ -162,6 +168,10 @@ const handleClick = () => {
         display: flex;
         flex-direction: column;
     }
+}
+
+.warning {
+    color: #f56c6c;
 }
 
 .right-wrapper {
