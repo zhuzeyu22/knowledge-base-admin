@@ -57,37 +57,6 @@ const goToDetails = () => {
     query: { id: props.dataset.id },
   });
 };
-// 定义节点类型
-interface TreeNode {
-  id: number | string;
-  label: string;
-  children?: TreeNode[];
-  disabled?: boolean;
-}
-
-const data: TreeNode[] = [
-  {
-    id: 1,
-    label: "节点1",
-    children: [
-      {
-        id: 2,
-        label: "节点1-1",
-        children: [],
-      },
-      {
-        id: 3,
-        label: "节点1-2",
-        children: [],
-      },
-    ],
-  },
-  {
-    id: 4,
-    label: "节点2",
-    children: [],
-  },
-];
 
 const handleDeleteClick = () => {
   ElMessageBox.confirm(
