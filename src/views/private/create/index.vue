@@ -22,24 +22,28 @@
         <el-col :span="11" style="display: flex; flex-direction: column">
           <div v-if="step === 1" style="flex-grow: 1">
             <el-row>
-              <el-radio-group
-                v-model="radio"
-                text-color="#626aef"
-                fill="rgb(239, 240, 253)"
-                style="margin-bottom: 10px"
-              >
-                <el-radio-button label="文档上传" value="datasets" />
-                <el-radio-button label="问答对上传" value="qa_pairs" />
-              </el-radio-group>
+              <el-row style="display: flex;align-items: center; margin-bottom: 10px">
+                <el-radio-group
+                  v-model="radio"
+                  text-color="#626aef"
+                  fill="rgb(239, 240, 253)"
+                >
+                  <el-radio-button label="文档上传" value="datasets" />
+                  <el-radio-button label="问答对上传" value="qa_pairs" />
+                </el-radio-group>
+                <div style="margin-left: 8px; font-size: 14px; color: #409eff;">
+                  <a href="/template/QA.xlsx" download="QA模板.xlsx">下载模板</a>
+                </div>
+              </el-row>
               <div style="padding: 10px; font-size: 14px">
-                {{  radio === "datasets" ? '支持 PDF、DOC、DOCX、TXT 、HTML、MARKDOWN、XLS、XLSX、CSV文件格式，最大上传文件数量为10个，单个文件大小不超过 40MB' : '支持 XLS、XLSX、CSV文件格式，最大上传文件数量为10个，单个文件大小不超过 40MB' }}
+                {{ `支持 ${ radio === 'datasets' ? "DOC、DOCX、TXT、PDF、HTML、MARKDOWN" : ''}XLSX、XLS、、CSV 文件格式，最大上传文件数量为10个，单个文件大小不超过 40MB` }}
               </div>
               <el-upload
                 v-model:file-list="fileList"
                 style="width: 100%"
                 drag
                 :auto-upload="false"
-                :accept="radio === 'datasets' ? '.pdf,.doc,.docx,.txt,.html,.markdown,.md,.xls,.xlsx,.csv' : '.csv,.xls,.xlsx,'"
+                :accept="radio === 'datasets' ? '.pdf,.doc,.docx,.txt,.html,.markdown,.md,.xls,.xlsx,.csv' : '.csv,.xls,.xlsx'"
                 action=""
                 :on-change="handleUploadChange"
                 :on-exceed="handleExceed"

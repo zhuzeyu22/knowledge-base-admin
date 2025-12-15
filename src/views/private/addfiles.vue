@@ -184,9 +184,7 @@ const formatFileSize = (bytes: number): string => {
                                 <el-radio-button label="问答对上传" value="qa_pairs" />
                             </el-radio-group>
                             <div style="padding: 10px; font-size: 14px;">
-                                {{ radio === "datasets" ? '支持 PDF、DOC、DOCX、TXT
-                                、HTML、MARKDOWN、XLS、XLSX、CSV文件格式，最大上传文件数量为10个，单个文件大小不超过 40MB' : '支持
-                                XLS、XLSX、CSV文件格式，最大上传文件数量为10个，单个文件大小不超过 40MB' }}
+                                {{ radio === "datasets" ? '支持 PDF、DOC、DOCX、TXT、HTML、MARKDOWN、XLS、XLSX、CSV文件格式，最大上传文件数量为10个，单个文件大小不超过 40MB' : '支持XLS、XLSX、CSV文件格式，最大上传文件数量为10个，单个文件大小不超过 40MB' }}
                             </div>
                             <el-upload v-model:file-list="fileList" style="width: 100%;" drag :auto-upload="false"
                                 :accept="radio === 'datasets' ? '.pdf,.doc,.docx,.txt,.html,.markdown,.md,.xls,.xlsx,.csv' : '.csv,.xls,.xlsx,'"
