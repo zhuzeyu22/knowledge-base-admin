@@ -3,7 +3,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ref, watch } from 'vue'
 import { UploadFilled, Back, Document, Delete } from '@element-plus/icons-vue'
 import { ElMessage, type UploadProps, type UploadUserFile } from 'element-plus'
-import { uploadDocument, UploadResponse, createDocument } from '@/service/datasets';
+import { uploadDocument, UploadResponse, createDocument, getFilesPreview } from '@/service/datasets';
 
 const route = useRoute()
 const router = useRouter()
@@ -161,6 +161,53 @@ const formatFileSize = (bytes: number): string => {
     return (bytes / Math.pow(k, i)).toFixed(2) + sizes[i]
 }
 
+//文件预览内容
+const previewFile = ref<string | null>(null);
+const previewContent = ref<string>("");
+const showPreview = ref(false); // 控制是否显示文件预览模块
+const segmentPreview = ref<any[]>([]); // 存储分段预览数据
+const isSegmentPreview = ref(false); // 标识当前是否为分段预览模式
+
+// 点击文件名显示预览
+const handleFileClick = (fileId: string) => {
+    showPreview.value = true; // 显示预览模块
+    previewFile.value = fileId; // 选中该文件
+};
+
+// watch侦听文件选择变化，自动获取预览内容
+watch(previewFile, (newFileId) => {
+    if (newFileId) {
+        // 在 step 1 时，只获取文件原始内容
+        fetchFilePreview(newFileId)
+            .then((response) => {
+                //previewContent.value = response.content
+            })
+            .catch((error) => {
+                console.error("获取文件预览失败:", error);
+                previewContent.value = "加载失败，请重试";
+            });
+    } else {
+        previewContent.value = "";
+        segmentPreview.value = [];
+        isSegmentPreview.value = false;
+    }
+});
+
+// 获取文件预览内容
+const fetchFilePreview = async (fileId: string) => {
+    if (!fileId) {
+        previewContent.value = "";
+        return;
+    }
+    try {
+        const response = await getFilesPreview(fileId);
+        previewContent.value = response.content || "暂无预览内容";
+    } catch (error) {
+        console.error("获取文件预览失败:", error);
+        ElMessage.error("获取文件预览失败");
+        previewContent.value = "加载失败，请重试";
+    }
+};
 </script>
 
 <template>
@@ -178,16 +225,22 @@ const formatFileSize = (bytes: number): string => {
                 <el-col :span="11" style="display: flex; flex-direction: column;">
                     <div style="flex-grow: 1">
                         <el-row>
-                            <el-radio-group v-model="radio" text-color="#626aef" fill="rgb(239, 240, 253)"
-                                style="margin-bottom: 10px;">
-                                <el-radio-button label="文档上传" value="datasets" />
-                                <el-radio-button label="问答对上传" value="qa_pairs" />
-                            </el-radio-group>
+                            <el-row style="display: flex; align-items: center; margin-bottom: 10px;">
+                                <el-radio-group v-model="radio" text-color="#626aef" fill="rgb(239, 240, 253)"
+                                    style="margin-bottom: 10px;">
+                                    <el-radio-button label="文档上传" value="datasets" />
+                                    <el-radio-button label="问答对上传" value="qa_pairs" />
+                                </el-radio-group>
+                                <div style="margin-left: 8px; font-size: 14px; color: #409eff;">
+                                    <a href="/template/QA.xlsx" download="QA模板.xlsx">下载模板</a>
+                                </div>
+                            </el-row>
                             <div style="padding: 10px; font-size: 14px;">
-                                {{ radio === "datasets" ? '支持 PDF、DOC、DOCX、TXT、HTML、MARKDOWN、XLS、XLSX、CSV文件格式，最大上传文件数量为10个，单个文件大小不超过 40MB' : '支持XLS、XLSX、CSV文件格式，最大上传文件数量为10个，单个文件大小不超过 40MB' }}
+                                {{ `支持 ${radio === 'datasets' ? "DOC、DOCX、TXT、PDF、HTML、MARKDOWN" : ''}XLSX、XLS、、CSV
+                                文件格式，最大上传文件数量为10个，单个文件大小不超过 40MB` }}
                             </div>
                             <el-upload v-model:file-list="fileList" style="width: 100%;" drag :auto-upload="false"
-                                :accept="radio === 'datasets' ? '.pdf,.doc,.docx,.txt,.html,.markdown,.md,.xls,.xlsx,.csv' : '.csv,.xls,.xlsx,'"
+                                :accept="radio === 'datasets' ? '.pdf,.doc,.docx,.txt,.html,.markdown,.md,.xls,.xlsx,.csv' : '.csv,.xls,.xlsx'"
                                 action="" :on-change="handleUploadChange" :on-exceed="handleExceed" multiple
                                 :show-file-list="false">
                                 <el-icon class="el-icon--upload"><upload-filled /></el-icon>
@@ -203,7 +256,7 @@ const formatFileSize = (bytes: number): string => {
                                 <div class="file-list-card">
                                     <div class="file-list-scroll">
                                         <div v-for="file in res" :key="file.id" class="uploaded-file-item">
-                                            <div class="file-info">
+                                            <div class="file-info" @click="handleFileClick(file.id)">
                                                 <el-icon class="file-icon" :size="32" color="#409EFF">
                                                     <Document />
                                                 </el-icon>
@@ -231,7 +284,29 @@ const formatFileSize = (bytes: number): string => {
                             @click="handleNext">下一步</el-button>
                     </div>
                 </el-col>
-
+                <!-- diliver -->
+                <el-col :span="2"></el-col>
+                <el-col :span="11" style="display: flex; flex-direction: column; height: 100%;">
+                    <!-- 未点击文件列表时显示空白 -->
+                    <div v-if="!showPreview" style="width: 100%; height: 100%;"></div>
+                    <!-- 点击文件列表后显示预览 -->
+                    <div v-else style="display: flex; flex-direction: column; height: 100%;">
+                        <el-row style="margin-bottom: 10px;">
+                            <div class="title">文件预览</div>
+                        </el-row>
+                        <!-- 文件内容预览 -->
+                        <el-card shadow="never" style="flex:1; overflow: hidden; display: flex; flex-direction: column;"
+                            body-style="flex: 1; overflow: auto; display: flex; flex-direction: column;">
+                            <div v-if="!previewFile"
+                                style="display: flex; justify-content: center; align-items: center; height: 100%; color: #909399;">
+                                请选择要预览的文件</div>
+                            <div v-else
+                                style="white-space: pre-wrap; word-break: break-word; line-height: 1.6; font-size: 14px;">
+                                {{ previewContent }}
+                            </div>
+                        </el-card>
+                    </div>
+                </el-col>
             </el-card>
         </el-main>
     </el-container>
