@@ -46,96 +46,109 @@ export type DataSource = {
   };
 };
 
-// export type KnowledgeBase = {
-//   data_source: DataSource
-//   /** 固定写法开始 */
-//   indexing_technique: "high_quality";
-//   embedding_model: "text-embedding-v1";
-//   embedding_model_provider: "langgenius/tongyi/tongyi";
-//   /** 固定写法结束 */
-//   process_rule: {
-//     rules: {
-//       pre_processing_rules: [
-//         { id: "remove_extra_spaces"; enabled: true },
-//         { id: "remove_urls_emails"; enabled: false }
-//       ];
-//       segmentation: { separator: "\n\n"; max_tokens: 500 };
-//       parent_mode: "full-doc";
-//       subchunk_segmentation: { separator: "\n"; max_tokens: 201 };
-//     };
-//     mode: "hierarchical";
-//   };
-//   doc_form: "hierarchical_model";
-//   doc_language: "English";
-//   retrieval_model: {
-//     search_method: "semantic_search";
-//     reranking_enable: true;
-//     /** 固定写法开始 */
-//     reranking_model: {
-//       reranking_provider_name: "langgenius/tongyi/tongyi";
-//       reranking_model_name: "gte-rerank-v2";
-//     };
-//     /** 固定写法结束 */
-//     top_k: 3;
-//     score_threshold_enabled: false;
-//     score_threshold: 0.5;
-//   };
-// };
-
-
 export enum RETRIEVE_TYPE {
-  oneWay = 'single',
-  multiWay = 'multiple',
+  oneWay = "single",
+  multiWay = "multiple",
 }
 
 export enum RerankingModeEnum {
-  RerankingModel = 'reranking_model',
-  WeightedScore = 'weighted_score',
+  RerankingModel = "reranking_model",
+  WeightedScore = "weighted_score",
 }
 
 export enum WeightedScoreEnum {
-  SemanticFirst = 'semantic_first',
-  KeywordFirst = 'keyword_first',
-  Customized = 'customized',
+  SemanticFirst = "semantic_first",
+  KeywordFirst = "keyword_first",
+  Customized = "customized",
 }
 
-
 export enum MetadataFilteringModeEnum {
-  disabled = 'disabled',
-  automatic = 'automatic',
-  manual = 'manual',
+  disabled = "disabled",
+  automatic = "automatic",
+  manual = "manual",
+}
+
+export enum DataSourceType {
+  FILE = "upload_file",
+  NOTION = "notion",
+  GITHUB = "github",
+}
+
+export const DataSourceTypeText: Record<DataSourceType, string> = {
+  [DataSourceType.FILE]: "文件上传",
+  [DataSourceType.NOTION]: "从Notion同步的文档",
+  [DataSourceType.GITHUB]: "从Github同步的文档"
+};
+
+
+export type ProcessRule = {
+  mode: ProcessMode
+  rules: Rules
+}
+
+export enum ProcessMode {
+  general = 'custom',
+  parentChild = 'hierarchical',
+}
+
+export const ProcessModeText: Record<ProcessMode, string> = {
+  [ProcessMode.general]: "自定义",
+  [ProcessMode.parentChild]: "父子分段",
+};
+
+export type Rules = {
+  pre_processing_rules: PreProcessingRule[]
+  segmentation: Segmentation
+  parent_mode: ParentMode
+  subchunk_segmentation: Segmentation
+}
+
+export type PreProcessingRule = {
+  id: string
+  enabled: boolean
+}
+
+export type Segmentation = {
+  separator: string
+  max_tokens: number
+  chunk_overlap?: number
+}
+
+export type ParentMode = 'full-doc' | 'paragraph'
+
+export enum ChunkingMode {
+  text = "text_model", // General text
+  qa = "qa_model", // General QA
+  parentChild = "hierarchical_model", // Parent-Child
+  // graph = 'graph', // todo: Graph RAG
 }
 
 export type DatasetConfigs = {
-  retrieval_model: RETRIEVE_TYPE
+  retrieval_model: RETRIEVE_TYPE;
   reranking_model: {
-    reranking_provider_name: string
-    reranking_model_name: string
-  }
-  top_k: number
-  score_threshold_enabled: boolean
-  score_threshold: number | null | undefined
+    reranking_provider_name: string;
+    reranking_model_name: string;
+  };
+  top_k: number;
+  score_threshold_enabled: boolean;
+  score_threshold: number | null | undefined;
   datasets: {
     datasets: {
-      enabled: boolean
-      id: string
-    }[]
-  }
-  reranking_mode?: RerankingModeEnum
+      enabled: boolean;
+      id: string;
+    }[];
+  };
+  reranking_mode?: RerankingModeEnum;
   weights?: {
-    weight_type: WeightedScoreEnum
+    weight_type: WeightedScoreEnum;
     vector_setting: {
-      vector_weight: number
-      embedding_provider_name: string
-      embedding_model_name: string
-    }
+      vector_weight: number;
+      embedding_provider_name: string;
+      embedding_model_name: string;
+    };
     keyword_setting: {
-      keyword_weight: number
-    }
-  }
-  reranking_enable?: boolean
-  // 下面的可能用不到，先去掉了，原结构参考 dify web 目录里面的
-  // metadata_filtering_mode?: MetadataFilteringModeEnum
-  // metadata_filtering_conditions?: MetadataFilteringConditions
-  // metadata_model_config?: NodeModelConfig
-}
+      keyword_weight: number;
+    };
+  };
+  reranking_enable?: boolean;
+};

@@ -1,13 +1,7 @@
 <template>
   <el-header class="header-style">
     <div class="header-left">
-      <el-button
-        type="primary"
-        link
-        size="default"
-        @click="handleClose"
-        style="padding: 0; margin-right: 16px"
-      >
+      <el-button type="primary" link size="default" @click="handleClose" style="padding: 0; margin-right: 16px">
         <el-icon>
           <Back />
         </el-icon>
@@ -18,8 +12,10 @@
     </div>
     <div class="header-right">
       <el-button @click="handleCreateSegementClick">添加分段</el-button>
-      <div>{{ display_status ? "可用" : "已禁用" }}</div>
-      <el-switch v-model="display_status" @change="handleChange" />
+      <div>{{ document.display_status === 'error' ? "错误" : display_status ? "可用" : "已禁用" }}
+      </div>
+      <el-suitch :model_value="document.display_status === 'error' ? false : display_status" @change="handleChange"
+        :disabled="document.display_status === 'error'" />
       <!-- <el-button>分段设置</el-button> -->
       <el-dropdown trigger="click" placement="bottom-end">
         <el-icon style="cursor: pointer">
@@ -27,84 +23,83 @@
         </el-icon>
         <template #dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item @click="showRenameModel = true"
-              >重命名</el-dropdown-item
-            >
-            <el-dropdown-item divided @click="handleDeleteClick"
-              >删除</el-dropdown-item
-            >
+            <el-dropdown-item @click="showRenameModel = true">重命名</el-dropdown-item>
+            <el-dropdown-item divided @click="handleDeleteClick">删除</el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>
     </div>
   </el-header>
   <div>
-    <el-col :span="11">
-      <el-table :data="segementList" @selection-change="handleSelectionChange">
-        <el-table-column type="selection" width="30"/>
-        <el-table-column :label="`${total} 分段`">
-          <template #default="scope">
-            <el-row>
-              <el-col :span="6">分段 {{ scope.row.position }} </el-col>
-              <el-col :span="6"> {{ scope.row.word_count }} 字符</el-col>
-              <el-col :span="6">召回次数 {{ scope.row.hit_count }} </el-col>
-              <el-col :span="4"
-                >{{ scope.row.status == "completed" ? "已启用" : "已禁用" }}
-              </el-col>
-              <el-col :span="2">
-                <el-dropdown trigger="click" placement="bottom-end">
-                  <el-icon style="cursor: pointer">
-                    <MoreFilled />
-                  </el-icon>
-                  <template #dropdown>
-                    <el-dropdown-menu>
-                      <el-dropdown-item
-                        @click="handleUpdateSegementClick(scope.row)"
-                        >编辑</el-dropdown-item
-                      >
-                      <el-dropdown-item
-                        divided
-                        @click="handleDeleteSegement(scope.row)"
-                        >删除</el-dropdown-item
-                      >
-                    </el-dropdown-menu>
-                  </template>
-                </el-dropdown>
-              </el-col>
-            </el-row>
-            <el-row>
-              {{ scope.row.content }}
-            </el-row>
-            <el-row>
-              <el-tag v-for="value in scope.row.keywords">{{ value }}</el-tag>
-            </el-row>
-          </template>
-        </el-table-column>
-      </el-table>
-      <div class="toolbar" v-if="selectedRows.length > 0">
-        <el-button type="default" class="btn">
-              <el-icon><CircleCheck /></el-icon>  启用
-            </el-button>
-            <el-button type="default" class="btn">
-              <el-icon><CircleClose /></el-icon>  禁用
-            </el-button>
-            <el-button type="danger" class="btn" style="color : #E05F57">
-              <el-icon> <Delete /> </el-icon>  删除
-            </el-button>
-            <el-button type="default" class="btn">
-              <el-icon><Remove /></el-icon>  取消
-            </el-button>
-      </div>
-      <el-pagination
-        layout="prev, pager, next"
-        :total="total"
-        v-model:current-page="page"
-        v-model:page-size="limit"
-        @change="handlePageChange"
-      />
-    </el-col>
-    <el-col :span="2"> </el-col>
-    <el-col :span="11"> </el-col>
+    <el-row>
+      <el-col :span="11">
+        <el-table :data="segementList" @selection-change="handleSelectionChange">
+          <el-table-column type="selection" width="30" />
+          <el-table-column :label="`${total} 分段`">
+            <template #default="scope">
+              <el-row>
+                <el-col :span="6">分段 {{ scope.row.position }} </el-col>
+                <el-col :span="6"> {{ scope.row.word_count }} 字符</el-col>
+                <el-col :span="6">召回次数 {{ scope.row.hit_count }} </el-col>
+                <el-col :span="4">{{ scope.row.status == "completed" ? "已启用" : "已禁用" }}
+                </el-col>
+                <el-col :span="2">
+                  <el-dropdown trigger="click" placement="bottom-end">
+                    <el-icon style="cursor: pointer">
+                      <MoreFilled />
+                    </el-icon>
+                    <template #dropdown>
+                      <el-dropdown-menu>
+                        <el-dropdown-item @click="handleUpdateSegementClick(scope.row)">编辑</el-dropdown-item>
+                        <el-dropdown-item divided @click="handleDeleteSegement(scope.row)">删除</el-dropdown-item>
+                      </el-dropdown-menu>
+                    </template>
+                  </el-dropdown>
+                </el-col>
+              </el-row>
+              <el-row v-if="document.doc_form == 'text_model'">
+                {{ scope.row.content }}
+              </el-row>
+              <el-row v-if="document.doc_form == 'qa_model'">
+                问题: {{ scope.row.content }}</br>
+                答案: {{ scope.row.answer }}
+              </el-row>
+              <el-row>
+                <el-tag v-for="value in scope.row.keywords">{{ value }}</el-tag>
+              </el-row>
+            </template>
+          </el-table-column>
+        </el-table>
+        <el-pagination layout="prev, pager, next" :total="total" v-model:current-page="page" v-model:page-size="limit"
+          @change="handlePageChange" />
+      </el-col>
+      <el-col :span="2"> </el-col>
+      <el-col :span="11">
+        <div class="document message">
+          <h3 class="message-title">文档信息</h3>
+          <el-form>
+            <el-form-item label="原始文件名称">{{ document.name }}</el-form-item>
+            <el-form-item label="原始文件大小">{{ document.size }}</el-form-item>
+            <el-form-item label="上传日期">{{ document.created_at }}</el-form-item>
+            <el-form-item label="最后更新日期">{{ document.updated_at }}</el-form-item>
+            <el-form-item label="来源">{{ document.data_source_type }}</el-form-item>
+          </el-form>
+          <h3 class="message-title">技术参数</h3>
+          <el-form>
+            <el-form-item label="分段规则">{{ document.dataset_process_rule }}</el-form-item>
+            <el-form-item label="段落长度">{{ document.max_tokens }}</el-form-item>
+            <el-form-item label="平均段落长度">{{ document.average_segment_length }} characters</el-form-item>
+            <el-form-item label="段落数量">{{ document.segment_count }} paragraphs</el-form-item>
+            <el-form-item label="召回次数">
+              {{ document.recall_count }}
+              {{ document.hit_count }}/{{ document.segment_count }}
+            </el-form-item>
+            <el-form-item label="嵌入时间">{{ document.indexing_latency }} sec</el-form-item>
+            <el-form-item label="嵌入花费">{{ document.tokens }} tokens</el-form-item>
+          </el-form>
+        </div>
+      </el-col>
+    </el-row>
   </div>
 
   <el-dialog v-model="showRenameModel" title="重命名" width="800">
@@ -116,21 +111,19 @@
     </div>
   </el-dialog>
 
-  <UpdateSegement
-    v-model="showUpdateSegementModel"
-    :segement="newSegement"
-    :documentId="document.id"
-    :datasetId="datasetId"
-    @update_data="handleUpdateData"
-  />
+  <UpdateSegement v-model="showUpdateSegementModel" :segement="newSegement" :documentId="document.id"
+    :datasetId="datasetId" :docForm="document.doc_form" @update_data="handleUpdateData" />
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import { MoreFilled } from "@element-plus/icons-vue";
 import { getSegmentList, deleteSegment } from "@/service/segement";
-import { ElMessage, ElMessageBox, rowContextKey } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import UpdateSegement from "@/components/updateSegement.vue";
+import { getDocumentMetaData } from "@/service/document";
+import { formatTimestamp } from "@/utils/time";
+import { DataSourceType, DataSourceTypeText, ProcessMode, ProcessModeText } from "@/models/dataset";
 
 const { document, datasetId } = defineProps(["document", "datasetId"]);
 const emit = defineEmits(["close", "update_status", "rename"]);
@@ -153,7 +146,7 @@ const handleClose = () => {
   emit("close");
 };
 const handleChange = (status) => {
-  emit("update_status", status);
+  emit("update_status", document.id.status);
 };
 
 const handleRenameEnsure = () => {
@@ -161,12 +154,10 @@ const handleRenameEnsure = () => {
   showRenameModel.value = false;
 };
 
-const handleDeleteClick = () => {};
+const handleDeleteClick = () => { };
 
-const selectedRows = ref<any>([]);
 // 段落编辑
-const handleSelectionChange = (rows:any) => {
-  selectedRows.value = rows;
+const handleSelectionChange = (rows: any) => {
 };
 
 const updateData = () => {
@@ -207,12 +198,39 @@ const handleDeleteSegement = (row) => {
     });
 };
 
+//文档信息和技术参数
+const documentMessage = async () => {
+  try {
+    const res = await getDocumentMetaData(datasetId, document.id)
+    document.size = isNaN(res.data_source_info.upload_file.size) ? '未知' : (Number(res.data_source_info.upload_file.size) / 1024).toFixed(2) + 'KB'
+    document.create_dat = formatTimestamp(res.create_dat)
+    document.update_dat = formatTimestamp(res.update_dat)
+    document.data_source_type = DataSourceTypeText[res.data_source_type as DataSourceType]
+    document.dataset_process_rule = ProcessModeText[res.dataset_process_rule.mode as ProcessMode]
+    document.max_tokens = res.dataset_process_rule.rules.segmentation.max_tokens
+    document.average_segment_length = res.average_segment_length
+    document.segment_count = res.segment_count
+    document.recall_count = Number(Number(res.hit_countres) / Number(res.segment_count)).toFixed(2)
+    document.indexing_latency = isNaN(res.indexing_latency) ? '未知' : Number(res.indexing_latency).toFixed(2)
+    if (res.tokens !== null && res.tokens !== undefined) {
+      document.tokens = res.tokens.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+    else {
+      document.tokens = '0'
+    }
+  }
+  catch (error) {
+    ElMessage.error(`文档信息展示错误：${error.message}`)
+  }
+}
+
 const handleUpdateData = () => {
   updateData();
 };
 
 onMounted(() => {
   updateData();
+  documentMessage()
 });
 
 // 分段编辑相关
@@ -252,22 +270,18 @@ const handleUpdateSegementClick = (row) => {
   gap: 16px;
   margin-top: 16px;
 }
-.toolbar {
-  position: fixed;
-bottom: 100px;
-  left: 35%;
-  transform: translate(-50%, 0%);
-  min-width: 200px;
-  border: 1px solid #409EFF;
-  border-radius: 5px;
-  background: #F5F7FF;
 
-  padding: 5px;
+.message-title {
+  padding: 20px 0;
+  font-weight: 700;
+}
 
-  .btn {
-    padding: 10px;
-    background: #F5F7FF;
-    border: 0px;
-  }
+:deep(.documen-message .el-form .el-form-item__label) {
+  text-align: left;
+  width: 100px;
+}
+
+:deep(.el-form-item--label-right .el-form-item__label) {
+  justify-content: flex-start;
 }
 </style>
