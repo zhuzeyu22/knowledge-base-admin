@@ -59,6 +59,16 @@ const handleSave = async () => {
         return
     }
 
+    if (localName.value.length < 1 || localName.value.length > 40) {
+        ElMessage.warning('知识库名称长度必须在1-40个字符之间')
+        return
+    }
+
+    if(localDescription.value.length > 400){
+        ElMessage.warning('知识库描述长度不能超过400个字符')
+        return
+    }
+
     try {
         saveLoading.value = true
         await updateKnowledgeBase(datasetId, {
