@@ -103,6 +103,7 @@
                   v-model="process_rule"
                   accordion
                   :before-collapse="handleCollapseProcessRule"
+                  :disabled="radio == 'qa_pairs'"
                 >
                   <el-collapse-item title="通用" name="custom">
                     <el-row :gutter="20">
@@ -114,17 +115,20 @@
                       <el-col :span="8"
                         ><el-input
                           v-model="custom.segmentation.separator"
+                          :disabled="radio == 'qa_pairs'"
                         ></el-input
                       ></el-col>
                       <el-col :span="8"
                         ><el-input-number
                           v-model="custom.segmentation.max_tokens"
+                          :disabled="radio == 'qa_pairs'"
                           :min="50"
                         ></el-input-number
                       ></el-col>
                       <el-col :span="8"
                         ><el-input-number
                           v-model="custom.segmentation.chunk_overlap"
+                          :disabled="radio == 'qa_pairs'"
                           :min="50"
                         ></el-input-number
                       ></el-col>
@@ -135,12 +139,14 @@
                         <el-checkbox
                           v-model="custom.pre_processing_rules[0].enabled"
                           label="替换掉连续的空格、换行符和制表符"
+                          :disabled="radio == 'qa_pairs'"
                         />
                       </el-col>
                       <el-col :span="24">
                         <el-checkbox
                           v-model="custom.pre_processing_rules[1].enabled"
                           label="删除所有 URL 和电子邮件地址"
+                          :disabled="radio == 'qa_pairs'"
                         />
                       </el-col>
                     </el-row>
@@ -153,9 +159,10 @@
                         >
                       </el-col>
                       <el-col :span="8">
-                        <el-button style="border: none; color: black"
-                          >重置</el-button
-                        >
+                        <el-button 
+                          style="border: none; color: black"
+                          :disabled="radio == 'qa_pairs'"
+                        >重置</el-button>
                       </el-col>
                     </el-row>
                   </el-collapse-item>
@@ -843,9 +850,9 @@
                   "
                 >
                   <span style="font-weight: 600">Chunk {{ index + 1 }}</span>
-                  <el-tag size="small" style="border: 'none'"
-                    >{{ segment.content?.length || 0 }} 字符</el-tag
-                  >
+                  <el-tag size="small" style="border: 'none'">
+                    {{ (segment?.content?.length | 0 ) + (segment?.question?.length | 0) + segment?.answer?.length | 0 }} 字符
+                  </el-tag>
                 </div>
 
                 <div
@@ -858,6 +865,30 @@
                   "
                 >
                   {{ segment.content }}
+                </div>
+                 <div
+                 v-if="segment.question"
+                  style="
+                    white-space: pre-wrap;
+                    word-break: break-word;
+                    line-height: 1.6;
+                    font-size: 14px;
+                    color: #606266;
+                  "
+                >
+                   问题 {{ segment.question }}
+                </div>
+                 <div
+                 v-if="segment.answer"
+                  style="
+                    white-space: pre-wrap;
+                    word-break: break-word;
+                    line-height: 1.6;
+                    font-size: 14px;
+                    color: #606266;
+                  "
+                >
+                  答案 {{ segment.answer }}
                 </div>
               </el-card>
             </div>
@@ -1137,10 +1168,6 @@ const handleUploadChange: UploadProps["onChange"] = (
         res.value.push(fileWithSequence);
         // 按序号排序，确保显示顺序正确
         res.value.sort((a, b) => (a.sequence || 0) - (b.sequence || 0));
-        //console.log("File uploaded successfully:", response);
-        if (res.value.length === 10) {
-          ElMessage.warning("上传文件达到限制");
-        }
       })
       .catch((error) => {
         // 上传失败，减少上传中计数
@@ -1166,6 +1193,12 @@ const handlePrev = () => {
 const handleNext = () => {
   step.value += 1;
 
+  if(radio.value === "qa_pairs"){
+    process_rule.value = ''
+  } else {
+    process_rule.value = 'custom'
+  }
+
   // 从 step 1 进入 step 2 时，清空文件预览内容
   if (step.value === 2) {
     previewContent.value = "";
@@ -1175,12 +1208,13 @@ const handleNext = () => {
 };
 
 const handleCollapseProcessRule = (value: string) => {
+  if(radio.value === "qa_pairs"){
+    return false;
+  }
   return value !== process_rule.value;
 };
 
 const handleCollapseParentMode = (value: string) => {
-  console.log(value);
-  console.log("parent_mode", hierarchical.value.parent_mode);
   return value !== hierarchical.value.parent_mode;
 };
 
@@ -1207,7 +1241,7 @@ const handleInit = () => {
     embedding_model_provider: embedding_model_provider.value,
     indexing_technique: indexing_technique.value,
     process_rule: {
-      mode: process_rule.value,
+      mode: process_rule.value === '' ? "custom" : process_rule.value,
       rules:
         process_rule.value === "custom" ? custom.value : hierarchical.value,
     },
@@ -1216,7 +1250,6 @@ const handleInit = () => {
   };
 
   initDataset(params).then((res) => {
-    console.log("res", res);
     dataset.value = res;
     step.value = 3;
   });
@@ -1246,10 +1279,6 @@ const handlePreviewButton = () => {
     custom.value.segmentation.max_tokens <
       custom.value.segmentation.chunk_overlap
   ) {
-    console.log(
-      "custom.segmentation.max_tokens",
-      custom.value.segmentation.max_tokens
-    );
     ElMessage.warning("分段最大长度应大于分段重叠长度");
     return;
   }
@@ -1259,8 +1288,8 @@ const handlePreviewButton = () => {
     const currentRules = custom.value;
 
     const params: IndexingEstimateParams = {
-      doc_form: "text_model",
-      doc_language: "English",
+      doc_form: radio.value === "datasets" ? "text_model" : "qa_model",
+      doc_language: "Chinese Simplified",
       indexing_technique: indexing_technique.value,
       info_list: {
         data_source_type: "upload_file",
@@ -1269,7 +1298,7 @@ const handlePreviewButton = () => {
         },
       },
       process_rule: {
-        mode: process_rule.value,
+        mode: process_rule.value === '' ? "custom" : process_rule.value,
         rules: currentRules,
       },
     };
@@ -1279,7 +1308,11 @@ const handlePreviewButton = () => {
         console.log("分段预览结果:", response);
         // 处理返回的分段内容,且不为空的
         if (response && response.preview) {
-          segmentPreview.value = response.preview;
+          if(radio.value === "datasets"){
+            segmentPreview.value = response.preview;
+          } else {
+            segmentPreview.value = response.qa_preview;
+          }
           isSegmentPreview.value = true;
           ElMessage.success("分段预览加载成功");
         } else {
@@ -1357,7 +1390,6 @@ watch(previewFile, (newFileId) => {
       fetchFilePreview(newFileId)
         .then((response) => {
           //previewContent.value = response.content
-          console.log(response);
         })
         .catch((error) => {
           console.error("获取文件预览失败:", error);
@@ -1371,17 +1403,13 @@ watch(previewFile, (newFileId) => {
         custom?.segmentation?.max_tokens &&
         custom.segmentation.max_tokens < custom.segmentation.chunk_overlap
       ) {
-        console.log(
-          "custom.segmentation.max_tokens",
-          custom.segmentation.max_tokens
-        );
         ElMessage.warning("分段最大长度应大于分段重叠长度");
         return;
       }
 
       const params: IndexingEstimateParams = {
-        doc_form: "text_model",
-        doc_language: "English",
+        doc_form: radio.value === 'datasets' ?  "text_model": "qa_model",
+        doc_language: "Chinese Simplified",
         indexing_technique: indexing_technique.value,
         info_list: {
           data_source_type: "upload_file",
@@ -1390,17 +1418,20 @@ watch(previewFile, (newFileId) => {
           },
         },
         process_rule: {
-          mode: process_rule.value,
+          mode: process_rule.value === '' ? "custom" : process_rule.value,
           rules: custom.value,
         },
       };
 
       fetchFileIndexingEstimate(params)
         .then((response) => {
-          console.log("分段预览结果:", response);
           // 处理返回的分段内容
           if (response && response.preview) {
-            segmentPreview.value = response.preview;
+            if(radio.value === "datasets"){
+              segmentPreview.value = response.preview;
+            }else{
+              segmentPreview.value = response.qa_preview;
+            }
             isSegmentPreview.value = true;
           } else {
             segmentPreview.value = [];
