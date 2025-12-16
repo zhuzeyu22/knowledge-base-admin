@@ -11,6 +11,7 @@ export interface DocumentList {
     hit_count:number;
     created_at: string;
     enabled: boolean;
+    display_status ?: string
 }
 export interface DocumentListParams {
     keyword?: string

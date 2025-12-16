@@ -114,7 +114,7 @@
             <el-table-column label="操作" width="80">
               <template #default="{ row }">
                 <el-switch 
-                :model-value="row.enabled" 
+                :model-value="row.display_status === 'error' ? false : row.enabled" 
                 @update:model-value="(newVal) => handleSwitchChange(row, newVal)"
                 :disabled="row.display_status === 'error'"
                 />
@@ -388,7 +388,7 @@ const handleSwitchChange = async (row: DocumentList, currentValue: boolean) => {
   }
   const oldValue = row.enabled; 
   try {
-    await patchDocumentStatus(datasetInfo.value.id, currentValue, row.id);
+    await patchDocumentStatus(datasetInfo.value.id, currentValue, row.id as string);
     ElMessage.success("修改成功");
     
     const newStatus = currentValue ? "available" : "disabled";
@@ -405,7 +405,7 @@ const handleSwitchChange = async (row: DocumentList, currentValue: boolean) => {
     
     if (documentSettingDetail.value && documentSettingDetail.value.id === row.id) {
       documentSettingDetail.value.display_status = newStatus;
-      documentSettingDetail.value.enabled = row.enabled;
+      documentSettingDetail.value.enabled = currentValue;
     }
   } catch (error: any) {
     ElMessage.error("修改失败");
