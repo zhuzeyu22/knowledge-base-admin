@@ -6,7 +6,7 @@
         </el-header>
         <el-main v-infinite-scroll="load" :infinite-scroll-disabled="loading" :infinite-scroll-distance="10"
             class="context-style" style="overflow: auto" v-loading="loading" elment-loading-text="数据加载中...">
-            <el-space wrap :size="16">
+            <el-space wrap :size="16" class="grid-container">
                 <CreateCard />
                 <KnowledgeBaseCard v-for="item in datasetList" :key="item.id" :dataset="item" @delete='reload' />
             </el-space>
@@ -90,5 +90,14 @@ load()
 .context-style {
     padding: 20px;
     height: 100%;
+}
+
+.grid-container {
+    display: grid;
+    /* 关键：自适应列数 */
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+    /* 列与列、行与行之间的间距 */
+    padding: 16px;
 }
 </style>

@@ -36,7 +36,7 @@ const handleCreateClick = () => {
     display: flex;
     flex-direction: column;
     position: relative;
-    width: 240px;
+    width: 100%;
     height: 240px;
     flex-shrink: 0;
     flex-grow: 1;
