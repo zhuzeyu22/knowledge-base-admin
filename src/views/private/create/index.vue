@@ -27,7 +27,7 @@
                 文件格式，最大上传文件数量为10个，单个文件大小不超过 40MB` }}
               </div>
             </el-row>
-            <UploadFiles :fileList="fileList" :accept="accept" @click="handleFileClick"></UploadFiles>
+            <UploadFiles v-model:file-list="fileList" :accept="accept" @click="handleFileClick"></UploadFiles>
           </div>
           <div v-else-if="step === 2" style="flex-grow: 1; overflow-y: auto">
             <el-col style="margin-bottom: 10px">
