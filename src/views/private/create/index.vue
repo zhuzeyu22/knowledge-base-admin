@@ -27,7 +27,7 @@
                 文件格式，最大上传文件数量为10个，单个文件大小不超过 40MB` }}
               </div>
             </el-row>
-            <uploadfiles :accept="accept"></uploadfiles>
+            <UploadFiles :fileList="fileList" :accept="accept" @click="handleFileClick"></UploadFiles>
           </div>
           <div v-else-if="step === 2" style="flex-grow: 1; overflow-y: auto">
             <el-col style="margin-bottom: 10px">
@@ -508,8 +508,6 @@ import { UploadFilled, Back, Document, Delete } from "@element-plus/icons-vue";
 import { ElMessage, type UploadProps, type UploadUserFile } from "element-plus";
 import {
   initDataset,
-  RetrievalModel,
-  uploadDocument,
   UploadResponse,
   getFilesPreview,
   fetchFileIndexingEstimate,
@@ -518,7 +516,8 @@ import {
   type IndexingEstimateParams,
 } from "@/service/datasets";
 import CreateFinish from "@/components/createFinish.vue";
-import uploadfiles from "@/components/uploadFiles/index.vue";
+import UploadFiles from "@/components/uploadFiles/index.vue";
+import { RetrievalModel } from "@/models/dataset";
 
 const radio = ref("datasets");
 
@@ -532,16 +531,11 @@ const isSegmentPreview = ref(false); // 标识当前是否为分段预览模式
 
 const res = ref<UploadResponse[]>([]);
 const step = ref(1);
-let uploadSequence = 0; // 上传序号计数器
-const MAX_FILE_COUNT = 10; // 最大文件数量限制
-let uploadingCount = 0; // 正在上传中的文件数量
 
 // 监听 radio 变化，重置上传序号和清空文件列表
 watch(
   () => radio.value,
   () => {
-    uploadSequence = 0;
-    uploadingCount = 0;
     // 切换上传类型时清空已上传的文件
     res.value = [];
     fileList.value = [];
@@ -710,82 +704,6 @@ const official = ref("official");
 
 const dataset = ref({});
 
-// 处理超出文件数量限制
-const handleExceed = (files: File[]) => {
-  const remainingSlots = MAX_FILE_COUNT - res.value.length;
-  if (remainingSlots > 0) {
-    ElMessage.warning(
-      `批量上传超过${MAX_FILE_COUNT}个文件，应按顺序只上传${MAX_FILE_COUNT}个文件`
-    );
-  } else {
-    ElMessage.warning(
-      `已达到最大文件数量限制${MAX_FILE_COUNT}个，请删除文件后再上传`
-    );
-  }
-};
-
-const handleUploadChange: UploadProps["onChange"] = (
-  uploadFile,
-  uploadFiles
-) => {
-  // 计算当前已上传 + 正在上传的总数
-  const totalCount = res.value.length + uploadingCount;
-
-  // 如果已经达到或超过最大限制，不允许上传
-  if (totalCount >= MAX_FILE_COUNT) {
-    const index = uploadFiles.findIndex((f) => f.uid === uploadFile.uid);
-    ElMessage.error(
-      "已达到最大上传文件数量,请先删除列表中的文件在进行相应操作"
-    );
-    if (index > -1) {
-      uploadFiles.splice(index, 1);
-    }
-    return;
-  }
-
-  // 验证文件格式
-  const type = uploadFile.name.replace(/.*\./, "");
-  let regex =
-    radio.value === "datasets"
-      ? ["pdf", "doc", "docx", "txt", "html", "markdown", "md", "xls", "xlsx", "csv"]
-      : ["csv", "xls", "xlsx"];
-
-  if (!regex.find((x) => x === type)) {
-    ElMessage.error("文件格式错误，请上传正确的文件格式");
-    uploadFiles.pop();
-    return;
-  }
-  // 开始上传文件
-  const formData = new FormData();
-  if (uploadFile.raw) {
-    // 增加正在上传的计数
-    uploadingCount++;
-    // 为当前文件分配序号
-    const currentSequence = uploadSequence++;
-    formData.append("file", uploadFile.raw);
-    uploadDocument(formData)
-      .then((response) => {
-        // 上传完成，减少上传中计数
-        uploadingCount--;
-        // 添加序号到响应对象
-        const fileWithSequence = { ...response, sequence: currentSequence };
-        res.value.push(fileWithSequence);
-        // 按序号排序，确保显示顺序正确
-        res.value.sort((a, b) => (a.sequence || 0) - (b.sequence || 0));
-      })
-      .catch((error) => {
-        // 上传失败，减少上传中计数
-        uploadingCount--;
-        ElMessage.error(`文件上传失败${error}`);
-        console.error("File upload failed:", error);
-        // 上传失败时从 fileList 中移除
-        const index = uploadFiles.findIndex((f) => f.uid === uploadFile.uid);
-        if (index > -1) {
-          uploadFiles.splice(index, 1);
-        }
-      });
-  }
-};
 
 const handlePrev = () => {
   step.value -= 1;
@@ -938,52 +856,6 @@ const handleFileClick = (fileId: string) => {
     showPreview.value = true; // 显示预览模块
     previewFile.value = fileId; // 选中该文件
   }
-};
-
-// 删除文件
-const handleDeleteFile = (fileId: string) => {
-  const index = res.value.findIndex((file) => file.id === fileId);
-  if (index > -1) {
-    const wasAtLimit = res.value.length >= MAX_FILE_COUNT;
-    res.value.splice(index, 1);
-    // 同时从 fileList 中删除
-    const fileListIndex = fileList.value.findIndex(
-      (file) => file.uid === fileId
-    );
-    if (fileListIndex > -1) {
-      fileList.value.splice(fileListIndex, 1);
-    }
-    // 如果删除的是当前预览的文件，清空预览内容
-    if (previewFile.value === fileId) {
-      previewFile.value = null;
-      previewContent.value = "";
-    }
-    // 如果删除后没有文件了，隐藏预览模块
-    if (res.value.length === 0) {
-      showPreview.value = false;
-    }
-    // 如果之前达到限制，删除后提示可以继续上传
-    if (wasAtLimit) {
-      ElMessage.success("文件已删除，现在可以继续上传");
-    } else {
-      ElMessage.success("文件已删除");
-    }
-  }
-};
-
-// 获取文件扩展名
-const getFileExtension = (fileName: string): string => {
-  const ext = fileName.split(".").pop()?.toUpperCase() || "";
-  return ext;
-};
-
-// 格式化文件大小
-const formatFileSize = (bytes: number): string => {
-  if (!bytes || bytes === 0) return "0B";
-  const k = 1024;
-  const sizes = ["B", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return (bytes / Math.pow(k, i)).toFixed(2) + sizes[i];
 };
 
 // watch侦听文件选择变化，自动获取预览内容

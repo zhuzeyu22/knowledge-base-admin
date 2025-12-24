@@ -54,9 +54,8 @@ const { accept } = defineProps({
 const emit = defineEmits(["click", "delete"]);
 
 //文件列表
-const fileList = ref<(UploadUserFile & UploadResponse)[]>([]);
+const fileList = defineModel("fileList");
 const MAX_FILE_COUNT = 10; // 最大文件数量限制
-const uploadRef = ref()
 
 const handleUploadChange: UploadProps["onChange"] = (
     uploadFile,
