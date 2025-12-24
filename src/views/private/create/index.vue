@@ -1,13 +1,7 @@
 <template>
   <el-container class="content-container">
     <el-header class="header-style">
-      <el-button
-        type="primary"
-        link
-        size="default"
-        @click="router.back()"
-        style="padding: 0; margin-right: 16px"
-      >
+      <el-button type="primary" link size="default" @click="router.back()" style="padding: 0; margin-right: 16px">
         <el-icon>
           <Back />
         </el-icon>
@@ -15,19 +9,12 @@
       <div>创建知识库</div>
     </el-header>
     <el-main v-if="step !== 3" class="context-style" style="overflow: auto">
-      <el-card
-        class="wapper-style"
-        body-style="height: 100%; display: flex; flex-direction: row;"
-      >
+      <el-card class="wapper-style" body-style="height: 100%; display: flex; flex-direction: row;">
         <el-col :span="11" style="display: flex; flex-direction: column">
           <div v-if="step === 1" style="flex-grow: 1">
             <el-row>
               <el-row style="display: flex;align-items: center; margin-bottom: 10px">
-                <el-radio-group
-                  v-model="radio"
-                  text-color="#626aef"
-                  fill="rgb(239, 240, 253)"
-                >
+                <el-radio-group v-model="radio" text-color="#626aef" fill="rgb(239, 240, 253)">
                   <el-radio-button label="文档上传" value="datasets" />
                   <el-radio-button label="问答对上传" value="qa_pairs" />
                 </el-radio-group>
@@ -36,75 +23,18 @@
                 </div>
               </el-row>
               <div style="padding: 10px; font-size: 14px">
-                {{ `支持 ${ radio === 'datasets' ? "DOC、DOCX、TXT、PDF、HTML、MARKDOWN" : ''}XLSX、XLS、、CSV 文件格式，最大上传文件数量为10个，单个文件大小不超过 40MB` }}
-              </div>
-              <el-upload
-                v-model:file-list="fileList"
-                style="width: 100%"
-                drag
-                :auto-upload="false"
-                :accept="radio === 'datasets' ? '.pdf,.doc,.docx,.txt,.html,.markdown,.md,.xls,.xlsx,.csv' : '.csv,.xls,.xlsx'"
-                action=""
-                :on-change="handleUploadChange"
-                :on-exceed="handleExceed"
-                multiple
-                :show-file-list="false"
-              >
-                <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-                <div class="el-upload__text">
-                  <el-col>
-                    <el-button type="primary" size="small"
-                      >选择文件上传</el-button
-                    >
-                  </el-col>
-                  <el-col style="margin-top: 10px"> 或将文件拖拽到此处</el-col>
-                </div>
-              </el-upload>
-              <!-- 已上传文件列表 -->
-              <div v-if="res.length > 0" class="file-list-container">
-                <div class="file-list-card">
-                  <div class="file-list-scroll">
-                    <div
-                      v-for="file in res"
-                      :key="file.id"
-                      class="uploaded-file-item"
-                    >
-                      <div class="file-info" @click="handleFileClick(file.id)">
-                        <el-icon class="file-icon" :size="32" color="#409EFF">
-                          <Document />
-                        </el-icon>
-                        <div class="file-details">
-                          <div class="file-name">{{ file.name }}</div>
-                          <div class="file-meta">
-                            {{ getFileExtension(file.name) }} ·
-                            {{ formatFileSize(file.size) }}
-                          </div>
-                        </div>
-                      </div>
-                      <el-icon
-                        class="delete-icon"
-                        @click="handleDeleteFile(file.id)"
-                        :size="20"
-                        color="#909399"
-                      >
-                        <Delete />
-                      </el-icon>
-                    </div>
-                  </div>
-                </div>
+                {{ `支持 ${radio === 'datasets' ? "DOC、DOCX、TXT、PDF、HTML、MARKDOWN" : ''}XLSX、XLS、、CSV
+                文件格式，最大上传文件数量为10个，单个文件大小不超过 40MB` }}
               </div>
             </el-row>
+            <uploadfiles :accept="accept"></uploadfiles>
           </div>
           <div v-else-if="step === 2" style="flex-grow: 1; overflow-y: auto">
             <el-col style="margin-bottom: 10px">
               <div class="title">分段设置</div>
               <el-card shadow="never">
-                <el-collapse
-                  v-model="process_rule"
-                  accordion
-                  :before-collapse="handleCollapseProcessRule"
-                  :disabled="radio == 'qa_pairs'"
-                >
+                <el-collapse v-model="process_rule" accordion :before-collapse="handleCollapseProcessRule"
+                  :disabled="radio == 'qa_pairs'">
                   <el-collapse-item title="通用" name="custom">
                     <el-row :gutter="20">
                       <el-col :span="8">分段标识符</el-col>
@@ -112,57 +42,30 @@
                       <el-col :span="8">分段重叠长度</el-col>
                     </el-row>
                     <el-row :gutter="20">
-                      <el-col :span="8"
-                        ><el-input
-                          v-model="custom.segmentation.separator"
-                          :disabled="radio == 'qa_pairs'"
-                        ></el-input
-                      ></el-col>
-                      <el-col :span="8"
-                        ><el-input-number
-                          v-model="custom.segmentation.max_tokens"
-                          :disabled="radio == 'qa_pairs'"
-                          :min="50"
-                        ></el-input-number
-                      ></el-col>
-                      <el-col :span="8"
-                        ><el-input-number
-                          v-model="custom.segmentation.chunk_overlap"
-                          :disabled="radio == 'qa_pairs'"
-                          :min="50"
-                        ></el-input-number
-                      ></el-col>
+                      <el-col :span="8"><el-input v-model="custom.segmentation.separator"
+                          :disabled="radio == 'qa_pairs'"></el-input></el-col>
+                      <el-col :span="8"><el-input-number v-model="custom.segmentation.max_tokens"
+                          :disabled="radio == 'qa_pairs'" :min="50"></el-input-number></el-col>
+                      <el-col :span="8"><el-input-number v-model="custom.segmentation.chunk_overlap"
+                          :disabled="radio == 'qa_pairs'" :min="50"></el-input-number></el-col>
                     </el-row>
                     <el-row>
                       <el-col :span="24"> 文本预处理规则 </el-col>
                       <el-col :span="24">
-                        <el-checkbox
-                          v-model="custom.pre_processing_rules[0].enabled"
-                          label="替换掉连续的空格、换行符和制表符"
-                          :disabled="radio == 'qa_pairs'"
-                        />
+                        <el-checkbox v-model="custom.pre_processing_rules[0].enabled" label="替换掉连续的空格、换行符和制表符"
+                          :disabled="radio == 'qa_pairs'" />
                       </el-col>
                       <el-col :span="24">
-                        <el-checkbox
-                          v-model="custom.pre_processing_rules[1].enabled"
-                          label="删除所有 URL 和电子邮件地址"
-                          :disabled="radio == 'qa_pairs'"
-                        />
+                        <el-checkbox v-model="custom.pre_processing_rules[1].enabled" label="删除所有 URL 和电子邮件地址"
+                          :disabled="radio == 'qa_pairs'" />
                       </el-col>
                     </el-row>
                     <el-row>
                       <el-col :span="4">
-                        <el-button
-                          style="color: skyblue"
-                          @click="handlePreviewButton"
-                          >预览</el-button
-                        >
+                        <el-button style="color: skyblue" @click="handlePreviewButton">预览</el-button>
                       </el-col>
                       <el-col :span="8">
-                        <el-button 
-                          style="border: none; color: black"
-                          :disabled="radio == 'qa_pairs'"
-                        >重置</el-button>
+                        <el-button style="border: none; color: black" :disabled="radio == 'qa_pairs'">重置</el-button>
                       </el-col>
                     </el-row>
                   </el-collapse-item>
@@ -172,12 +75,8 @@
                     </el-row>
                     <el-row style="width: 100%; margin-bottom: 10px">
                       <el-card shadow="never">
-                        <el-collapse
-                          v-model="hierarchical.parent_mode"
-                          style="width: 100%"
-                          accordion
-                          :before-collapse="handleCollapseParentMode"
-                        >
+                        <el-collapse v-model="hierarchical.parent_mode" style="width: 100%" accordion
+                          :before-collapse="handleCollapseParentMode">
                           <el-collapse-item title="段落" name="paragraph">
                             <el-card shadow="never">
                               <div style="font-size: 12px; margin-bottom: 8px">
@@ -188,21 +87,10 @@
                                 <el-col :span="10">分段最大长度</el-col>
                               </el-row>
                               <el-row :gutter="20">
-                                <el-col :span="10"
-                                  ><el-input
-                                    v-model="
-                                      hierarchical.segmentation.separator
-                                    "
-                                  ></el-input
-                                ></el-col>
-                                <el-col :span="10"
-                                  ><el-input-number
-                                    v-model="
-                                      hierarchical.segmentation.max_tokens
-                                    "
-                                    :min="50"
-                                  ></el-input-number
-                                ></el-col>
+                                <el-col :span="10"><el-input v-model="hierarchical.segmentation.separator
+                                  "></el-input></el-col>
+                                <el-col :span="10"><el-input-number v-model="hierarchical.segmentation.max_tokens
+                                  " :min="50"></el-input-number></el-col>
                               </el-row>
                             </el-card>
                           </el-collapse-item>
@@ -223,36 +111,19 @@
                         <el-col :span="10">分段最大长度</el-col>
                       </el-row>
                       <el-row :gutter="20" style="width: 100%">
-                        <el-col :span="10"
-                          ><el-input
-                            v-model="
-                              hierarchical.subchunk_segmentation.separator
-                            "
-                          ></el-input
-                        ></el-col>
-                        <el-col :span="10"
-                          ><el-input-number
-                            v-model="
-                              hierarchical.subchunk_segmentation.max_tokens
-                            "
-                            :min="50"
-                          ></el-input-number
-                        ></el-col>
+                        <el-col :span="10"><el-input v-model="hierarchical.subchunk_segmentation.separator
+                          "></el-input></el-col>
+                        <el-col :span="10"><el-input-number v-model="hierarchical.subchunk_segmentation.max_tokens
+                          " :min="50"></el-input-number></el-col>
                       </el-row>
                     </el-row>
                     <el-row style="width: 100%; margin-bottom: 10px">
                       <el-col :span="24"> 文本预处理规则 </el-col>
                       <el-col :span="24">
-                        <el-checkbox
-                          v-model="hierarchical.pre_processing_rules[0].enabled"
-                          label="替换掉连续的空格、换行符和制表符"
-                        />
+                        <el-checkbox v-model="hierarchical.pre_processing_rules[0].enabled" label="替换掉连续的空格、换行符和制表符" />
                       </el-col>
                       <el-col :span="24">
-                        <el-checkbox
-                          v-model="hierarchical.pre_processing_rules[1].enabled"
-                          label="删除所有 URL 和电子邮件地址"
-                        />
+                        <el-checkbox v-model="hierarchical.pre_processing_rules[1].enabled" label="删除所有 URL 和电子邮件地址" />
                       </el-col>
                     </el-row>
                   </el-collapse-item>
@@ -261,111 +132,56 @@
             </el-col>
             <el-col style="margin-bottom: 10px">
               <div class="title">Embedding 模型</div>
-              <el-select
-                v-model="embedding_model"
-                @change="handleEmbeddingModelChange"
-                disabled
-              >
-                <el-option
-                  v-for="item in embedding_model_options"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                ></el-option>
+              <el-select v-model="embedding_model" @change="handleEmbeddingModelChange" disabled>
+                <el-option v-for="item in embedding_model_options" :key="item.value" :label="item.label"
+                  :value="item.value"></el-option>
               </el-select>
             </el-col>
             <el-col style="margin-bottom: 10px">
               <div class="title">检索设置</div>
               <el-card shadow="never">
-                <el-collapse
-                  v-model="retrieval_model.search_method"
-                  accordion
-                  :before-collapse="handleCollapseSearchMethod"
-                >
+                <el-collapse v-model="retrieval_model.search_method" accordion
+                  :before-collapse="handleCollapseSearchMethod">
                   <el-collapse-item title="向量检索" name="semantic_search">
                     <el-row style="width: 100%; margin-bottom: 10px">
                       通过生成查询嵌入并查询与其向量表示最相似的文本分段
                     </el-row>
                     <el-card shadow="never">
-                      <el-row
-                        style="
+                      <el-row style="
                           width: 100%;
                           margin-bottom: 10px;
                           display: flex;
                           align-items: center;
-                        "
-                      >
-                        <el-switch
-                          v-model="retrieval_model.reranking_enable"
-                          style="margin-right: 10px"
-                        />
+                        ">
+                        <el-switch v-model="retrieval_model.reranking_enable" style="margin-right: 10px" />
                         <div>Rerank 模型</div>
                       </el-row>
-                      <el-row
-                        v-if="retrieval_model.reranking_enable"
-                        style="width: 100%; margin-bottom: 10px"
-                      >
-                        <el-select
-                          v-model="rerank_model"
-                          @change="handleRerankModelChange"
-                          disabled
-                        >
-                          <el-option
-                            v-for="item in rerank_model_options"
-                            :key="item.value"
-                            :label="item.label"
-                            :value="item.value"
-                          ></el-option>
+                      <el-row v-if="retrieval_model.reranking_enable" style="width: 100%; margin-bottom: 10px">
+                        <el-select v-model="rerank_model" @change="handleRerankModelChange" disabled>
+                          <el-option v-for="item in rerank_model_options" :key="item.value" :label="item.label"
+                            :value="item.value"></el-option>
                         </el-select>
                       </el-row>
                       <el-row>
                         <el-row style="width: 100%" :gutter="20">
                           <el-col :span="12">Top K</el-col>
                           <el-col :span="12">
-                            <el-switch
-                              v-model="retrieval_model.score_threshold_enabled"
-                            />
+                            <el-switch v-model="retrieval_model.score_threshold_enabled" />
                             Score 阈值
                           </el-col>
                         </el-row>
                         <el-row style="width: 100%" :gutter="20">
                           <el-col :span="12">
-                            <el-input-number
-                              v-model="retrieval_model.top_k"
-                              :min="1"
-                              :max="10"
-                              :step="1"
-                            />
-                            <el-slider
-                              class="slider-style"
-                              v-model="retrieval_model.top_k"
-                              size="small"
-                              :min="1"
-                              :max="10"
-                              :step="1"
-                            />
+                            <el-input-number v-model="retrieval_model.top_k" :min="1" :max="10" :step="1" />
+                            <el-slider class="slider-style" v-model="retrieval_model.top_k" size="small" :min="1"
+                              :max="10" :step="1" />
                           </el-col>
                           <el-col :span="12">
-                            <el-input-number
-                              v-model="retrieval_model.score_threshold"
-                              :disabled="
-                                !retrieval_model.score_threshold_enabled
-                              "
-                              :min="0"
-                              :max="1"
-                              :step="0.01"
-                            />
-                            <el-slider
-                              class="slider-style"
-                              v-model="retrieval_model.score_threshold"
-                              size="small"
-                              :disabled="
-                                !retrieval_model.score_threshold_enabled
-                              "
-                              :min="0"
-                              :max="1"
-                              :step="0.01"
-                            />
+                            <el-input-number v-model="retrieval_model.score_threshold" :disabled="!retrieval_model.score_threshold_enabled
+                              " :min="0" :max="1" :step="0.01" />
+                            <el-slider class="slider-style" v-model="retrieval_model.score_threshold" size="small"
+                              :disabled="!retrieval_model.score_threshold_enabled
+                                " :min="0" :max="1" :step="0.01" />
                           </el-col>
                         </el-row>
                       </el-row>
@@ -376,85 +192,41 @@
                       索引文档中的所有词汇，从而允许用户查询任意词汇，并返回包含这些词汇的文本片段
                     </el-row>
                     <el-card shadow="never">
-                      <el-row
-                        style="
+                      <el-row style="
                           width: 100%;
                           margin-bottom: 10px;
                           display: flex;
                           align-items: center;
-                        "
-                      >
-                        <el-switch
-                          v-model="retrieval_model.reranking_enable"
-                          style="margin-right: 10px"
-                        />
+                        ">
+                        <el-switch v-model="retrieval_model.reranking_enable" style="margin-right: 10px" />
                         <div>Rerank 模型</div>
                       </el-row>
-                      <el-row
-                        v-if="retrieval_model.reranking_enable"
-                        style="width: 100%; margin-bottom: 10px"
-                      >
-                        <el-select
-                          v-model="rerank_model"
-                          @change="handleRerankModelChange"
-                          disabled
-                        >
-                          <el-option
-                            v-for="item in rerank_model_options"
-                            :key="item.value"
-                            :label="item.label"
-                            :value="item.value"
-                          ></el-option>
+                      <el-row v-if="retrieval_model.reranking_enable" style="width: 100%; margin-bottom: 10px">
+                        <el-select v-model="rerank_model" @change="handleRerankModelChange" disabled>
+                          <el-option v-for="item in rerank_model_options" :key="item.value" :label="item.label"
+                            :value="item.value"></el-option>
                         </el-select>
                       </el-row>
                       <el-row>
                         <el-row style="width: 100%" :gutter="20">
                           <el-col :span="12">Top K</el-col>
                           <el-col :span="12">
-                            <el-switch
-                              v-model="retrieval_model.score_threshold_enabled"
-                            />
+                            <el-switch v-model="retrieval_model.score_threshold_enabled" />
                             Score 阈值
                           </el-col>
                         </el-row>
                         <el-row style="width: 100%" :gutter="20">
                           <el-col :span="12">
-                            <el-input-number
-                              v-model="retrieval_model.top_k"
-                              :min="1"
-                              :max="10"
-                              :step="1"
-                            />
-                            <el-slider
-                              class="slider-style"
-                              v-model="retrieval_model.top_k"
-                              size="small"
-                              :min="1"
-                              :max="10"
-                              :step="1"
-                            />
+                            <el-input-number v-model="retrieval_model.top_k" :min="1" :max="10" :step="1" />
+                            <el-slider class="slider-style" v-model="retrieval_model.top_k" size="small" :min="1"
+                              :max="10" :step="1" />
                           </el-col>
                           <el-col :span="12">
-                            <el-input-number
-                              v-model="retrieval_model.score_threshold"
-                              :disabled="
-                                !retrieval_model.score_threshold_enabled
-                              "
-                              :min="0"
-                              :max="1"
-                              :step="0.01"
-                            />
-                            <el-slider
-                              class="slider-style"
-                              v-model="retrieval_model.score_threshold"
-                              size="small"
-                              :disabled="
-                                !retrieval_model.score_threshold_enabled
-                              "
-                              :min="0"
-                              :max="1"
-                              :step="0.01"
-                            />
+                            <el-input-number v-model="retrieval_model.score_threshold" :disabled="!retrieval_model.score_threshold_enabled
+                              " :min="0" :max="1" :step="0.01" />
+                            <el-slider class="slider-style" v-model="retrieval_model.score_threshold" size="small"
+                              :disabled="!retrieval_model.score_threshold_enabled
+                                " :min="0" :max="1" :step="0.01" />
                           </el-col>
                         </el-row>
                       </el-row>
@@ -465,109 +237,58 @@
                       同时执行全文检索和向量检索，并应用重排序步骤，从两类查询结果中选择匹配用户问题的最佳结果，用户可以选择设置权重或配置重新排序模型。
                     </el-row>
                     <el-row>
-                      <el-tabs
-                        v-model="retrieval_model.reranking_mode"
-                        type="border-card"
-                      >
+                      <el-tabs v-model="retrieval_model.reranking_mode" type="border-card">
                         <el-tab-pane name="weighted_score" label="权重设置">
                           <div>
                             通过调整分配的权重，重新排序策略确定是优先进行语义匹配还是关键字匹配。
                           </div>
                           <el-row style="margin-bottom: 10px">
-                            <el-slider
-                              v-model="
-                                retrieval_model.weights.keyword_setting
-                                  .keyword_weight
-                              "
-                              :onchange="
-                                (retrieval_model.weights.vector_setting.vector_weight =
-                                  Number(
-                                    (
-                                      1 -
-                                      retrieval_model.weights.keyword_setting
-                                        .keyword_weight
-                                    ).toFixed(1)
-                                  ))
-                              "
-                              :min="0"
-                              :max="1"
-                              :step="0.1"
-                            />
-                            <el-col :span="12"
-                              >语义{{
-                                retrieval_model.weights.keyword_setting
-                                  .keyword_weight
-                              }}</el-col
-                            >
-                            <el-col :span="12"
-                              >{{
-                                retrieval_model.weights.vector_setting
-                                  .vector_weight
-                              }}关键词</el-col
-                            >
+                            <el-slider v-model="retrieval_model.weights.keyword_setting
+                              .keyword_weight
+                              " :onchange="(retrieval_model.weights.vector_setting.vector_weight =
+                                Number(
+                                  (
+                                    1 -
+                                    retrieval_model.weights.keyword_setting
+                                      .keyword_weight
+                                  ).toFixed(1)
+                                ))
+                                " :min="0" :max="1" :step="0.1" />
+                            <el-col :span="12">语义{{
+                              retrieval_model.weights.keyword_setting
+                                .keyword_weight
+                            }}</el-col>
+                            <el-col :span="12">{{
+                              retrieval_model.weights.vector_setting
+                                .vector_weight
+                            }}关键词</el-col>
                           </el-row>
-                          <el-row
-                            v-if="retrieval_model.reranking_enable"
-                            style="width: 100%; margin-bottom: 10px"
-                          >
-                            <el-input
-                              v-model="
-                                retrieval_model.reranking_model
-                                  .reranking_model_name
-                              "
-                              disabled
-                            ></el-input>
+                          <el-row v-if="retrieval_model.reranking_enable" style="width: 100%; margin-bottom: 10px">
+                            <el-input v-model="retrieval_model.reranking_model
+                              .reranking_model_name
+                              " disabled></el-input>
                           </el-row>
                           <el-row>
                             <el-row style="width: 100%" :gutter="20">
                               <el-col :span="12">Top K</el-col>
                               <el-col :span="12">
-                                <el-switch
-                                  v-model="
-                                    retrieval_model.score_threshold_enabled
-                                  "
-                                />
+                                <el-switch v-model="retrieval_model.score_threshold_enabled
+                                  " />
                                 Score 阈值
                               </el-col>
                             </el-row>
                             <el-row style="width: 100%" :gutter="20">
                               <el-col :span="12">
-                                <el-input-number
-                                  v-model="retrieval_model.top_k"
-                                  :min="1"
-                                  :max="10"
-                                  :step="1"
-                                />
-                                <el-slider
-                                  class="slider-style"
-                                  v-model="retrieval_model.top_k"
-                                  size="small"
-                                  :min="1"
-                                  :max="10"
-                                  :step="1"
-                                />
+                                <el-input-number v-model="retrieval_model.top_k" :min="1" :max="10" :step="1" />
+                                <el-slider class="slider-style" v-model="retrieval_model.top_k" size="small" :min="1"
+                                  :max="10" :step="1" />
                               </el-col>
                               <el-col :span="12">
-                                <el-input-number
-                                  v-model="retrieval_model.score_threshold"
-                                  :disabled="
-                                    !retrieval_model.score_threshold_enabled
-                                  "
-                                  :min="0"
-                                  :max="1"
-                                  :step="0.01"
-                                />
-                                <el-slider
-                                  class="slider-style"
-                                  v-model="retrieval_model.score_threshold"
-                                  size="small"
-                                  :disabled="
-                                    !retrieval_model.score_threshold_enabled
-                                  "
-                                  :min="0"
-                                  :max="1"
-                                  :step="0.01"
-                                />
+                                <el-input-number v-model="retrieval_model.score_threshold" :disabled="!retrieval_model.score_threshold_enabled
+                                  " :min="0" :max="1" :step="0.01" />
+                                <el-slider class="slider-style" v-model="retrieval_model.score_threshold" size="small"
+                                  :disabled="!retrieval_model.score_threshold_enabled
+                                    " :min="0" :max="1" :step="0.01" />
                               </el-col>
                             </el-row>
                           </el-row>
@@ -577,87 +298,42 @@
                             重排序模型将根据候选文档列表与用户问题语义匹配度进行重新排序，从而改进语义排序的结果
                           </div>
 
-                          <el-row
-                            style="
+                          <el-row style="
                               width: 100%;
                               margin-bottom: 10px;
                               display: flex;
                               align-items: center;
-                            "
-                          >
-                            <el-switch
-                              v-model="retrieval_model.reranking_enable"
-                              style="margin-right: 10px"
-                            />
+                            ">
+                            <el-switch v-model="retrieval_model.reranking_enable" style="margin-right: 10px" />
                             <div>Rerank 模型</div>
                           </el-row>
-                          <el-row
-                            v-if="retrieval_model.reranking_enable"
-                            style="width: 100%; margin-bottom: 10px"
-                          >
-                            <el-select
-                              v-model="rerank_model"
-                              @change="handleRerankModelChange"
-                              disabled
-                            >
-                              <el-option
-                                v-for="item in rerank_model_options"
-                                :key="item.value"
-                                :label="item.label"
-                                :value="item.value"
-                              ></el-option>
+                          <el-row v-if="retrieval_model.reranking_enable" style="width: 100%; margin-bottom: 10px">
+                            <el-select v-model="rerank_model" @change="handleRerankModelChange" disabled>
+                              <el-option v-for="item in rerank_model_options" :key="item.value" :label="item.label"
+                                :value="item.value"></el-option>
                             </el-select>
                           </el-row>
                           <el-row>
                             <el-row style="width: 100%" :gutter="20">
                               <el-col :span="12">Top K</el-col>
                               <el-col :span="12">
-                                <el-switch
-                                  v-model="
-                                    retrieval_model.score_threshold_enabled
-                                  "
-                                />
+                                <el-switch v-model="retrieval_model.score_threshold_enabled
+                                  " />
                                 Score 阈值
                               </el-col>
                             </el-row>
                             <el-row style="width: 100%" :gutter="20">
                               <el-col :span="12">
-                                <el-input-number
-                                  v-model="retrieval_model.top_k"
-                                  :min="1"
-                                  :max="10"
-                                  :step="1"
-                                />
-                                <el-slider
-                                  class="slider-style"
-                                  v-model="retrieval_model.top_k"
-                                  size="small"
-                                  :min="1"
-                                  :max="10"
-                                  :step="1"
-                                />
+                                <el-input-number v-model="retrieval_model.top_k" :min="1" :max="10" :step="1" />
+                                <el-slider class="slider-style" v-model="retrieval_model.top_k" size="small" :min="1"
+                                  :max="10" :step="1" />
                               </el-col>
                               <el-col :span="12">
-                                <el-input-number
-                                  v-model="retrieval_model.score_threshold"
-                                  :disabled="
-                                    !retrieval_model.score_threshold_enabled
-                                  "
-                                  :min="0"
-                                  :max="1"
-                                  :step="0.01"
-                                />
-                                <el-slider
-                                  class="slider-style"
-                                  v-model="retrieval_model.score_threshold"
-                                  size="small"
-                                  :disabled="
-                                    !retrieval_model.score_threshold_enabled
-                                  "
-                                  :min="0"
-                                  :max="1"
-                                  :step="0.01"
-                                />
+                                <el-input-number v-model="retrieval_model.score_threshold" :disabled="!retrieval_model.score_threshold_enabled
+                                  " :min="0" :max="1" :step="0.01" />
+                                <el-slider class="slider-style" v-model="retrieval_model.score_threshold" size="small"
+                                  :disabled="!retrieval_model.score_threshold_enabled
+                                    " :min="0" :max="1" :step="0.01" />
                               </el-col>
                             </el-row>
                           </el-row>
@@ -676,218 +352,141 @@
               </el-radio-group>
             </el-col>
           </div>
-          <div
-            style="
+          <div style="
               align-self: flex-end;
               display: flex;
               flex-direction: row-reverse;
               justify-content: space-between;
               margin-top: 10px;
-            "
-          >
-            <el-button
-              style="align-self: flex-end"
-              v-if="step === 1"
-              type="primary"
-              :disabled="fileList.length === 0"
-              @click="handleNext"
-              >下一步</el-button
-            >
-            <el-button v-if="step === 2" type="primary" @click="handleInit"
-              >保存并处理</el-button
-            >
-            <el-button
-              v-if="step !== 1"
-              type="primary"
-              @click="handlePrev"
-              style="margin-right: 10px"
-              >上一步</el-button
-            >
+            ">
+            <el-button style="align-self: flex-end" v-if="step === 1" type="primary" :disabled="fileList.length === 0"
+              @click="handleNext">下一步</el-button>
+            <el-button v-if="step === 2" type="primary" @click="handleInit">保存并处理</el-button>
+            <el-button v-if="step !== 1" type="primary" @click="handlePrev" style="margin-right: 10px">上一步</el-button>
           </div>
         </el-col>
         <!-- diliver -->
         <el-col :span="2"> </el-col>
         <!-- Step 1 右侧：根据是否点击文件列表显示内容 -->
-        <el-col
-          :span="11"
-          v-if="step === 1"
-          style="display: flex; flex-direction: column; height: 100%"
-        >
+        <el-col :span="11" v-if="step === 1" style="display: flex; flex-direction: column; height: 100%">
           <!-- 未点击文件列表时显示空白 -->
           <div v-if="!showPreview" style="width: 100%; height: 100%"></div>
           <!-- 点击文件列表后显示预览 -->
-          <div
-            v-else
-            style="display: flex; flex-direction: column; height: 100%"
-          >
+          <div v-else style="display: flex; flex-direction: column; height: 100%">
             <el-row style="margin-bottom: 10px">
               <div class="title">文件预览</div>
             </el-row>
             <!-- 文件内容预览 -->
-            <el-card
-              shadow="never"
-              style="
+            <el-card shadow="never" style="
                 flex: 1;
                 overflow: hidden;
                 display: flex;
                 flex-direction: column;
-              "
-              body-style="flex: 1; overflow: auto; display: flex; flex-direction: column;"
-            >
-              <div
-                v-if="!previewFile"
-                style="
+              " body-style="flex: 1; overflow: auto; display: flex; flex-direction: column;">
+              <div v-if="!previewFile" style="
                   display: flex;
                   justify-content: center;
                   align-items: center;
                   height: 100%;
                   color: #909399;
-                "
-              >
+                ">
                 请选择要预览的文件
               </div>
-              <div
-                v-else
-                style="
+              <div v-else style="
                   white-space: pre-wrap;
                   word-break: break-word;
                   line-height: 1.6;
                   font-size: 14px;
-                "
-              >
+                ">
                 {{ previewContent }}
               </div>
             </el-card>
           </div>
         </el-col>
         <!-- Step 2 右侧：文件预览 -->
-        <el-col
-          :span="11"
-          v-if="step === 2"
-          style="display: flex; flex-direction: column; height: 100%"
-        >
-          <el-row
-            style="
+        <el-col :span="11" v-if="step === 2" style="display: flex; flex-direction: column; height: 100%">
+          <el-row style="
               margin-bottom: 10px;
               display: flex;
               justify-content: space-between;
               align-items: center;
-            "
-          >
+            ">
             <div class="title">文件预览</div>
           </el-row>
-          <el-select
-            v-model="previewFile"
-            placeholder="请选择文件预览"
-            style="width: 100%; margin-bottom: 10px"
-          >
-            <el-option
-              v-for="value in res"
-              :key="value.id"
-              :label="value.name"
-              :value="value.id"
-            />
+          <el-select v-model="previewFile" placeholder="请选择文件预览" style="width: 100%; margin-bottom: 10px">
+            <el-option v-for="value in res" :key="value.id" :label="value.name" :value="value.id" />
           </el-select>
           <!-- 文件内容预览 -->
-          <el-card
-            v-if="!isSegmentPreview"
-            shadow="never"
-            style="
+          <el-card v-if="!isSegmentPreview" shadow="never" style="
               flex: 1;
               overflow: hidden;
               display: flex;
               flex-direction: column;
-            "
-            body-style="flex: 1; overflow: auto; display: flex; flex-direction: column;"
-          >
-            <div
-              v-if="!previewFile"
-              style="
+            " body-style="flex: 1; overflow: auto; display: flex; flex-direction: column;">
+            <div v-if="!previewFile" style="
                 display: flex;
                 justify-content: center;
                 align-items: center;
                 height: 100%;
                 color: #909399;
-              "
-            >
+              ">
               请点击左侧预览按钮来进行预览
             </div>
-            <div
-              v-else
-              style="
+            <div v-else style="
                 white-space: pre-wrap;
                 word-break: break-word;
                 line-height: 1.6;
                 font-size: 14px;
-              "
-            >
+              ">
               {{ previewContent }}
             </div>
           </el-card>
           <!-- 分段内容预览 -->
-          <el-card
-            v-else
-            shadow="never"
-            style="
+          <el-card v-else shadow="never" style="
               flex: 1;
               overflow: hidden;
               display: flex;
               flex-direction: column;
-            "
-            body-style="flex: 1; overflow: auto; display: flex; flex-direction: column;"
-          >
+            " body-style="flex: 1; overflow: auto; display: flex; flex-direction: column;">
             <div style="display: flex; flex-direction: column; gap: 16px">
-              <el-card
-                v-for="(segment, index) in segmentPreview"
-                :key="index"
-                shadow="hover"
-              >
-                <div
-                  style="
+              <el-card v-for="(segment, index) in segmentPreview" :key="index" shadow="hover">
+                <div style="
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
-                  "
-                >
+                  ">
                   <span style="font-weight: 600">Chunk {{ index + 1 }}</span>
                   <el-tag size="small" style="border: 'none'">
-                    {{ (segment?.content?.length | 0 ) + (segment?.question?.length | 0) + segment?.answer?.length | 0 }} 字符
+                    {{ (segment?.content?.length | 0) + (segment?.question?.length | 0) + segment?.answer?.length | 0
+                    }} 字符
                   </el-tag>
                 </div>
 
-                <div
-                  style="
+                <div style="
                     white-space: pre-wrap;
                     word-break: break-word;
                     line-height: 1.6;
                     font-size: 14px;
                     color: #606266;
-                  "
-                >
+                  ">
                   {{ segment.content }}
                 </div>
-                 <div
-                 v-if="segment.question"
-                  style="
+                <div v-if="segment.question" style="
                     white-space: pre-wrap;
                     word-break: break-word;
                     line-height: 1.6;
                     font-size: 14px;
                     color: #606266;
-                  "
-                >
-                   问题 {{ segment.question }}
+                  ">
+                  问题 {{ segment.question }}
                 </div>
-                 <div
-                 v-if="segment.answer"
-                  style="
+                <div v-if="segment.answer" style="
                     white-space: pre-wrap;
                     word-break: break-word;
                     line-height: 1.6;
                     font-size: 14px;
                     color: #606266;
-                  "
-                >
+                  ">
                   答案 {{ segment.answer }}
                 </div>
               </el-card>
@@ -904,7 +503,7 @@
 
 <script setup lang="ts">
 import router from "@/router";
-import { ref, watch, onMounted } from "vue";
+import { ref, watch, onMounted, computed } from "vue";
 import { UploadFilled, Back, Document, Delete } from "@element-plus/icons-vue";
 import { ElMessage, type UploadProps, type UploadUserFile } from "element-plus";
 import {
@@ -919,6 +518,7 @@ import {
   type IndexingEstimateParams,
 } from "@/service/datasets";
 import CreateFinish from "@/components/createFinish.vue";
+import uploadfiles from "@/components/uploadFiles/index.vue";
 
 const radio = ref("datasets");
 
@@ -950,6 +550,10 @@ watch(
     showPreview.value = false;
   }
 );
+// accept
+const accept = computed(() => {
+  return radio.value === 'datasets' ? '.pdf,.doc,.docx,.txt,.html,.markdown,.md,.xls,.xlsx,.csv' : '.csv,.xls,.xlsx'
+});
 
 const process_rule = ref("custom");
 
@@ -1143,7 +747,7 @@ const handleUploadChange: UploadProps["onChange"] = (
   const type = uploadFile.name.replace(/.*\./, "");
   let regex =
     radio.value === "datasets"
-      ? ["pdf", "doc", "docx", "txt", "html", "markdown","md", "xls", "xlsx", "csv"]
+      ? ["pdf", "doc", "docx", "txt", "html", "markdown", "md", "xls", "xlsx", "csv"]
       : ["csv", "xls", "xlsx"];
 
   if (!regex.find((x) => x === type)) {
@@ -1193,7 +797,7 @@ const handlePrev = () => {
 const handleNext = () => {
   step.value += 1;
 
-  if(radio.value === "qa_pairs"){
+  if (radio.value === "qa_pairs") {
     process_rule.value = ''
   } else {
     process_rule.value = 'custom'
@@ -1208,7 +812,7 @@ const handleNext = () => {
 };
 
 const handleCollapseProcessRule = (value: string) => {
-  if(radio.value === "qa_pairs"){
+  if (radio.value === "qa_pairs") {
     return false;
   }
   return value !== process_rule.value;
@@ -1277,7 +881,7 @@ const handlePreviewButton = () => {
   if (
     custom.value?.segmentation?.max_tokens &&
     custom.value.segmentation.max_tokens <
-      custom.value.segmentation.chunk_overlap
+    custom.value.segmentation.chunk_overlap
   ) {
     ElMessage.warning("分段最大长度应大于分段重叠长度");
     return;
@@ -1308,7 +912,7 @@ const handlePreviewButton = () => {
         console.log("分段预览结果:", response);
         // 处理返回的分段内容,且不为空的
         if (response && response.preview) {
-          if(radio.value === "datasets"){
+          if (radio.value === "datasets") {
             segmentPreview.value = response.preview;
           } else {
             segmentPreview.value = response.qa_preview;
@@ -1408,7 +1012,7 @@ watch(previewFile, (newFileId) => {
       }
 
       const params: IndexingEstimateParams = {
-        doc_form: radio.value === 'datasets' ?  "text_model": "qa_model",
+        doc_form: radio.value === 'datasets' ? "text_model" : "qa_model",
         doc_language: "Chinese Simplified",
         indexing_technique: indexing_technique.value,
         info_list: {
@@ -1427,9 +1031,9 @@ watch(previewFile, (newFileId) => {
         .then((response) => {
           // 处理返回的分段内容
           if (response && response.preview) {
-            if(radio.value === "datasets"){
+            if (radio.value === "datasets") {
               segmentPreview.value = response.preview;
-            }else{
+            } else {
               segmentPreview.value = response.qa_preview;
             }
             isSegmentPreview.value = true;
@@ -1494,11 +1098,11 @@ onMounted(() => {
 }
 
 .slider-style {
-  > .el-slider__runway {
+  >.el-slider__runway {
     margin-right: 10px;
   }
 
-  > .el-input-number {
+  >.el-input-number {
     width: 60px !important;
   }
 }
@@ -1607,6 +1211,7 @@ onMounted(() => {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }

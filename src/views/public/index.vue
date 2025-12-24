@@ -1,7 +1,7 @@
 <template>
   <el-container class="content-container">
     <el-header class="header-style">
-      <div>共享知识库</div>
+      <div>公共知识库</div>
       <el-input 
         placeholder="请输入内容" 
         v-model="search" 
