@@ -42,7 +42,6 @@
 // 上传文件组件
 import { uploadDocument, UploadResponse } from "@/service/datasets";
 import { ElMessage, UploadFile, type UploadProps, type UploadUserFile } from "element-plus";
-import { ref } from "vue";
 
 // .pdf,.doc,.docx,.txt,.html,.markdown,.md,.xls,.xlsx,.csv
 const { accept } = defineProps({
@@ -54,6 +53,7 @@ const { accept } = defineProps({
 const emit = defineEmits(["click", "delete"]);
 
 //文件列表
+// UploadResponse[] | UploadUserFile[]
 const fileList = defineModel("fileList");
 const MAX_FILE_COUNT = 10; // 最大文件数量限制
 

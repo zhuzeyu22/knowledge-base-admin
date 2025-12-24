@@ -414,7 +414,7 @@
             <div class="title">文件预览</div>
           </el-row>
           <el-select v-model="previewFile" placeholder="请选择文件预览" style="width: 100%; margin-bottom: 10px">
-            <el-option v-for="value in res" :key="value.id" :label="value.name" :value="value.id" />
+            <el-option v-for="value in fileList" :key="value.id" :label="value.name" :value="value.id" />
           </el-select>
           <!-- 文件内容预览 -->
           <el-card v-if="!isSegmentPreview" shadow="never" style="
@@ -522,14 +522,13 @@ import { RetrievalModel } from "@/models/dataset";
 const radio = ref("datasets");
 
 //文件预览内容
-const fileList = ref<UploadUserFile[]>([]);
+const fileList = ref<(UploadResponse & UploadUserFile)[]>([]);
 const previewFile = ref<string | null>(null);
 const previewContent = ref<string>("");
 const showPreview = ref(false); // 控制是否显示文件预览模块
 const segmentPreview = ref<any[]>([]); // 存储分段预览数据
 const isSegmentPreview = ref(false); // 标识当前是否为分段预览模式
 
-const res = ref<UploadResponse[]>([]);
 const step = ref(1);
 
 // 监听 radio 变化，重置上传序号和清空文件列表
@@ -537,7 +536,6 @@ watch(
   () => radio.value,
   () => {
     // 切换上传类型时清空已上传的文件
-    res.value = [];
     fileList.value = [];
     previewFile.value = null;
     previewContent.value = "";
@@ -753,7 +751,7 @@ const handleInit = () => {
       info_list: {
         data_source_type: "upload_file",
         file_info_list: {
-          file_ids: res.value.map((x) => x.id),
+          file_ids: fileList.value.map((x) => x.id),
         },
       },
     },
@@ -805,7 +803,7 @@ const handlePreviewButton = () => {
     return;
   }
 
-  if (res.value.length > 0) {
+  if (fileList.value.length > 0) {
     // 根据当前选择的 process_rule 模式获取对应的配置
     const currentRules = custom.value;
 
@@ -816,7 +814,7 @@ const handlePreviewButton = () => {
       info_list: {
         data_source_type: "upload_file",
         file_info_list: {
-          file_ids: res.value.map((x) => x.id),
+          file_ids: fileList.value.map((x) => x.id),
         },
       },
       process_rule: {
