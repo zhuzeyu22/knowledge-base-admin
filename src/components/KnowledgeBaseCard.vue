@@ -4,34 +4,31 @@
       <div class="knowledge-base-card-background"></div>
       <div class="knowledge-base-card-name">{{ dataset.name }}</div>
       <div class="knowledge-base-card-tags">
-        <el-tag type="info">{{ dataset.documentNumber }} 文档</el-tag>
-        <el-tag type="info"
-          >{{ (dataset.word_count / 1000).toFixed(1) }} 千字符</el-tag
-        >
+        <el-tag type="info" style="margin-right: 2px;">{{ dataset.documentNumber }} 文档</el-tag>
+        <el-tag type="info">{{ (dataset.word_count / 1000).toFixed(1) }} 千字符</el-tag>
       </div>
       <div class="knowledge-base-card-description">
         {{ dataset.description }}
       </div>
 
-            <div class="knowledge-base-card-label">{{ dataset.official == 'official' ? '官方' : '非官方' }}</div>
-            <div class="knowledge-base-card-operate" @click.stop>
-                <el-dropdown trigger="click" placement="bottom-end">
-                    <el-icon style="cursor: pointer">
-                        <MoreFilled />
-                    </el-icon>
-                    <template #dropdown>
-                        <el-dropdown-menu>
-                            <!-- <el-dropdown-item @click="updateUserDialogVisible = true">共享</el-dropdown-item> -->
-                            <el-dropdown-item @click="handleDeleteClick" divided>删除</el-dropdown-item>
-                        </el-dropdown-menu>
-                    </template>
-                </el-dropdown>
-            </div>
-        </div>
-    </el-card>
-    <el-dialog v-model="updateUserDialogVisible" title="添加成员" width="800">
-
-    </el-dialog>
+      <div class="knowledge-base-card-label">
+        {{ dataset.official == "official" ? "官方" : "非官方" }}
+      </div>
+      <div class="knowledge-base-card-operate" @click.stop>
+        <el-dropdown trigger="click" placement="bottom-end">
+          <el-icon style="cursor: pointer">
+            <MoreFilled />
+          </el-icon>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <!-- <el-dropdown-item @click="updateUserDialogVisible = true" divided>共享</el-dropdown-item> -->
+              <el-dropdown-item @click="handleDeleteClick">删除</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+      </div>
+    </div>
+  </el-card>
 </template>
 
 <script lang="ts" setup>
@@ -48,7 +45,6 @@ const props = defineProps<{
 }>();
 
 const router = useRouter();
-const updateUserDialogVisible = ref(false);
 
 // 跳转到详情页
 const goToDetails = () => {
@@ -57,37 +53,6 @@ const goToDetails = () => {
     query: { id: props.dataset.id },
   });
 };
-// 定义节点类型
-interface TreeNode {
-  id: number | string;
-  label: string;
-  children?: TreeNode[];
-  disabled?: boolean;
-}
-
-const data: TreeNode[] = [
-  {
-    id: 1,
-    label: "节点1",
-    children: [
-      {
-        id: 2,
-        label: "节点1-1",
-        children: [],
-      },
-      {
-        id: 3,
-        label: "节点1-2",
-        children: [],
-      },
-    ],
-  },
-  {
-    id: 4,
-    label: "节点2",
-    children: [],
-  },
-];
 
 const handleDeleteClick = () => {
   ElMessageBox.confirm(
@@ -97,7 +62,7 @@ const handleDeleteClick = () => {
       confirmButtonText: "我确定",
       cancelButtonText: "取消",
       type: "warning",
-      confirmButtonClass: "my-confirm-btn"
+      confirmButtonClass: "my-confirm-btn",
     }
   )
     .then(() => {
@@ -118,6 +83,7 @@ const handleDeleteClick = () => {
     });
   console.log("删除");
 };
+
 </script>
 
 <style scoped>
@@ -125,7 +91,7 @@ const handleDeleteClick = () => {
   display: flex;
   flex-direction: column;
   position: relative;
-  width: 200px;
+  width: 100%;
   flex-shrink: 0;
   height: 200px;
   flex-grow: 1;
@@ -156,7 +122,7 @@ const handleDeleteClick = () => {
 }
 
 .knowledge-base-card-tags {
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 
 .knowledge-base-card-description {

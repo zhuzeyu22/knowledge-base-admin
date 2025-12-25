@@ -2,14 +2,19 @@
     <div class="common-layout">
         <el-container style="height: 100%;">
             <el-aside width="200px">
-                <el-menu style="height: 100%;">
+                <el-menu class="menu">
                     <el-menu-item index="1" @click="$router.push('/private')">个人知识库</el-menu-item>
-                    <!-- <el-menu-item index="2" @click="$router.push('/public')">共享知识库</el-menu-item> -->
-                    <el-menu-item index="4" @click="$router.push('/stat')">数据统计</el-menu-item>
-                    <el-menu-item index="5" @click="$router.push('/conversation-log')">对话记录</el-menu-item>
-                    <el-menu-item index="6" @click="$router.push('/login-log')">登录记录</el-menu-item>
-                    <el-menu-item index="7" @click="$router.push('/auth-log')">授权记录</el-menu-item>
-                    <el-menu-item index="8" @click="$router.push('/logout')">退出登录</el-menu-item>
+                    <el-menu-item index="2" @click="$router.push('/public')">公共知识库</el-menu-item>
+                    <el-menu-item index="8" @click="$router.push('/team')">团队知识库</el-menu-item>
+                    <PublicTree v-if="$router.currentRoute.value.name?.toString().match('public')" class="tree">
+                    </PublicTree>
+                    <TeamTree v-if="$router.currentRoute.value.name?.toString().match('team')" class="tree"></TeamTree>
+                    <el-menu-item v-if="showStat" index="4" @click="$router.push('/stat')">数据统计</el-menu-item>
+                    <el-menu-item v-if="showConversationLog" index="5"
+                        @click="$router.push('/conversation-log')">对话记录</el-menu-item>
+                    <el-menu-item v-if="showLoginLog" index="6" @click="$router.push('/login-log')">登录记录</el-menu-item>
+                    <el-menu-item v-if="showAuthLog" index="7" @click="$router.push('/auth-log')">授权记录</el-menu-item>
+                    <!-- <el-menu-item index="8" @click="$router.push('/logout')">退出登录</el-menu-item> -->
                 </el-menu>
             </el-aside>
             <el-main>
@@ -18,23 +23,57 @@
         </el-container>
     </div>
 </template>
+<script setup lang="ts">
+import { getRolePermissionNameList, getTenantRole } from "@/service/tenant";
+import { getAccountProfile, getWorkspaceCurrent } from "@/service/workspace";
+import { computed, onBeforeMount, ref } from "vue";
+import { Permission, hasPermission } from "@/utils/permission";
+import PublicTree from "@/components/publicTree/index.vue";
+import TeamTree from "@/components/teamTree/index.vue";
 
-<script lang="ts">
-import { defineComponent } from "vue";
+const permissions = ref([]);
+const showStat = computed(() => hasPermission(permissions.value, Permission.STAT_MENU_BUTTON_VISIBLE));
+const showConversationLog = computed(() => hasPermission(permissions.value, Permission.CONVERSATION_LOG_MENU_BUTTON_VISIBLE));
+const showLoginLog = computed(() => hasPermission(permissions.value, Permission.LOGIN_LOG_MENU_BUTTON_VISIBLE));
+const showAuthLog = computed(() => hasPermission(permissions.value, Permission.AUTH_LOG_MENU_BUTTON_VISIBLE));
 
-export default defineComponent({
+onBeforeMount(async () => {
+    const { id: userId } = await getAccountProfile();
+    localStorage.setItem("authId", userId);
+    localStorage.removeItem("roleId");
 
-})
+    const { id: tenantId } = await getWorkspaceCurrent();
+    const { data } = await getTenantRole(tenantId, userId);
 
-const logout = () => {
-    console.log('logout')
-    localStorage.removeItem('token')
-}
+    if (data && data[0]) {
+        const roleId = data[0].role_id;
+        localStorage.setItem("roleId", roleId);
+        permissions.value = (await getRolePermissionNameList(roleId)).data;
+    }
+});
 
+// 树结构
 </script>
-<style>
+
+<style scoped lang="less">
 .common-layout {
     width: 100%;
     height: 100%;
+}
+
+.common-aside {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.menu {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    .tree {
+        flex: 1;
+    }
 }
 </style>

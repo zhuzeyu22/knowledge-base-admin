@@ -1,3 +1,4 @@
+// 知识库-文档 数据结构
 export type Document = {
   id: string;
   name: string;

@@ -46,30 +46,32 @@
                         <div class="title">召回段落
                             <span>{{ records.length }} </span>
                         </div>
-                        <el-card v-for="(item, index) in records" :key="index" class="card-item"
-                            @click="handleSegementClick(item)" >
-                            <!-- <template #header> -->
-                            <div style="display: flex; justify-content: space-between">
-                                <div>Chunk-{{ item.segment.position }}·{{ item.segment.word_count }} 字符</div>
-                                <div>score {{ item.score.toFixed(2) }}</div>
-                            </div>
-                            <el-divider />
-                            <!-- </template> -->
-                            <div class="segment"> {{ item.segment.content }} </div>
-                            <div class="tag">
-                                <el-tag v-for="value in item.segment.keywords">{{ value }}</el-tag>
-                            </div>
-                            <!-- <template #footer> -->
-                            <div>{{ item.segment.document.name }}</div>
-                            <!-- </template> -->
-                        </el-card>
+                        <div class="context">
+                            <el-card v-for="(item, index) in records" :key="index" class="card-item"
+                                @click="handleSegementClick(item)" >
+                                <!-- <template #header> -->
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                    <div>Chunk-{{ item.segment.position }}·{{ item.segment.word_count }} 字符</div>
+                                    <div>score {{ item.score.toFixed(2) }}</div>
+                                </div>
+                                <el-divider />
+                                <!-- </template> -->
+                                <div class="segment"> {{ Boolean(item.segment.answer) ? `问题 ${item.segment.content}` : item.segment.content }} </div>
+                                <div v-if="item.segment.answer" class="segment">答案 {{ item.segment.answer }}</div>
+                                <div class="tag">
+                                    <el-tag v-for="value in item.segment.keywords">{{ value }}</el-tag>
+                                </div>
+                                <!-- <template #footer> -->
+                                <div>{{ item.segment.document.name }}</div>
+                                <!-- </template> -->
+                            </el-card>
+                        </div>
                     </div>
                 </el-col>
             </el-row>
         </el-card>
-        <el-dialog v-model="detailVisible" title="段落详情" :modal="false" style="max-height: 600px; overflow-y: auto;"
-            @close="detailVisible = false">
-            <div style="display: flex; justify-content: space-between">
+        <el-dialog v-model="detailVisible" title="段落详情" :modal="false" class="detail" @close="detailVisible = false">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
                 <div style="display: flex; flex-direction: row; margin-bottom: 10px;">
                     <div style="margin-right: 20px;">
                         Chunk-{{ detail.segment.position }}·{{ detail.segment.word_count }} 字符
@@ -78,7 +80,8 @@
                 </div>
                 <div>score {{ detail.score.toFixed(2) }}</div>
             </div>
-            <div style="margin-bottom: 20px; font-size: 16px;">{{ detail.segment.content }}</div>
+            <div class="context"> {{ Boolean(item.segment.answer) ? `问题 ${item.segment.content}` : item.segment.content }} </div>
+            <div v-if="item.segment.answer" class="context">答案 {{ item.segment.answer }}</div>
             <div class="tag">
                 <el-tag v-for="value in detail.segment.keywords">{{ value }}</el-tag>
             </div>
@@ -111,7 +114,6 @@ const updateRecords = async () => {
             total.value = res.total | 0
             page.value = res.page | 0
             limit.value = res.limit | 0
-            console.log(total.value, page.value, limit.value)
         }).catch(error => {
             console.log(error)
         })
@@ -157,6 +159,23 @@ onMounted(() => {
 .hit-testing {
     width: 100%;
     height: 100%;
+
+    :deep(.detail){
+        height: 600px;
+        overflow-y: auto;
+        .el-dialog__body { 
+            padding: 16px;
+            height: calc(100% -40px);
+            display: flex;
+            flex-direction: column;
+            .context{
+                margin-bottom: 20px;
+                font-size: 16px;
+                flex: 1;
+                overflow: auto;
+            }
+        }
+    }
 }
 
 .card-wrapper {
@@ -195,40 +214,39 @@ onMounted(() => {
     display: flex;
     flex-direction: column;
     height: 100%;
-    overflow: auto;
 
-    .card-item {
-        margin-bottom: 10px;
-        cursor: pointer;
+    .context {
+        flex: 1;
+        overflow-y: auto;
 
-        .segment {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            line-height: 1.5;
-            max-height: 3em;
-        }
+        :deep(.card-item){
+            margin-bottom: 10px;
+            cursor: pointer;
+
+            .segment {
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                line-height: 1.5;
+                max-height: 3em;
+                margin-bottom: 10px;
+            }
 
 
-        :deep(.el-card__header) {
-            padding: 16px;
-        }
+            :deep(.el-card__header) {
+                padding: 16px;
+            }
 
-        :deep(.el-card__body) {
-            padding: 16px;
-            // height: 100px;
+            :deep(.el-card__body) {
+                padding: 16px;
+            } 
         }
     }
 }
 
 .tag {
-    // display: flex;
-    // gap: 0.5rem;
-    // flex-wrap: wrap
-    // display: inline-block;
-    // margin: 0 8px 8px 0;
     display: flex;
     flex-wrap: wrap;
     gap: 8px;

@@ -1,10 +1,11 @@
+// 知识库-文档-分段 数据结构
 export type Segment = {
   id: string;
   position: number;
   document_id: string;
   content: string;
   sign_content: string;
-  answer: string | null;
+  answer?: string | null;
   word_count: number;
   tokens: number;
   keywords: string[];

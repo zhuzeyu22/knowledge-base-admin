@@ -1,7 +1,6 @@
 <template>
-    <el-upload v-model:file-list="fileList" style="width: 100%;" drag :auto-upload="false"
-        accept=".pkg" action="" :limit="10"
-        :on-change="handleUploadChange" multiple>
+    <el-upload v-model:file-list="fileList" style="width: 100%;" drag :auto-upload="false" accept=".pkg" action=""
+        :limit="10" :on-change="handleUploadChange" multiple>
         <el-icon class="el-icon--upload"><upload-filled /></el-icon>
         <div class="el-upload__text">
             <el-col>
@@ -29,15 +28,11 @@ const handleUploadChange: UploadProps['onChange'] = (uploadFile, uploadFiles) =>
     if (uploadFile.raw) {
         formData.append('pkg', uploadFile.raw)
         uploadPlugin(formData).then(response => {
-            console.log('Plugin uploaded successfully:', response)
             unique_identifier.value = response.unique_identifier
             installPlugin({ plugin_unique_identifiers: [unique_identifier.value] }).then(res => {
-                console.log('Plugin install successfully:', res)
             }).catch(error => {
-                console.error('Plugin install failed:', error)
             })
         }).catch(error => {
-            console.error('Plugin upload failed:', error)
         })
     }
 }
