@@ -2,9 +2,13 @@
     <div class="common-layout">
         <el-container style="height: 100%;">
             <el-aside width="200px">
-                <el-menu style="height: 100%;">
+                <el-menu class="menu">
                     <el-menu-item index="1" @click="$router.push('/private')">个人知识库</el-menu-item>
-                    <el-menu-item index="2" @click="$router.push('/public')">共享知识库</el-menu-item>
+                    <el-menu-item index="2" @click="$router.push('/public')">公共知识库</el-menu-item>
+                    <el-menu-item index="8" @click="$router.push('/team')">团队知识库</el-menu-item>
+                    <PublicTree v-if="$router.currentRoute.value.name?.toString().match('public')" class="tree">
+                    </PublicTree>
+                    <TeamTree v-if="$router.currentRoute.value.name?.toString().match('team')" class="tree"></TeamTree>
                     <el-menu-item v-if="showStat" index="4" @click="$router.push('/stat')">数据统计</el-menu-item>
                     <el-menu-item v-if="showConversationLog" index="5"
                         @click="$router.push('/conversation-log')">对话记录</el-menu-item>
@@ -24,8 +28,10 @@ import { getRolePermissionNameList, getTenantRole } from "@/service/tenant";
 import { getAccountProfile, getWorkspaceCurrent } from "@/service/workspace";
 import { computed, onBeforeMount, ref } from "vue";
 import { Permission, hasPermission } from "@/utils/permission";
-const permissions = ref([]);
+import PublicTree from "@/components/publicTree/index.vue";
+import TeamTree from "@/components/teamTree/index.vue";
 
+const permissions = ref([]);
 const showStat = computed(() => hasPermission(permissions.value, Permission.STAT_MENU_BUTTON_VISIBLE));
 const showConversationLog = computed(() => hasPermission(permissions.value, Permission.CONVERSATION_LOG_MENU_BUTTON_VISIBLE));
 const showLoginLog = computed(() => hasPermission(permissions.value, Permission.LOGIN_LOG_MENU_BUTTON_VISIBLE));
@@ -45,9 +51,11 @@ onBeforeMount(async () => {
         permissions.value = (await getRolePermissionNameList(roleId)).data;
     }
 });
+
+// 树结构
 </script>
 
-<style>
+<style scoped lang="less">
 .common-layout {
     width: 100%;
     height: 100%;
@@ -57,5 +65,15 @@ onBeforeMount(async () => {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+}
+
+.menu {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    .tree {
+        flex: 1;
+    }
 }
 </style>
