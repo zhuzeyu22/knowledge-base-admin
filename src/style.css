@@ -53,6 +53,26 @@ button:hover {
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 } */
+*:focus,
+*:focus-visible {
+  outline: 0px !important;
+}
+
+/* 悬停容器 */
+.hover-container {}
+
+/* 默认隐藏按钮 */
+.hover-item {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+/* 悬停时显示 */
+.hover-container:hover .hover-item {
+    opacity: 1;
+    visibility: visible;
+}
 
 .card {
   padding: 2em;
