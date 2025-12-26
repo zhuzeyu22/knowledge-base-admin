@@ -16,20 +16,24 @@
       :infinite-scroll-distance="10" 
       class="context-style" 
       style="overflow: auto"
+      v-loading="loading" 
+      element-loading-text="数据加载中..."
     >
       <el-space wrap :size="16">
-        <KnowledgeBaseCard 
+        <KnowledgebaseCardWithCreator
           v-for="item in datasetList" 
           :key="item.id" 
           :dataset="item" 
         />
+        <DirectoryCard />
       </el-space>
     </el-main>
   </el-container>
 </template>
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import KnowledgeBaseCard from '@/components/KnowledgeBaseCard.vue'
+import KnowledgebaseCardWithCreator from '@/components/KnowledgebaseCardWithCreator.vue'
+import DirectoryCard from '@/components/DirectoryCard.vue'
 import { Dataset } from '@/models/dataset'
 import { getPublicDatasetList } from '@/service/datasets'
 const datasetList = ref<Dataset[]>([])

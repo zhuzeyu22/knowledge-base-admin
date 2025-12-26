@@ -625,19 +625,6 @@ const handleCancelSelection = () => {
   tableRef.value?.clearSelection();
   selectedRows.value = [];
 };
-const toolbarRef = ref();
-const handleClickOutside = (event: MouseEvent) => {
-  const toolbar = toolbarRef.value;
-  if (toolbar && selectedRows.value.length > 0) {
-    // 检查点击是否在工具栏内
-    const isClickInsideToolbar = toolbar.contains(event.target as Node);
-    
-    // 如果点击不在工具栏内，清空选择
-    if (!isClickInsideToolbar) {
-      handleCancelSelection();
-    }
-  }
-};
 
 
 const toolbarRef = ref();
