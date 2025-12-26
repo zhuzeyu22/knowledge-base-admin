@@ -5,10 +5,8 @@
       <div class="knowledge-base-card-name">{{ dataset.name }}</div>
       <div class="knowledge-base-card-creator">
         <el-icon class="icon"><User /></el-icon>
-        <!-- 这里展示公共知识库的来源团队 字段：team-->
-        <span v-if="dataset.team">@{{ dataset.team }}</span>
-        <!-- 这里展示团队知识库的创建者 字段：   -->
-        <span v-if="dataset.creator">@{{ dataset.creator }}</span>
+        <!-- 这里展示团队知识库的创建者 字段未给   -->
+        <span>@创建者{{ dataset.creator }}</span>
       </div>
       <div class="knowledge-base-card-tags">
         <el-tag type="info" style="margin-right: 2px;">{{ dataset.documentNumber }} 文档</el-tag>
@@ -28,7 +26,7 @@
           </el-icon>
           <template #dropdown>
             <el-dropdown-menu>
-              <!-- <el-dropdown-item @click="handlePublicDataset" v-if="dataset.creator">公开</el-dropdown-item> -->
+              <el-dropdown-item @click="handlePublicDataset">公开</el-dropdown-item>
               <el-dropdown-item @click="handleDeleteClick">删除</el-dropdown-item>
             </el-dropdown-menu>
           </template>
@@ -130,6 +128,7 @@ const handleDeleteClick = () => {
 .knowledge-base-card-creator {
   display: flex;
   margin: 4px 0;
+  font-size: 13px;
 }
 .knowledge-base-card-creator .icon {
     margin-right: 2px;

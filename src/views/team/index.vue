@@ -20,7 +20,7 @@
       element-loading-text="数据加载中..."
     >
       <el-space wrap :size="16">
-        <KnowledgebaseCardWithCreator 
+        <KnowledgeTeamCard
           v-for="item in datasetList" 
           :key="item.id" 
           :dataset="item" 
@@ -31,7 +31,6 @@
 </template>
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import KnowledgebaseCardWithCreator from '@/components/KnowledgebaseCardWithCreator.vue'
 import { Dataset } from '@/models/dataset'
 import { getPublicDatasetList } from '@/service/datasets'
 const datasetList = ref<Dataset[]>([])

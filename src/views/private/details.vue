@@ -104,10 +104,12 @@
                 <span
                   :class="[
                     'status-text',
+                    row.display_status === 'indexing' ? 'status-indexing' : row.display_status === 'queuing' ? 'status-queuing' : 
                     row.display_status === 'error' ? 'status-error' : row.enabled ? 'status-available' : 'status-disabled',
                   ]"
                 >
-                  {{ row.display_status === 'error' ? '错误' : row.enabled ? "可用" : "已禁用" }}
+                  {{ row.display_status === 'indexing' ? '索引中' : row.display_status === 'queuing'? '排队中':
+                     row.display_status === 'error' ? '错误' : row.enabled ? "可用" : "已禁用" }}
                 </span>
               </template>
             </el-table-column>
@@ -442,7 +444,7 @@ const loadData = async () => {
       datasetId.value,
       queryParams
     );
-
+    
     documentList.value = response.data || response;
     ElMessage.success("文档列表数据加载完成");
   } catch (error: any) {
@@ -820,6 +822,14 @@ onUnmounted(() => {
           .status-text {
             font-size: 14px;
             font-weight: 500;
+          }
+
+          .status-indexing {
+            color: #409eff;
+          }
+
+          .status-queuing {
+            color: #E05F57;
           }
 
           .status-error {

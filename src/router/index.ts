@@ -55,6 +55,11 @@ const routes = [
         component: () => import("@/views/auth-log/index.vue"),
       },
       {
+        path: "op-log",
+        name: "op-log",
+        component: () => import("@/views/op-log/index.vue"),
+      },
+      {
         path: "logout",
         name: "logout",
         component: () => import("@/views/logout/index.vue"),

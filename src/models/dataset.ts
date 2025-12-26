@@ -46,6 +46,22 @@ export type DataSource = {
   };
 };
 
+// export enum DisplayStatus {
+//   INDEXING = "indexing",
+//   QUEUING = "queuing",
+//   ERROR = "error",
+//   AVALIABLE='avaliable',
+//   DISABLE='disable',
+// }
+
+// export const DisplayStatusText: Record<DisplayStatus, string> ={
+//   [DisplayStatus.INDEXING]:"索引中",
+//   [DisplayStatus.QUEUING]:"排队中",
+//   [DisplayStatus.ERROR]:"错误",
+//   [DisplayStatus.AVALIABLE]:'可用',
+//   [DisplayStatus.DISABLE]:'已禁用',
+// }
+
 export enum RETRIEVE_TYPE {
   oneWay = "single",
   multiWay = "multiple",

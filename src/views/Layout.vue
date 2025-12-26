@@ -24,6 +24,7 @@
                         @click="$router.push('/conversation-log')">对话记录</el-menu-item>
                     <el-menu-item v-if="showLoginLog" index="6" @click="$router.push('/login-log')">登录记录</el-menu-item>
                     <el-menu-item v-if="showAuthLog" index="7" @click="$router.push('/auth-log')">授权记录</el-menu-item>
+                    <el-menu-item v-if="showOpLog" index="8" @click="$router.push('/op-log')">操作记录</el-menu-item>
                     <!-- <el-menu-item index="8" @click="$router.push('/logout')">退出登录</el-menu-item> -->
                 </el-menu>
             </el-aside>
@@ -46,6 +47,7 @@ const showStat = computed(() => hasPermission(permissions.value, Permission.STAT
 const showConversationLog = computed(() => hasPermission(permissions.value, Permission.CONVERSATION_LOG_MENU_BUTTON_VISIBLE));
 const showLoginLog = computed(() => hasPermission(permissions.value, Permission.LOGIN_LOG_MENU_BUTTON_VISIBLE));
 const showAuthLog = computed(() => hasPermission(permissions.value, Permission.AUTH_LOG_MENU_BUTTON_VISIBLE));
+const showOpLog = computed(()=> hasPermission(permissions.value,Permission.OP_MENU_BUTTON_VISIBLE))
 
 onBeforeMount(async () => {
     const { id: userId } = await getAccountProfile();

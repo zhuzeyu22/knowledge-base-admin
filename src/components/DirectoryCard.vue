@@ -44,15 +44,14 @@ const handleDeleteDirectory = () => {
   display: flex;
   flex-direction: column;
   position: relative;
-  /* width: 100%; */
-  width: 360px;
+  width: 100%;
   flex-shrink: 0;
   height: 200px;
   flex-grow: 1;
   align-items: center;
 }
 .knowledge-base-card-background {
-  background-image: url("@/assets/know-title-icon.png");
+  background-image: url("@/assets/know-directory-icon.png");
   width: 80px;
   height: 60px;
   margin: 40px 0;
