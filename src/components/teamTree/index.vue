@@ -1,12 +1,21 @@
 <template>
     <section class="section">
-        team
-        <el-tree :props="props" :load="loadNode" lazy show-checkbox>
+        <el-tree :data="data" node-key="id" :load="loadNode" lazy>
+            <template #default="{ node, data }">
+                <span class="custom-tree-node">
+                    <span>{{ node.data.name }}</span>
+                    <span>
+                        <el-button type="text" @click="() => remove(node, data)">
+                        </el-button>
+                    </span>
+                </span>
+            </template>
         </el-tree>
     </section>
 </template>
 
 <script setup lang="ts">
+const data = ref<PublicFolderNode[]>([])
 
 
 
