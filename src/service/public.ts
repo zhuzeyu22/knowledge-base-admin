@@ -4,7 +4,7 @@ import request from "./request";
 // level 从 0 开始，0 表示 root 下的一级目录
 export const postCreateFolder = (
   name: string,
-  level: string,
+  level: string | number,
   parent_id: string | null = null
 ) => {
   return request.post("/create_folder", { name, parent_id, level });
@@ -21,7 +21,6 @@ export const renameFolder = (id: string, name: string) => {
 };
 
 // 查询公共知识库目录文件夹下的数据
-
 export const getFolder = (parent_id: string = "") => {
-  return request.post(`/get_folder/${parent_id}`);
+  return request.get(`/get_folder?parent_id=${parent_id}`);
 };
