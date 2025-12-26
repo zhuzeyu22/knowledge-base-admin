@@ -7,37 +7,54 @@ import {
   renameFolder,
 } from "@/service/public";
 
-export const MAX_LEVEL = 4;
+// 只有 0,1,2,3
+export const MAX_LEVEL = 3;
 
 export const usePublicStore = defineStore("public", {
   state: () =>
     // 新建的名称
     ({
-      root: {
-        id: "",
-        level: 0,
-        name: "公共知识库",
-        children: [],
-      } as PublicFolderNode,
+      folderTree: [] as PublicFolderNode[],
+      currentNode: null as PublicFolderNode | null,
     }),
   getters: {
     // 计算属性
     getPublicTree: (state) => {
-      return state.root;
+      return state.folderTree;
+    },
+    // 点击的节点
+    getCurrentNode: (state) => {
+      return state.currentNode;
     },
   },
   actions: {
     // 方法
-    setPublicTreeRoot(data: PublicFolderNode) {
-      this.root = data;
+    setPublicTree(data: PublicFolderNode[]) {
+      this.folderTree = data;
     },
     async getNodeChildren(node: PublicFolderNode) {
-      //   node.children = children;
-      const res = await getFolder(node.id);
-      if (node.level < MAX_LEVEL) {
-        node.children = res.data;
+      if (node.level <= MAX_LEVEL) {
+        const res = await getFolder(node.id)
+          .catch((err) => {
+            console.log(err);
+          })
+          .finally(() => {
+            // todo mock
+            node.children = [
+              {
+                id: node.id + "-1",
+                name: "新建文件夹新建文件夹",
+                level: Number(node.level) + 1,
+                children: [],
+                parentId: node.id,
+              },
+            ];
+          });
+        // node.children = res.data;
+        return node.children;
+      } else {
+        return [];
       }
-      return res;
     },
     async appendNode(node: PublicFolderNode, name: string) {
       if (node.level >= MAX_LEVEL) {
@@ -58,7 +75,7 @@ export const usePublicStore = defineStore("public", {
         .catch((err) => {});
     },
     async deleteNode(node: PublicFolderNode) {
-      if (node.children.length > 0) {
+      if (node?.children?.length > 0) {
         throw new Error("请先删除子节点");
       }
       await deleteFolder(node.id).then((res) => {
@@ -69,6 +86,9 @@ export const usePublicStore = defineStore("public", {
       return await renameFolder(node.id, name).then((res) => {
         console.log(res);
       });
+    },
+    updateCurrentNode(node: PublicFolderNode) {
+      this.currentNode = node;
     },
   },
 });

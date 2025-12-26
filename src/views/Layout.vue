@@ -1,7 +1,7 @@
 <template>
     <div class="common-layout">
         <el-container style="height: 100%;">
-            <el-aside width="200px">
+            <el-aside width="240px">
                 <el-menu class="menu">
                     <el-menu-item index="1" @click="$router.push('/private')">个人知识库</el-menu-item>
                     <el-menu-item index="2" @click="$router.push('/public')" class="hover-container">
