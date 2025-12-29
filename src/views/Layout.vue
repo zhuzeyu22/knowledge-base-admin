@@ -10,7 +10,8 @@
                             <plus />
                         </el-icon>
                     </el-menu-item>
-                    <PublicTree ref="pbTreeRef" v-if="$router.currentRoute.value.name?.toString().match('public')" class="tree">
+                    <PublicTree ref="pbTreeRef" v-if="$router.currentRoute.value.name?.toString().match('public')"
+                        class="tree">
                     </PublicTree>
                     <el-menu-item index="8" @click="$router.push('/team')" class="hover-container">
                         <div style="flex: 1;">团队知识库</div>
@@ -54,7 +55,7 @@ onBeforeMount(async () => {
     localStorage.removeItem("roleId");
 
     const { id: tenantId } = await getWorkspaceCurrent();
-    const { data } = await getTenantRole(tenantId, userId);
+    const { data } = (await getTenantRole(tenantId, userId)) || {};
 
     if (data && data[0]) {
         const roleId = data[0].role_id;

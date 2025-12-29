@@ -40,13 +40,13 @@ const form = reactive({
 
 const onSubmit = async () => {
     const res = await postLogin(form.email, form.pw)
-    if (res.result === 'success') {
+    if (res?.result === 'success') {
         localStorage.setItem('console_token', res.data.access_token)
         localStorage.setItem('refresh_token', res.data.refresh_token)
         router.replace('/private')
         ElMessage.success('登录成功')
     } else {
-        ElMessage.error('登录失败', res.data)
+        ElMessage.error('登录失败', res?.data)
         return
     }
     console.log('submit!')
