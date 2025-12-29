@@ -35,7 +35,7 @@ const datasetMockList = [
     id: "model_001",
     name: "通用文档检索模型V1",
     official: "official",
-    imageUrl: "https://example.com/models/official/general_v1.png",
+    imageUrl: "",
     description: "官方出品的通用文档检索模型，适配各类文本格式，支持中英文混合检索，准确率达95%以上",
     documentNumber: 15890,
     characterNumber: 89765432,

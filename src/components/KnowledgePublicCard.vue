@@ -26,8 +26,8 @@
           </el-icon>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item @click="handlePublicDataset">取消公开</el-dropdown-item>
-              <el-dropdown-item @click="handleDeleteClick">删除</el-dropdown-item>
+              <el-dropdown-item @click="">取消公开</el-dropdown-item>
+              <!-- <el-dropdown-item @click="handleDeleteClick">删除</el-dropdown-item> -->
             </el-dropdown-menu>
           </template>
         </el-dropdown>
