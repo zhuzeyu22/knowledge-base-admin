@@ -24,3 +24,9 @@ export const renameFolder = (id: string, name: string) => {
 export const getFolder = (parent_id: string = "") => {
   return request.get(`/get_folder?parent_id=${parent_id}`);
 };
+
+// 查询文件夹中的知识库列表
+// todo 暂不考虑分页，下一版本优化
+export const getDatasetsByFolderId = (id: string = "") => {
+  return request.get(`/folder_datasets/folder_id=${id}`);
+};

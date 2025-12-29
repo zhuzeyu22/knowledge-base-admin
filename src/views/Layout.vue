@@ -10,7 +10,7 @@
                             <plus />
                         </el-icon>
                     </el-menu-item>
-                    <PublicTree v-if="$router.currentRoute.value.name?.toString().match('public')" class="tree">
+                    <PublicTree ref="pbTreeRef" v-if="$router.currentRoute.value.name?.toString().match('public')" class="tree">
                     </PublicTree>
                     <el-menu-item index="8" @click="$router.push('/team')" class="hover-container">
                         <div style="flex: 1;">团队知识库</div>
@@ -46,6 +46,7 @@ const showStat = computed(() => hasPermission(permissions.value, Permission.STAT
 const showConversationLog = computed(() => hasPermission(permissions.value, Permission.CONVERSATION_LOG_MENU_BUTTON_VISIBLE));
 const showLoginLog = computed(() => hasPermission(permissions.value, Permission.LOGIN_LOG_MENU_BUTTON_VISIBLE));
 const showAuthLog = computed(() => hasPermission(permissions.value, Permission.AUTH_LOG_MENU_BUTTON_VISIBLE));
+const pbTreeRef = ref(null);
 
 onBeforeMount(async () => {
     const { id: userId } = await getAccountProfile();
@@ -63,7 +64,7 @@ onBeforeMount(async () => {
 });
 
 const handleAddPublic = () => {
-    // postCreateFolder()
+    pbTreeRef.value.handleNodeCreateClick();
 }
 </script>
 

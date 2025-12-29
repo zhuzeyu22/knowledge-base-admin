@@ -15,6 +15,7 @@ export const usePublicStore = defineStore("public", {
     // 新建的名称
     ({
       folderTree: [] as PublicFolderNode[],
+      nodeMap: {} as Record<string, PublicFolderNode>,
       currentNode: null as PublicFolderNode | null,
     }),
   getters: {
@@ -28,28 +29,31 @@ export const usePublicStore = defineStore("public", {
     },
   },
   actions: {
-    // 方法
+    getNodeById(id: string) {
+      return this.nodeMap[id];
+    },
+    // 递归构建节点映射表
+    buildNodeMap(nodes: PublicFolderNode[]) {
+      nodes.forEach((node) => {
+        this.nodeMap[node.id] = node;
+        if (node.children) this.buildNodeMap(node.children);
+      });
+    },
+    async initPublicTree() {
+      await getFolder().then((res) => {
+        this.setPublicTree(res.data);
+      });
+    },
     setPublicTree(data: PublicFolderNode[]) {
       this.folderTree = data;
+      this.nodeMap = {};
+      this.buildNodeMap(data);
     },
     async getNodeChildren(node: PublicFolderNode) {
       if (node.level <= MAX_LEVEL) {
-        const res = await getFolder(node.id)
-          .catch((err) => {
-            console.log(err);
-          })
-          .finally(() => {
-            // todo mock
-            node.children = [
-              {
-                id: node.id + "-1",
-                name: "新建文件夹新建文件夹",
-                level: Number(node.level) + 1,
-                children: [],
-                parentId: node.id,
-              },
-            ];
-          });
+        const res = await getFolder(node.id).catch((err) => {
+          console.log(err);
+        });
         // node.children = res.data;
         return node.children;
       } else {
@@ -62,17 +66,9 @@ export const usePublicStore = defineStore("public", {
         return false;
       }
 
-      await postCreateFolder(name, node.level, node.id)
-        .then((res) => {
-          node.children.push({
-            name,
-            // todo 这里需要测试下
-            id: res.data,
-            level: Number(node.level) + 1,
-            children: [],
-          });
-        })
-        .catch((err) => {});
+      await postCreateFolder(name, node.level, node.id).then((res) => {
+        // todo
+      });
     },
     async deleteNode(node: PublicFolderNode) {
       if (node?.children?.length > 0) {
@@ -88,7 +84,7 @@ export const usePublicStore = defineStore("public", {
       });
     },
     updateCurrentNode(node: PublicFolderNode) {
-      this.currentNode = node;
+      this.currentNode = this.nodeMap[node.id];
     },
   },
 });
