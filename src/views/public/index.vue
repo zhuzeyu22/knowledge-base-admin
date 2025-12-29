@@ -8,11 +8,7 @@
       class="context-style" style="overflow: auto"> -->
     <el-main :loading="loading" class="context-style" style="overflow: auto">
       <el-space wrap :size="16" class="grid-container">
-        <KnowledgePublicCard 
-          v-for="item in datasetMockList"
-          :key="item.id" 
-          :dataset="item" 
-          />
+        <KnowledgePublicCard v-for="item in datasetMockList" :key="item.id" :dataset="item" />
         <DirectoryCard />
       </el-space>
     </el-main>
@@ -26,19 +22,24 @@ import { usePublicStore } from '@/store/public'
 import { computed, ref, watch } from 'vue'
 import _ from 'lodash'
 import { getDatasetsByFolderId } from '@/service/public'
+import { PublicFolderNode } from '@/models/public'
 
 const publicStore = usePublicStore()
 const currentNode = computed(() => publicStore.currentNode)
 
-
+// 知识库列表
 const datasetList = ref<Dataset[]>([])
-const search = ref('')
-const page = ref(1)
-const limit = ref(50)
-const loading = ref(false)
-const total = ref(1)
+// 目录列表
+const publicFolderList = computed(() => publicStore.currentNode?.children || publicStore.getPublicTree)
+
+// const search = ref('')
+// const page = ref(1)
+// const limit = ref(50)
+// const loading = ref(false)
+// const total = ref(1)
+
 const datasetMockList = [
-{
+  {
     id: "model_001",
     name: "通用文档检索模型V1",
     official: "official",
@@ -103,6 +104,8 @@ watch(() => currentNode.value, (newValue) => {
   load(newValue?.id || '')
 })
 
+
+
 // 下一版本加
 // watch(() => search.value, (newValue) => {
 //   console.log('search changed:', newValue)
@@ -118,6 +121,7 @@ const load = _.debounce((folderId: string) => {
     loading.value = false
   })
 }, 500)
+
 </script>
 
 <style scoped lang="scss">
@@ -144,10 +148,10 @@ const load = _.debounce((folderId: string) => {
 }
 
 .grid-container {
-    display: grid;
-    /* 关键：自适应列数 */
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 16px;
-    /* 列与列、行与行之间的间距 */
+  display: grid;
+  /* 关键：自适应列数 */
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  /* 列与列、行与行之间的间距 */
 }
 </style>

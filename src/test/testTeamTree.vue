@@ -15,9 +15,8 @@
 </template>
 
 <script setup lang="ts">
-import { PublicFolderNode } from "@/models/public";
 import { ref, watch, computed } from "vue"
-const data = ref<PublicFolderNode[]>([])
+const data = ref<[]>([])
 
 const loadNode = (node: any, resolve: any) => {
 }
