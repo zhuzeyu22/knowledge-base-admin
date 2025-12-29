@@ -4,14 +4,15 @@
       <div>公共知识库</div>
       <el-input placeholder="请输入内容" v-model="search" class="search-style" clearable @input="handleSearchChange" />
     </el-header>
-    <el-main v-infinite-scroll="load" :infinite-scroll-disabled="loading" :infinite-scroll-distance="10"
-      class="context-style" style="overflow: auto">
+    <!-- <el-main v-infinite-scroll="load" :infinite-scroll-disabled="loading" :infinite-scroll-distance="10"
+      class="context-style" style="overflow: auto"> -->
+    <el-main :loading="loading" class="context-style" style="overflow: auto">
       <el-space wrap :size="16" class="grid-container">
         <KnowledgePublicCard 
-          v-for="item in datasetMockList" 
+          v-for="item in datasetMockList"
           :key="item.id" 
           :dataset="item" 
-        />
+          />
         <DirectoryCard />
       </el-space>
     </el-main>
@@ -19,13 +20,19 @@
 </template>
 <script setup lang="ts">
 import { Dataset } from '@/models/dataset'
-import { ref } from 'vue'
 import DirectoryCard from '@/components/DirectoryCard.vue'
 import KnowledgePublicCard from '@/components/KnowledgePublicCard.vue'
+import { usePublicStore } from '@/store/public'
+import { computed, ref, watch } from 'vue'
+import _ from 'lodash'
+import { getDatasetsByFolderId } from '@/service/public'
+
+const publicStore = usePublicStore()
+const currentNode = computed(() => publicStore.currentNode)
+
 
 const datasetList = ref<Dataset[]>([])
 const search = ref('')
-// const filterDataList = ref<Dataset[]>([])
 const page = ref(1)
 const limit = ref(50)
 const loading = ref(false)
@@ -90,14 +97,29 @@ const datasetMockList = [
     }
   }
 ]
+
+watch(() => currentNode.value, (newValue) => {
+  console.log('currentNode changed:', newValue)
+  load(newValue?.id || '')
+})
+
+// 下一版本加
+// watch(() => search.value, (newValue) => {
+//   console.log('search changed:', newValue)
+// })
+
 const handleSearchChange = () => {
   console.log('Search changed:', search.value)
 }
 
-const load = () => {
-
-}
+const load = _.debounce((folderId: string) => {
+  loading.value = true
+  getDatasetsByFolderId(folderId).finally(() => {
+    loading.value = false
+  })
+}, 500)
 </script>
+
 <style scoped lang="scss">
 .content-container {
   width: 100%;

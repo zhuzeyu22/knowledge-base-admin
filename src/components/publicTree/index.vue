@@ -14,7 +14,7 @@
                         </el-icon>
                         <template #dropdown>
                             <el-dropdown-menu>
-                                <el-dropdown-item @click="">重命名</el-dropdown-item>
+                                <el-dropdown-item @click="() => rename(node)">重命名</el-dropdown-item>
                                 <el-dropdown-item @click="() => remove(node)">删除</el-dropdown-item>
                             </el-dropdown-menu>
                         </template>
@@ -22,12 +22,20 @@
                 </span>
             </template>
         </el-tree>
-        <el-dialog title="提示" :visible.sync="nodeCreateDialogVisible" width="30%">
-            <span>请输入名称：</span>
-            <el-input v-model="newNode.name" placeholder="请输入名称"></el-input>
+        <el-dialog title="新建文件夹" v-model="nodeCreateDialogVisible" width="30%">
+            <div style="margin-bottom: 8px;">文件夹名称：</div>
+            <el-input v-model="newName" placeholder="请输入名称"></el-input>
             <span slot="footer" class="dialog-footer">
-                <el-button @click="newNodeName = false">取 消</el-button>
-                <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+                <el-button type="primary" @click="handleNodeCreateConfirm">确 定</el-button>
+                <el-button @click="nodeCreateDialogVisible = false">取 消</el-button>
+            </span>
+        </el-dialog>
+        <el-dialog title="重命名文件夹" v-model="nodeRenameDialogVisible" width="30%">
+            <div style="margin-bottom: 8px;">文件夹名称：</div>
+            <el-input v-model="newName" placeholder="请输入名称"></el-input>
+            <span slot="footer" class="dialog-footer">
+                <el-button type="primary" @click="handleNodeRenameConfirm">确 定</el-button>
+                <el-button @click="nodeRenameDialogVisible = false">取 消</el-button>
             </span>
         </el-dialog>
     </section>
@@ -35,7 +43,6 @@
 
 <script setup lang="ts">
 import { PublicFolderNode } from '@/models/public';
-import { getFolder } from '@/service/public';
 import { MAX_LEVEL, usePublicStore } from '@/store/public';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { computed, onMounted, ref } from 'vue';
@@ -43,40 +50,31 @@ import { computed, onMounted, ref } from 'vue';
 const publicStore = usePublicStore()
 const folderTree = computed(() => publicStore.folderTree)
 
+const newName = ref('')
 const nodeCreateDialogVisible = ref(false)
-const newNode = ref<PublicFolderNode>({
+const nodeRenameDialogVisible = ref(false)
+
+
+// 记录点击增加按钮的节点
+const updateNode = ref<PublicFolderNode>({
     id: '',
     name: '',
     parentId: '',
     level: 0,
     children: []
 })
-const nodeRenameDialogVisible = ref(false)
 
 onMounted(() => {
-    getFolder().then(res => {
-        // todo
-    }).catch(err => {
-        console.log(err)
-    }).finally(() => {
-        publicStore.setPublicTree([{
-            id: '1',
-            name: '1',
-            parentId: '',
-            level: 0,
-            children: []
-        }, {
-            id: '2',
-            name: '2',
-            parentId: '',
-            level: 0,
-            children: []
-        }])
-    })
+    publicStore.initPublicTree()
 });
 
 function append(data: PublicFolderNode) {
     console.log(data)
+}
+function rename(node: { data: PublicFolderNode }) {
+    console.log(node)
+    newName.value = node.data.name
+    nodeRenameDialogVisible.value = true
 }
 
 function remove(node: any) {
@@ -116,19 +114,62 @@ function loadNode(node: any, resolve: any) {
             type: "warning",
             message: "加载失败",
         });
-    })  
+    })
 }
 
-const handleNodeCreateClick = (node: PublicFolderNode) => {
-    newNode.value = {
-        id: '',
-        name: '',
-        parentId: node.id,
-        level: node.level + 1,
-        children: []
+const handleNodeCreateClick = (node?: PublicFolderNode) => {
+    if (!node) {
+        updateNode.value = {
+            id: '',
+            name: '',
+            parentId: '',
+            level: 0,
+            children: []
+        }
+    } else {
+        updateNode.value = node
     }
+
+    console.log('handleNodeCreateClick')
+    newName.value = ''
     nodeCreateDialogVisible.value = true
 }
+
+const handleNodeCreateConfirm = () => {
+    publicStore.appendNode(updateNode.value, newName.value).then(res => {
+        ElMessage({
+            type: "success",
+            message: "创建成功",
+        });
+    }).catch(err => {
+        ElMessage({
+            type: "warning",
+            message: "创建失败",
+        });
+        console.log(err)
+    }).finally(() => {
+        nodeCreateDialogVisible.value = false
+    })
+}
+
+const handleNodeRenameConfirm = () => {
+    publicStore.renameNode(updateNode.value, newName.value).then(res => {
+        ElMessage({
+            type: "success",
+            message: "重命名成功",
+        });
+        nodeRenameDialogVisible.value = false
+    }).catch(err => {
+        ElMessage({
+            type: "warning",
+            message: "重命名失败",
+        });
+    })
+}
+
+defineExpose({
+    handleNodeCreateClick
+})
 
 </script>
 
@@ -168,5 +209,12 @@ const handleNodeCreateClick = (node: PublicFolderNode) => {
         color: var(--el-color-primary);
     }
 
+}
+
+.dialog-footer {
+    display: flex;
+    flex-direction: row-reverse;
+    gap: 16px;
+    margin-top: 16px;
 }
 </style>

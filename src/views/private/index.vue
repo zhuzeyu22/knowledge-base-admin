@@ -34,8 +34,8 @@ const handleSearchChange = () => {
     reload()
 }
 
-const getTotal = () => {
-    getPrivateDatasetList(
+const getTotal = async () => {
+    await getPrivateDatasetList(
         page.value,
         limit.value,
         search.value,
@@ -43,7 +43,7 @@ const getTotal = () => {
         total.value = res.total
     })
 }
-getTotal()
+
 const load = () => {
     if (datasetList.value.length >= total.value) {
         return
@@ -56,6 +56,8 @@ const load = () => {
     ).then((res) => {
         datasetList.value.push(...res.data)
         loading.value = false
+    }).catch(err => {
+        console.log(err)
     })
 }
 

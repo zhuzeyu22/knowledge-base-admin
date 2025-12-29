@@ -1,7 +1,7 @@
 <template>
     <section class="section">
         <el-upload v-model:file-list="fileList" style="width: 100%" drag :auto-upload="false" :accept="accept" action=""
-            ref="uploadRef" :on-change="handleUploadChange" :limit="MAX_FILE_COUNT" :on-exceed="handleExceed" multiple
+            :on-change="handleUploadChange" :limit="MAX_FILE_COUNT" :on-exceed="handleExceed" multiple
             :show-file-list="false">
             <el-icon class="el-icon--upload"><upload-filled /></el-icon>
             <div class="el-upload__text">
@@ -40,8 +40,8 @@
 
 <script setup lang="ts">
 // 上传文件组件
-import { uploadDocument, UploadResponse } from "@/service/datasets";
-import { ElMessage, UploadFile, type UploadProps, type UploadUserFile } from "element-plus";
+import { uploadDocument } from "@/service/datasets";
+import { ElMessage, type UploadProps, } from "element-plus";
 
 // .pdf,.doc,.docx,.txt,.html,.markdown,.md,.xls,.xlsx,.csv
 const { accept } = defineProps({
