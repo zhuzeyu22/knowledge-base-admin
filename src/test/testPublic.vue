@@ -2,13 +2,14 @@
   <el-container class="content-container">
     <el-header class="header-style">
       <div>公共知识库</div>
-      <el-input placeholder="请输入内容" v-model="search" class="search-style" clearable @input="handleSearchChange" />
+      <!-- <el-input placeholder="请输入内容" v-model="search" class="search-style" clearable @input="handleSearchChange" /> -->
     </el-header>
     <!-- <el-main v-infinite-scroll="load" :infinite-scroll-disabled="loading" :infinite-scroll-distance="10"
       class="context-style" style="overflow: auto"> -->
-    <el-main :loading="loading" class="context-style" style="overflow: auto">
-      <el-space wrap :size="16">
-        <KnowledgeBaseCard v-for="item in datasetList" :key="item.id" :dataset="item" />
+    <el-main class="context-style" style="overflow: auto">
+      <el-space wrap :size="16" class="grid-container">
+        <KnowledgePublicCard v-for="item in datasetList" :key="item.id" :dataset="item" />
+        <DirectoryCard />
       </el-space>
     </el-main>
   </el-container>
@@ -18,11 +19,15 @@ import { Dataset } from '@/models/dataset'
 import { usePublicStore } from '@/store/public'
 import { computed, ref, watch } from 'vue'
 import _ from 'lodash'
+import { PublicFolderNode } from '@/models/public'
 
 const publicStore = usePublicStore()
+// 根据 currentNode level 切换展示列表
 const currentNode = computed(() => publicStore.currentNode)
-
+// 知识库列表
 const datasetList = ref<Dataset[]>([])
+// 目录列表
+const publicFolderList = computed<PublicFolderNode[]>(() => publicStore.currentNode?.children || publicStore.getPublicTree)
 
 watch(() => currentNode.value, (newValue) => {
   console.log('currentNode changed:', newValue)
@@ -34,9 +39,9 @@ watch(() => currentNode.value, (newValue) => {
 //   console.log('search changed:', newValue)
 // })
 
-const handleSearchChange = () => {
-  console.log('Search changed:', search.value)
-}
+// const handleSearchChange = () => {
+//   console.log('Search changed:', search.value)
+// }
 
 const load = _.debounce((folderId: string) => {
   datasetList.value = [
