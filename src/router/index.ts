@@ -65,27 +65,12 @@ const routes = [
         component: () => import("@/views/logout/index.vue"),
       },
       {
-        path: "hitTesting",
-        name: "hitTesting",
-        component: () => import("@/test/testHitTesting.vue"),
-      },
-      {
-        path: "createFinish",
-        name: "createFinish",
-        component: () => import("@/test/testCreateFinish.vue"),
-      },
-      {
-        path: "segement",
-        name: "segement",
-        component: () => import("@/test/testSegement.vue"),
-      },
-      {
         path: "plugins",
         name: "plugins",
         component: () => import("@/views/plugins/index.vue"),
       },
       {
-        path: "/addfiles",
+        path: "addfiles",
         component: () => import("@/views/private/addfiles.vue"),
       },
     ],
@@ -93,6 +78,40 @@ const routes = [
   {
     path: "/signin",
     component: () => import("@/views/signin/index.vue"),
+  },
+  {
+    path: "/test",
+    component: () => import("@/test/testLayout.vue"),
+    children:
+      import.meta.env.MODE !== "production"
+        ? [
+            {
+              path: "testHitTesting",
+              name: "testHitTesting",
+              component: () => import("@/test/testHitTesting.vue"),
+            },
+            {
+              path: "testCreateFinish",
+              name: "testCreateFinish",
+              component: () => import("@/test/testCreateFinish.vue"),
+            },
+            {
+              path: "testSegement",
+              name: "testSegement",
+              component: () => import("@/test/testSegement.vue"),
+            },
+            {
+              path: "testPublic",
+              name: "testPublic",
+              component: () => import("@/test/testPublic.vue"),
+            },
+            {
+              path: "testTeam",
+              name: "testTeam",
+              component: () => import("@/test/testPublic.vue"),
+            },
+          ]
+        : [],
   },
 ];
 
