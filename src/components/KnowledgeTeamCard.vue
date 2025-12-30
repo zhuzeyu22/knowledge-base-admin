@@ -26,11 +26,12 @@
           </el-icon>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item @click="">知识库权限</el-dropdown-item>
+              <el-dropdown-item @click="handlePermission">知识库权限</el-dropdown-item>
               <!-- <el-dropdown-item @click="handleDeleteClick">删除</el-dropdown-item> -->
             </el-dropdown-menu>
           </template>
         </el-dropdown>
+        <memberPermission v-model:visible="isPermissionDialogShow" :dataset-id="props.dataset.id"/>
       </div>
     </div>
   </el-card>
@@ -43,6 +44,7 @@ import { ref, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { deleteDataset } from "@/service/datasets";
+import memberPermission from "@/views/team/components/memberPermission.vue";
 const emit = defineEmits(["delete"]);
 
 const props = defineProps<{
@@ -50,7 +52,7 @@ const props = defineProps<{
 }>();
 
 const router = useRouter();
-
+const isPermissionDialogShow = ref(false)
 // 跳转到详情页
 const goToDetails = () => {
   router.push({
@@ -89,6 +91,9 @@ const handleDeleteClick = () => {
   console.log("删除");
 };
 
+const handlePermission = () => {
+  isPermissionDialogShow.value = true;
+}
 </script>
 
 <style scoped>

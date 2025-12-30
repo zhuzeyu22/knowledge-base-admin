@@ -25,7 +25,7 @@
         :key="item.id"
         :dataset="item"
         />
-        <memberPermission />
+        
       </el-space>
     </el-main>
   </el-container>
@@ -35,7 +35,6 @@ import { ref, onMounted } from 'vue'
 import { Dataset } from '@/models/dataset'
 import { getPublicDatasetList } from '@/service/datasets'
 import KnowledgeTeamCard from '@/components/KnowledgeTeamCard.vue'
-import memberPermission from './components/memberPermission.vue'
 const datasetList = ref<Dataset[]>([])
 const search = ref('')
 // const filterDataList = ref<Dataset[]>([])
