@@ -10,14 +10,32 @@ import {
 // 只有 0,1,2,3
 export const MAX_LEVEL = 3;
 
+// 后续可以放到 utils 里面
+function flat(tree: PublicFolderNode[], nodeMap: Record<string, PublicFolderNode>) {
+  if (!Array.isArray(tree)) {
+    return nodeMap
+  }
+
+  for (const node of tree) {
+    nodeMap[node.id] = node
+    if (node.children && node.children.length > 0) {
+      flat(node.children, nodeMap)
+    } else {
+      node.children = []
+    }
+  }
+
+  return nodeMap
+}
+
 export const usePublicStore = defineStore("public", {
   state: () =>
-    // 新建的名称
-    ({
-      folderTree: [] as PublicFolderNode[],
-      nodeMap: {} as Record<string, PublicFolderNode>,
-      currentNode: null as PublicFolderNode | null,
-    }),
+  // 新建的名称
+  ({
+    folderTree: [] as PublicFolderNode[],
+    nodeMap: {} as Record<string, PublicFolderNode>,
+    currentNode: null as PublicFolderNode | null,
+  }),
   getters: {
     // 计算属性
     getPublicTree: (state) => {
@@ -29,30 +47,32 @@ export const usePublicStore = defineStore("public", {
     },
   },
   actions: {
-    // 递归构建节点映射表
-    buildNodeMap(nodes: PublicFolderNode[]) {
-      nodes.forEach((node) => {
-        this.nodeMap[node.id] = node;
-        if (node.children) this.buildNodeMap(node.children);
-      });
-    },
     async initPublicTree() {
-      await getFolder().then((res) => {
-        this.setPublicTree(res.data);
-      });
-    },
-    setPublicTree(data: PublicFolderNode[]) {
-      this.folderTree = data;
+      const res = await getFolder()
+      console.log(res)
       this.nodeMap = {};
-      this.buildNodeMap(data);
+      this.folderTree = res.data as unknown as PublicFolderNode[];
+      flat(this.folderTree, this.nodeMap)
+      return this.folderTree
     },
     async getNodeChildren(node: PublicFolderNode) {
+      // init
+      if (node instanceof Array) {
+        await this.initPublicTree()
+        return []
+      }
+
       if (node.level <= MAX_LEVEL) {
         const res = await getFolder(node.id).catch((err) => {
           console.log(err);
         });
-        // node.children = res.data;
-        return node.children;
+        console.log('res')
+        const folder = this.nodeMap[node.id];
+        folder.children = res.data;
+        folder.children.forEach((c) => {
+          this.nodeMap[c.id] = c
+        })
+        return folder.children;
       } else {
         return [];
       }
@@ -62,29 +82,52 @@ export const usePublicStore = defineStore("public", {
         console.log("层级已达上限");
         return false;
       }
-
-      await postCreateFolder(name, node.level, node.id).then((res) => {
-        node.id = res.data.folder_id;
-        if (node.parent_id != null && node.parent_id != undefined) {
-          const folder = this.nodeMap[node.parent_id];
-          folder.children.push(node);
-        } else {
-          this.folderTree.push(node);
-        }
-        this.nodeMap[node.id] = node;
-      });
+      const res = await postCreateFolder(name, Number(node.level) + 1, node.id)
+      const id = res.folder_id
+      const newNode = {
+        id,
+        name,
+        level: Number(node.level) + 1,
+        children: [],
+        parent_id: node.id
+      }
+      if (newNode.parent_id) {
+        const folder = this.nodeMap[newNode.parent_id];
+        folder.children.push(newNode);
+      } else {
+        this.folderTree.push(newNode);
+      }
+      this.nodeMap[id] = newNode;
     },
     async deleteNode(node: PublicFolderNode) {
       if (node?.children?.length > 0) {
         throw new Error("请先删除子节点");
       }
-      await deleteFolder(node.id).then((res) => {
-        console.log(res);
+      console.log('deleteNode', node)
+      await deleteFolder(node.id).then(() => {
+        if (node.parent_id) {
+          const index = this.nodeMap[node.parent_id].children.findIndex(x => x.id == node.id)
+          if (index != -1) {
+            this.nodeMap[node.parent_id].children.splice(index, 1)
+          } else {
+            console.log('deleteFolder not found index ', node.parent_id)
+          }
+          this.nodeMap[node.parent_id].children.splice(index, 1)
+        } else {
+          const index = this.folderTree.findIndex(x => x.id == node.id)
+          if (index != -1) {
+            this.folderTree.splice(index, 1)
+          } else {
+            console.log('deleteFolder not found index.')
+          }
+          this.folderTree = [...this.folderTree]
+        }
+        delete this.nodeMap[node.id]
       });
     },
     async renameNode(node: PublicFolderNode, name: string) {
       return await renameFolder(node.id, name).then((res) => {
-        console.log(res);
+        this.nodeMap[node.id].name = name 
       });
     },
     updateCurrentNode(node: PublicFolderNode) {

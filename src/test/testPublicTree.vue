@@ -65,22 +65,7 @@ const updateNode = ref<PublicFolderNode>({
 })
 
 onMounted(() => {
-    publicStore.setPublicTree([
-        {
-            id: '1',
-            name: '1',
-            parentId: '',
-            level: 0,
-            children: []
-        },
-        {
-            id: '2',
-            name: '2',
-            parentId: '',
-            level: 0,
-            children: []
-        },
-    ])
+    
 });
 
 function rename(node: { data: PublicFolderNode }) {

@@ -1,11 +1,11 @@
 <template>
     <section class="section">
-        <el-tree :data="folderTree" node-key="id" :load="loadNode" lazy>
+        <el-tree ref='publicTree' :data="folderTree" node-key="id" :load="loadNode" lazy>
             <template #default="{ node, data }">
                 <span class="custom-tree-node hover-container">
                     <div class="label">{{ data.name }}</div>
-                    <el-icon v-if="data.level <= MAX_LEVEL" class="append hover-item"
-                        @click.stop="handleNodeCreateClick(node)">
+                    <el-icon v-if="data.level < MAX_LEVEL" class="append hover-item"
+                        @click.stop="handleNodeCreateClick(data)">
                         <plus />
                     </el-icon>
                     <el-dropdown class="more hover-item" placement="bottom-end">
@@ -14,8 +14,8 @@
                         </el-icon>
                         <template #dropdown>
                             <el-dropdown-menu>
-                                <el-dropdown-item @click="() => rename(node)">重命名</el-dropdown-item>
-                                <el-dropdown-item @click="() => remove(node)">删除</el-dropdown-item>
+                                <el-dropdown-item @click="() => rename(data)">重命名</el-dropdown-item>
+                                <el-dropdown-item @click="() => remove(node, data)">删除</el-dropdown-item>
                             </el-dropdown-menu>
                         </template>
                     </el-dropdown>
@@ -48,22 +48,13 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { computed, onMounted, ref } from 'vue';
 
 const publicStore = usePublicStore()
-const folderTree = ref<PublicFolderNode[]>([{
-    id: '0',
-    name: '根目录',
-    parent_id: null,
-    level: 0,
-    children: [],
-}])
-
-onMounted(() => {
-    console.log('node', folderTree.value)
-});
-// const folderTree = computed(() => publicStore.folderTree)
+const folderTree = computed(() => publicStore.folderTree)
 
 const newName = ref('')
 const nodeCreateDialogVisible = ref(false)
 const nodeRenameDialogVisible = ref(false)
+
+const publicTree = ref()
 
 // 记录点击增加按钮的节点
 const updateNode = ref<Partial<PublicFolderNode>>({
@@ -74,29 +65,36 @@ const updateNode = ref<Partial<PublicFolderNode>>({
     children: []
 })
 
-onMounted(() => {
-    publicStore.initPublicTree()
-});
+// onMounted(() => {
+//     // publicStore.initPublicTree()
+// });
 
-function rename(node: { data: PublicFolderNode }) {
-    console.log(node)
-    newName.value = node.data.name
+function rename(data: PublicFolderNode) {
+    newName.value = data.name
+    updateNode.value = data
     nodeRenameDialogVisible.value = true
 }
 
-function remove(node: any) {
-    console.log(node)
+async function remove(node: any, data: PublicFolderNode) {
+    console.log('remove', node)
+    console.log('remove', data)
+    // 查询是否有子节点
+    if(node.expanded == false && data.children && data.children.length == 0){
+        await publicStore.getNodeChildren(data)
+    }
+
     ElMessageBox.confirm("删除这个节点？", "", {
         confirmButtonText: "我确定",
         cancelButtonText: "取消",
         type: "warning",
     })
         .then(() => {
-            publicStore.deleteNode(node).then(res => {
+            publicStore.deleteNode(data).then(res => {
                 ElMessage({
                     type: "success",
                     message: "删除成功",
                 });
+                publicTree.value.remove(data)
             }).catch(err => {
                 ElMessage({
                     type: "warning",
@@ -113,31 +111,33 @@ function remove(node: any) {
 }
 
 function loadNode(node: any, resolve: any) {
-    publicStore.getNodeChildren(node).then((res) => {
+    publicStore.getNodeChildren(node.data).then((res) => {
+        console.log('loadNode res11', res)
         resolve(res)
     }).catch((err) => {
-        resolve([])
+        console.log(err)
         ElMessage({
             type: "warning",
             message: "加载失败",
         });
+        resolve([])
     })
 }
 
 const handleNodeCreateClick = (node?: Partial<PublicFolderNode>) => {
+    console.log('handleNodeCreateClick node', node)
     if (!node) {
         updateNode.value = {
             id: null,
             name: '',
             parent_id: null,
-            level: 0,
+            // 从根的层级进行创建需要是 -1
+            level: -1,
             children: []
         }
     } else {
         updateNode.value = node
     }
-
-    console.log('handleNodeCreateClick')
     newName.value = ''
     nodeCreateDialogVisible.value = true
 }

@@ -30,8 +30,8 @@ export const deleteFolder = (id: string) => {
 };
 
 //重命名公共知识库目录文件夹
-export const renameFolder = (id: string, name: string) => {
-  return request.post<FolderOptResponse>(`/update_folder`, { id, name });
+export const renameFolder = (folder_id: string, name: string) => {
+  return request.put<FolderOptResponse>(`/update_folder`, { folder_id, name });
 };
 
 // 查询公共知识库目录文件夹下的数据

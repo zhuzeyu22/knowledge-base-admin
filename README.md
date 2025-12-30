@@ -32,6 +32,7 @@ pnpm run dev
 
 # 注意事项
 - 20251205 目前使用 temp 和 prod 环境
+- 去除了打包时的静态检测 vue-tsc -b &&   ，删除
 
 # 备注
 登录统一使用 VITE_SSO_LOGIN_URL 访问
