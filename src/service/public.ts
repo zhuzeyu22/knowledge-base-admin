@@ -6,7 +6,8 @@ export type FolderOptResponse = {
   code: string;
   message: string;
   status: number;
-  id?: string;
+  // id?: string;
+  folder_id?: string;
 };
 
 // 创建公共知识库目录文件夹
@@ -16,7 +17,7 @@ export const postCreateFolder = (
   level: string | number,
   parent_id: string | null = null
 ) => {
-  return request.post<FolderOptResponse>("/create_folder", {
+  return request.post<Required<FolderOptResponse>>("/create_folder", {
     name,
     parent_id,
     level,

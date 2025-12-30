@@ -29,9 +29,6 @@ export const usePublicStore = defineStore("public", {
     },
   },
   actions: {
-    getNodeById(id: string) {
-      return this.nodeMap[id];
-    },
     // 递归构建节点映射表
     buildNodeMap(nodes: PublicFolderNode[]) {
       nodes.forEach((node) => {
@@ -67,7 +64,14 @@ export const usePublicStore = defineStore("public", {
       }
 
       await postCreateFolder(name, node.level, node.id).then((res) => {
-        // todo
+        node.id = res.data.folder_id;
+        if (node.parent_id != null && node.parent_id != undefined) {
+          const folder = this.nodeMap[node.parent_id];
+          folder.children.push(node);
+        } else {
+          this.folderTree.push(node);
+        }
+        this.nodeMap[node.id] = node;
       });
     },
     async deleteNode(node: PublicFolderNode) {

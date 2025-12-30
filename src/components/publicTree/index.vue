@@ -3,8 +3,8 @@
         <el-tree :data="folderTree" node-key="id" :load="loadNode" lazy>
             <template #default="{ node, data }">
                 <span class="custom-tree-node hover-container">
-                    <div class="label">{{ node.data.name }}</div>
-                    <el-icon v-if="node.data.level <= MAX_LEVEL" class="append hover-item"
+                    <div class="label">{{ data.name }}</div>
+                    <el-icon v-if="data.level <= MAX_LEVEL" class="append hover-item"
                         @click.stop="handleNodeCreateClick(node)">
                         <plus />
                     </el-icon>
@@ -48,18 +48,28 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { computed, onMounted, ref } from 'vue';
 
 const publicStore = usePublicStore()
-const folderTree = computed(() => publicStore.folderTree)
+const folderTree = ref<PublicFolderNode[]>([{
+    id: '0',
+    name: '根目录',
+    parent_id: null,
+    level: 0,
+    children: [],
+}])
+
+onMounted(() => {
+    console.log('node', folderTree.value)
+});
+// const folderTree = computed(() => publicStore.folderTree)
 
 const newName = ref('')
 const nodeCreateDialogVisible = ref(false)
 const nodeRenameDialogVisible = ref(false)
 
-
 // 记录点击增加按钮的节点
-const updateNode = ref<PublicFolderNode>({
-    id: '',
+const updateNode = ref<Partial<PublicFolderNode>>({
+    id: null,
     name: '',
-    parentId: '',
+    parent_id: null,
     level: 0,
     children: []
 })
@@ -68,9 +78,6 @@ onMounted(() => {
     publicStore.initPublicTree()
 });
 
-function append(data: PublicFolderNode) {
-    console.log(data)
-}
 function rename(node: { data: PublicFolderNode }) {
     console.log(node)
     newName.value = node.data.name
@@ -117,12 +124,12 @@ function loadNode(node: any, resolve: any) {
     })
 }
 
-const handleNodeCreateClick = (node?: PublicFolderNode) => {
+const handleNodeCreateClick = (node?: Partial<PublicFolderNode>) => {
     if (!node) {
         updateNode.value = {
-            id: '',
+            id: null,
             name: '',
-            parentId: '',
+            parent_id: null,
             level: 0,
             children: []
         }
