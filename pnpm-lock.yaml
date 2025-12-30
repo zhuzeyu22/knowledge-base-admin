@@ -23,6 +23,9 @@ importers:
       jsencrypt:
         specifier: ^3.5.4
         version: 3.5.4
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
       vue:
         specifier: ^3.5.12
         version: 3.5.22(typescript@5.6.3)
