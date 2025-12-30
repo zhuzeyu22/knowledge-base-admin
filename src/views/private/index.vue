@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import KnowledgeBaseCard from '@/components/KnowledgeBaseCard.vue'
 import { Dataset } from '@/models/dataset';
 import CreateCard from './components/createCard.vue';
@@ -44,6 +44,10 @@ const getTotal = async () => {
     })
 }
 
+onMounted(() => {
+    getTotal()
+})
+
 const load = () => {
     if (datasetList.value.length >= total.value) {
         return
@@ -55,6 +59,7 @@ const load = () => {
         search.value,
     ).then((res) => {
         datasetList.value.push(...res.data)
+        total.value = res.total
         loading.value = false
     }).catch(err => {
         console.log(err)
