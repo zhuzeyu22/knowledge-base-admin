@@ -1,3 +1,4 @@
+import { Profile } from "@/models/user";
 import request from "./request";
 
 // 获取当前工作空间（租户）信息
@@ -7,5 +8,5 @@ export const getWorkspaceCurrent = () => {
 
 // 获取当前用户信息
 export const getAccountProfile = () => {
-  return request.get(`/account/profile`);
+  return request.get<Profile>(`/account/profile`);
 };

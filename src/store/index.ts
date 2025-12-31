@@ -1,9 +1,9 @@
-// store/index.ts
-import { createPinia } from 'pinia'
-import { useUserStore } from './user'
+// // store/index.ts
+// import { createPinia } from 'pinia'
+// import { useUserStore } from './user'
 
-const pinia = createPinia()
+// const pinia = createPinia()
 
-export default pinia
+// export default pinia
 
-export { useUserStore }
+// export { useUserStore }

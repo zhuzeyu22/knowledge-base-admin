@@ -1,7 +1,16 @@
 import request from "./request";
 import { Team } from "@/models/team";
 
-const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const VITE_TENANT_API_BASE_URL = import.meta.env.VITE_TENANT_API_BASE_URL;
+
+type TenantListResponse = {
+  data: {
+    results: Team[];
+    count: number;
+  };
+  message: string;
+  status: "success" | string;
+};
 
 // 对应 finna 工作空间（租户）
 // https://www.finna.com.cn/tenant/api/app/user_tenant_role/tenant_list?account_id=71aaf60f-544b-4478-ae57-612814946eb1&page=1&page_size=100
@@ -10,13 +19,13 @@ export const getTenantList = (
   page: number,
   page_size: number
 ) =>
-  request.get("/app/user_tenant_role/tenant_list", {
+  request.get<TenantListResponse>("/app/user_tenant_role/tenant_list", {
     params: {
       account_id,
       page,
       page_size,
     },
-    baseURL: VITE_API_BASE_URL,
+    baseURL: VITE_TENANT_API_BASE_URL,
   });
 
 // https://www.finna.com.cn/console/api/datasets?page=1&limit=30&include_all=false
@@ -31,7 +40,7 @@ export const getDatasetList = (
       page,
       limit,
     },
-    baseURL: VITE_API_BASE_URL,
+    baseURL: VITE_TENANT_API_BASE_URL,
   });
 // https://www.finna.com.cn/tenant/api/app/tenant/add post
 // avatar :"it is mock"
@@ -40,12 +49,15 @@ export const getDatasetList = (
 // name :"bigood"
 // owner :"f5a3c6c5-5670-46c8-bbf0-d95741a16c2a"
 export const postAddTenant = (data: Team) => {
-  return request.post("/app/tenant/add", { data, baseURL: VITE_API_BASE_URL });
+  return request.post("/app/tenant/add", {
+    data,
+    baseURL: VITE_TENANT_API_BASE_URL,
+  });
 };
 
 //  http://172.16.6.129:30720/tenant/api/app/tenant/delete/145160f4-ad15-4054-bcb0-cd01daadf2a5\
-export const deleteAddTenant = (tenant_id: string) => {
+export const deleteTenant = (tenant_id: string) => {
   return request.delete(`/app/tenant/delete/${tenant_id}`, {
-    baseURL: VITE_API_BASE_URL,
+    baseURL: VITE_TENANT_API_BASE_URL,
   });
 };

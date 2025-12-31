@@ -60,6 +60,7 @@ const load = () => {
     ).then((res) => {
         datasetList.value.push(...res.data)
         total.value = res.total
+        page.value++
         loading.value = false
     }).catch(err => {
         console.log(err)
@@ -69,6 +70,7 @@ const load = () => {
 const reload = () => {
     datasetList.value = []
     page.value = 1
+    total.value = 1
     load()
 }
 

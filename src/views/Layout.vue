@@ -43,12 +43,13 @@ import { Permission, hasPermission } from "@/utils/permission";
 import PublicTree from "@/components/publicTree/index.vue";
 import TeamTree from "@/components/teamTree/index.vue";
 
+
 const permissions = ref([]);
 const showStat = computed(() => hasPermission(permissions.value, Permission.STAT_MENU_BUTTON_VISIBLE));
 const showConversationLog = computed(() => hasPermission(permissions.value, Permission.CONVERSATION_LOG_MENU_BUTTON_VISIBLE));
 const showLoginLog = computed(() => hasPermission(permissions.value, Permission.LOGIN_LOG_MENU_BUTTON_VISIBLE));
 const showAuthLog = computed(() => hasPermission(permissions.value, Permission.AUTH_LOG_MENU_BUTTON_VISIBLE));
-const showOpLog = computed(()=> hasPermission(permissions.value,Permission.OP_MENU_BUTTON_VISIBLE));
+const showOpLog = computed(() => hasPermission(permissions.value, Permission.OP_MENU_BUTTON_VISIBLE));
 
 const pbTreeRef = ref(null);
 
