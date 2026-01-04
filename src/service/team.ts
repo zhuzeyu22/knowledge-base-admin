@@ -42,6 +42,8 @@ export const getDatasetList = (
     },
     baseURL: VITE_TENANT_API_BASE_URL,
   });
+
+// 创建团队
 // https://www.finna.com.cn/tenant/api/app/tenant/add post
 // avatar :"it is mock"
 // description :"bigood"
@@ -61,3 +63,27 @@ export const deleteTenant = (tenant_id: string) => {
     baseURL: VITE_TENANT_API_BASE_URL,
   });
 };
+
+// 团队角色列表
+// https://www.finna.com.cn/tenant/api/app/role/list
+export const getRoleList = () => {
+  return request.get("/app/role/list", {
+    baseURL: VITE_TENANT_API_BASE_URL,
+  });
+};
+
+// 团队成员列表
+// https://www.finna.com.cn/tenant/api/app/user_tenant_role/account_list?page=1&page_size=-1&tenant_id=8219d257-e383-441f-9c0f-07625e2c67e3
+export const getTeamMemberList = (
+  tenant_id: string,
+  page: number,
+  page_size: number
+) =>
+  request.get("/app/user_tenant_role/account_list", {
+    params: {
+      tenant_id,
+      page,
+      page_size,
+    },
+    baseURL: VITE_TENANT_API_BASE_URL,
+  });

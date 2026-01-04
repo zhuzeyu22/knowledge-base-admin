@@ -6,20 +6,22 @@
                     <el-menu-item index="1" @click="$router.push('/private')">个人知识库</el-menu-item>
                     <el-menu-item index="2" @click="$router.push('/public')" class="hover-container">
                         <div style="flex: 1;">公共知识库</div>
-                        <el-icon @click.stop="handleAddPublic" class="hover-button">
+                        <el-icon @click.stop="handleAddPublic" class="hover-button"
+                            v-if="$router.currentRoute.value.fullPath?.toString().match('/public')">
                             <plus />
                         </el-icon>
                     </el-menu-item>
-                    <PublicTree ref="pbTreeRef" v-if="$router.currentRoute.value.name?.toString().match('public')"
+                    <PublicTree ref="pbTreeRef" v-if="$router.currentRoute.value.fullPath?.toString().match('/public')"
                         class="tree">
                     </PublicTree>
                     <el-menu-item index="8" @click="$router.push('/team')" class="hover-container">
                         <div style="flex: 1;">团队知识库</div>
-                        <el-icon @click.stop="handleAddPublic" class="hover-button">
+                        <el-icon @click="handleAddTeam" class="hover-button"
+                            v-if="$router.currentRoute.value.fullPath?.toString().match('/team')">
                             <plus />
                         </el-icon>
                     </el-menu-item>
-                    <TeamTree v-if="$router.currentRoute.value.name?.toString().match('team')" class="tree"></TeamTree>
+                    <TeamTree v-if="$router.currentRoute.value.fullPath?.toString().match('/team')" class="tree"></TeamTree>
                     <el-menu-item v-if="showStat" index="4" @click="$router.push('/stat')">数据统计</el-menu-item>
                     <el-menu-item v-if="showConversationLog" index="5"
                         @click="$router.push('/conversation-log')">对话记录</el-menu-item>
@@ -32,6 +34,7 @@
             <el-main>
                 <router-view />
             </el-main>
+            <CreateTeamDialog v-model:visible="addTeamDialogVisible"></CreateTeamDialog>
         </el-container>
     </div>
 </template>
@@ -42,7 +45,7 @@ import { computed, onBeforeMount, ref } from "vue";
 import { Permission, hasPermission } from "@/utils/permission";
 import PublicTree from "@/components/publicTree/index.vue";
 import TeamTree from "@/components/teamTree/index.vue";
-
+import CreateTeamDialog from "@/views/team/createTeamDialog.vue";
 
 const permissions = ref([]);
 const showStat = computed(() => hasPermission(permissions.value, Permission.STAT_MENU_BUTTON_VISIBLE));
@@ -52,6 +55,8 @@ const showAuthLog = computed(() => hasPermission(permissions.value, Permission.A
 const showOpLog = computed(() => hasPermission(permissions.value, Permission.OP_MENU_BUTTON_VISIBLE));
 
 const pbTreeRef = ref(null);
+
+const addTeamDialogVisible = ref(false);
 
 onBeforeMount(async () => {
     const { id: userId } = await getAccountProfile();
@@ -71,6 +76,10 @@ onBeforeMount(async () => {
 const handleAddPublic = () => {
     pbTreeRef.value.handleNodeCreateClick();
 }
+const handleAddTeam = () => {
+    addTeamDialogVisible.value = true;
+}
+
 </script>
 
 <style scoped lang="less">

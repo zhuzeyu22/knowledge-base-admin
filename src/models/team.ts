@@ -3,9 +3,10 @@ export type Team = {
   avatar: string;
   description: string;
   // 个人空间还是团队空间
-  is_public: boolean;
+  is_public: true | boolean;
   name: string;
   owner: string;
+  tenant_id: string;
 };
 
 export type TeamNode = {
@@ -19,4 +20,13 @@ export type Member = {
   name: string;
   role: string;
   roleId: string;
+};
+
+export type Role = {
+  id: string;
+  name: "开发" | string;
+  created_at?: string;
+  description?: string;
+  status?: true;
+  updated_at?: string;
 };

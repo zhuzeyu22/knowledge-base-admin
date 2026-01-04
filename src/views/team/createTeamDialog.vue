@@ -1,0 +1,37 @@
+<template>
+    <el-dialog title="新建团队" v-model="visible" width="30%" :before-close="handleClose">
+        <div style="margin-bottom: 8px;">团队名称：</div>
+        <el-input v-model="newName" placeholder="请输入名称"></el-input>
+        <span slot="footer" class="dialog-footer">
+            <el-button type="primary" @click="handleCreateConfirm">确 定</el-button>
+            <el-button @click="visible = false">取 消</el-button>
+        </span>
+    </el-dialog>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue';
+
+const newName = ref('')
+const visible = defineModel("visible")
+
+const handleClose = () => {
+    // 关闭对话框的回调函数
+    visible.value = false;
+};
+
+const handleCreateConfirm = () => {
+    // 确定按钮的回调函数
+    visible.value = false;
+};
+
+</script>
+
+<style scoped lang="less">
+.dialog-footer {
+    display: flex;
+    flex-direction: row-reverse;
+    gap: 16px;
+    margin-top: 16px;
+}
+</style>

@@ -35,6 +35,15 @@ const routes = [
         component: () => import("@/views/team/index.vue"),
       },
       {
+        path: "team/:teamId",
+        component: () => import("@/views/team/index.vue"),
+      },
+      {
+        path: "team/:teamId/member",
+        component: () => import("@/views/team/member.vue"),
+        props: true,
+      },
+      {
         path: "stat",
         name: "stat",
         component: () => import("@/views/stat/index.vue"),

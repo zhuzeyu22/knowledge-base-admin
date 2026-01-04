@@ -3,12 +3,19 @@
         <el-tree :data="teamList" node-key="id" v-infinite-scroll="load" :infinite-scroll-disabled="loading"
             :infinite-scroll-distance="10">
             <template #default="{ node, data }">
-                <span class="custom-tree-node">
-                    <span>{{ data.tenant_name }}</span>
-                    <!-- <span>
-                        <el-button type="text" @click="() => remove(node, data)">
-                        </el-button>
-                    </span> -->
+                <span class="custom-tree-node hover-container" @click.stop="handleTeamClick(data)">
+                    <div class="label">{{ data.tenant_name }}</div>
+                    <el-dropdown class="more hover-item" placement="bottom-end">
+                        <el-icon style="cursor: pointer">
+                            <MoreFilled />
+                        </el-icon>
+                        <template #dropdown>
+                            <el-dropdown-menu>
+                                <el-dropdown-item @click="() => config(data)">基本信息</el-dropdown-item>
+                                <el-dropdown-item @click="() => member(data)">成员权限管理</el-dropdown-item>
+                            </el-dropdown-menu>
+                        </template>
+                    </el-dropdown>
                 </span>
             </template>
         </el-tree>
@@ -17,11 +24,15 @@
 
 <script setup lang="ts">
 import { Team } from "@/models/team";
+import { Profile } from "@/models/user";
+import router from "@/router";
 import { getTenantList } from "@/service/team";
+import { useTeamStore } from "@/store/team";
 import { useUserStore } from "@/store/user";
-import { ref, watch, computed, onMounted } from "vue"
+import { ref, watch, computed, onMounted, onBeforeUnmount, nextTick } from "vue"
 
 const userStore = useUserStore()
+const teamStore = useTeamStore()
 const teamList = ref<Team[]>([])
 
 const page = ref(1)
@@ -32,6 +43,9 @@ const total = ref(1)
 
 const load = () => {
     if (nowIndex.value >= total.value) {
+        return
+    }
+    if (!userStore?.getUserInfo?.id) {
         return
     }
     loading.value = true
@@ -48,22 +62,42 @@ const load = () => {
     })
 }
 
+const reload = () => {
+    teamList.value = []
+    page.value = 1
+    nowIndex.value = 0
+    total.value = 1
+    load()
+}
+
+defineExpose({ reload })
+
 watch(
-    () => userStore.getUserInfo.id,
-    () => {
-        teamList.value = []
-        page.value = 1
-        nowIndex.value = 0
-        total.value = 1
-        load()
-    },
-    {
-        immediate: true,
-        deep: true,
+    () => userStore.getUserInfo,
+    (userInfo: Profile) => {
+        if (userInfo?.id) {
+            reload()
+        }
     }
 );
 
+onMounted(() => {
+    reload()
+})
 
+const handleTeamClick = (data: Team) => {
+    teamStore.updateCurrentTeam(data)
+    console.log('handleTeamClick', teamStore.getCurrentTeam)
+    router.push(`/team/${data.tenant_id}`)
+}
+
+const config = (data: Team) => {
+    console.log('config', data)
+}
+const member = (data: Team) => {
+    console.log('member', data)
+    router.push(`/team/${data.tenant_id}/member`)
+}
 
 </script>
 
@@ -74,6 +108,12 @@ watch(
     width: 100%;
     height: 100%;
     overflow-y: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.section::-webkit-scrollbar {
+    display: none;
 }
 
 .custom-tree-node {
