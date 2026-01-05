@@ -38,61 +38,82 @@
 </template>
 <script setup lang="ts">
 import { Search } from '@element-plus/icons-vue';
-import { ref, computed  } from 'vue'
+import { ref, computed, onMounted  } from 'vue'
+import { getTeamMemberPermissionList } from '@/service/team';
+import { ElMessage, ElTable } from "element-plus";
 
 const searchName = ref('')
 // const dialogTableVisible = ref(true)
 const selectedRows = ref([])
-const tableRef = ref('')
+const tableRef = ref<InstanceType<typeof ElTable> | null>(null);
 const selectedToolbarPermission = ref('');
+
+interface MemberPermission {
+  account_name: string,
+  role_name: string,
+}
 const props = defineProps<{
     visible:boolean;
     datasetId:string
 }>();
 const emit = defineEmits(['update:visible','refresh'])
+const datasetId = String(props.datasetId);
 
 const permissionOptions = [
     {
-        value: 'management',
+        value: '管理',
         label: '管理'
     },
     {
-        value: 'collaboration',
+        value: '协作',
         label: '协作'
     },
     {
-        value: 'use',
+        value: '使用',
         label: '使用'
     },
 ]
-
-const filteredData = computed(() => {
-    if (!searchName.value.trim()) {
-        return MockData;
-    }
-    return MockData.filter(item => {
-        return item.user.toLowerCase().includes(searchName.value.trim().toLowerCase());
-    });
-});
+const memberPermissionList = ref<MemberPermission[]>([]);
 const MockData = [
     {
-        user: '用户A',
-        permission: 'collaboration',
+        account_name: '用户A',
+        role_name: '协作',
     },
     {
-        user: '用户B',
-        permission: 'use',
+        account_name: '用户B',
+        role_name: '使用',
     },
     {
-        user: '用户C',
-        permission: 'management',
+        account_name: '用户C',
+        role_name: '管理',
     },
     {
-        user: '用户D',
-        permission: 'use',
+        account_name: '用户D',
+        role_name: '使用',
     },
 
 ]
+const loadData = () => {
+    getTeamMemberPermissionList(datasetId)
+    .then((res)=>{
+        // console.log(res)
+        memberPermissionList.value = res.data.results;
+    })
+    .catch((error:any) => {
+        ElMessage.error('展示模拟数据')
+        memberPermissionList.value = MockData;
+        console.log(memberPermissionList)
+    })
+} 
+const filteredData = computed(() => {
+    if (!searchName.value.trim()) {
+        return memberPermissionList;
+    }
+    return memberPermissionList.value.filter(item => {
+        return item.account_name.toLowerCase().includes(searchName.value.trim().toLowerCase());
+    });
+});
+
 const handleSelectedRows = (rows:any) => {
     selectedRows.value = rows;
 }
@@ -101,7 +122,9 @@ const handleCancelSelection = () => {
     selectedRows.value = [];
     selectedToolbarPermission.value = '';
 }
-
+onMounted(()=>{
+    loadData()
+})
 </script>
 <style scoped lang="scss">
 .container {
@@ -118,9 +141,6 @@ const handleCancelSelection = () => {
             background-color: transparent;
             box-shadow: none; 
         }
-        // :deep(.el-select__placeholder.is-transparent){
-        //     color:#409eff;
-        // }
         :deep(.el-select__placeholder){
             color:#409eff;
         }
@@ -129,7 +149,7 @@ const handleCancelSelection = () => {
         overflow-x: hidden;
         :deep(.el-select__wrapper) {
         background-color: transparent !important;
-        box-shadow: none !important; /* 建议平时把边框也去掉，看起来更像纯文字，体验更好 */
+        box-shadow: none !important; 
     }
     }
 

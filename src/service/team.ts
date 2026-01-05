@@ -35,7 +35,7 @@ export const getDatasetList = (
   limit: number
 ) =>
   request.get("/app/dataset/list", {
-    params: {
+    params: { 
       tenant_id,
       page,
       limit,
@@ -82,6 +82,22 @@ export const getTeamMemberList = (
   request.get("/app/user_tenant_role/account_list", {
     params: {
       tenant_id,
+      page,
+      page_size,
+    },
+    baseURL: VITE_TENANT_API_BASE_URL,
+  });
+
+//知识库成员权限列表
+//
+export const getTeamMemberPermissionList = (
+  dataset_id: string,
+  page?: number,
+  page_size?: number
+) =>
+  request.get("/app/user_datasets_role/account_list", {
+    params: {
+      dataset_id,
       page,
       page_size,
     },
