@@ -1,15 +1,15 @@
 <template>
     <div class="container">
-        <el-dialog v-model="$props.visible" title="知识库权限" align-center width="500px" style="height: 500px;">
-            <el-input class="input" v-model="searchName" type="text" placeholder="搜索" style="width: 120px; " :prefix-icon="Search"
+        <el-dialog v-model="props.visible" title="知识库权限" align-center width="500px" style="height: 500px;">
+            <el-input class="input" v-model="searchName" type="text" placeholder="搜索" :prefix-icon="Search"
                 size="small" clearable/>
             <div class="scroll-container">
                 <el-table :data="filteredData" @selection-change="handleSelectedRows" ref="tableRef">
                     <el-table-column type="selection" width="60" />
-                    <el-table-column property="user" label="成员" width="260" />
+                    <el-table-column property="user" label="成员" width="240" />
                     <el-table-column property="permission" label="权限" width="120">
                         <template #default=scope>
-                            <el-select v-model="scope.row.permission">
+                            <el-select class="select" v-model="scope.row.permission">
                                 <el-option v-for="item in permissionOptions" :key="item.value" :label="item.label"
                                     :value="item.value" />
                             </el-select>
@@ -19,7 +19,7 @@
             </div>
             <div class="toolbar" v-if="selectedRows.length > 0">
                 <span class="permission-text">{{ selectedRows.length }}名成员权限修改为
-                <el-select v-model="selectedToolbarPermission" placeholder="请选择权限" style="width: 120px;">
+                <el-select class="select" v-model="selectedToolbarPermission" placeholder="请选择权限" style="width: 120px;">
                     <el-option 
                     v-for="item in permissionOptions" 
                     :key="item.value" 
@@ -28,8 +28,8 @@
                     />
                 </el-select></span>
                 <span class="permission-button">
-                   <el-button type="info" plain style="width:120px" @click="handleCancelSelection">取消</el-button>
-                   <el-button type="primary" style="width:120px" @click="handleBatchUpdate">确认</el-button> 
+                   <el-button type="info" plain style="width:100px" @click="handleCancelSelection">取消</el-button>
+                   <el-button type="primary" style="width:100px" @click="handleBatchUpdate">确认</el-button> 
                 </span>
                 
             </div>
@@ -101,41 +101,64 @@ const handleCancelSelection = () => {
     selectedRows.value = [];
     selectedToolbarPermission.value = '';
 }
-const handleClose = () => {
-    emit('update:visible',false)
-}
+
 </script>
 <style scoped lang="scss">
 .container {
     display: flex;
     position: relative;
-
+    :deep(.el-dialog) {
+        padding: 40px;
+    }
+    .select {
+        :deep(.el-select__wrapper){
+            box-shadow: none;
+        }
+        :deep(.el-select__wrapper:hover) {
+            background-color: transparent;
+            box-shadow: none; 
+        }
+        // :deep(.el-select__placeholder.is-transparent){
+        //     color:#409eff;
+        // }
+        :deep(.el-select__placeholder){
+            color:#409eff;
+        }
+    }
     .scroll-container {
-        height: 340px;
         overflow-x: hidden;
+        :deep(.el-select__wrapper) {
+        background-color: transparent !important;
+        box-shadow: none !important; /* 建议平时把边框也去掉，看起来更像纯文字，体验更好 */
+    }
     }
 
     .input {
         position: absolute;
         right: 50px;
-        top: 14px;
+        top: 34px;
+        width: 120px;
     }
     .toolbar {
+        position: absolute;
+        bottom: 10px;
+        left: 0px;
         border-top: 1px solid;
         padding: 10px;
+        width: 100%;
         :v-deep(.el-dialog){
-            --el-dialog-padding-primary: 0px;
+            --el-dialog-padding-primary: 10px;
         }
         .permission-text {
             display: inline-block;
             display: flex;
-            justify-content: space-between;
+            justify-content: space-around;
             align-items: center;
             font-size: 16px;
         }
         .permission-button{
             display: flex;
-            padding-top: 10px;
+            padding-top: 20px;
             justify-content: space-around;
             align-items: center;
         }

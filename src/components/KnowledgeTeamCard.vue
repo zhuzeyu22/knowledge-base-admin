@@ -26,12 +26,13 @@
           </el-icon>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item @click="handlePermission">知识库权限</el-dropdown-item>
-              <!-- <el-dropdown-item @click="handleDeleteClick">删除</el-dropdown-item> -->
+              <el-dropdown-item @click="handleMemberPermission">知识库权限</el-dropdown-item>
+              <el-dropdown-item @click="handlePublicPermission">公开</el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
-        <memberPermission v-model:visible="isPermissionDialogShow" :dataset-id="props.dataset.id"/>
+        <memberPermission v-model:visible="isMemberPermissionShow" :dataset-id="props.dataset.id"/>
+        <publicPermission v-model:visible="isPublicPermissionShow" :dataset-name = "props.dataset.name"/>
       </div>
     </div>
   </el-card>
@@ -45,6 +46,7 @@ import { useRouter } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { deleteDataset } from "@/service/datasets";
 import memberPermission from "@/views/team/components/memberPermission.vue";
+import publicPermission from "@/views/team/components/publicPermission.vue";
 const emit = defineEmits(["delete"]);
 
 const props = defineProps<{
@@ -52,7 +54,9 @@ const props = defineProps<{
 }>();
 
 const router = useRouter();
-const isPermissionDialogShow = ref(false)
+const isMemberPermissionShow = ref(false)
+const isPublicPermissionShow = ref(false)
+
 // 跳转到详情页
 const goToDetails = () => {
   router.push({
@@ -91,8 +95,11 @@ const handleDeleteClick = () => {
   console.log("删除");
 };
 
-const handlePermission = () => {
-  isPermissionDialogShow.value = true;
+const handleMemberPermission = () => {
+  isMemberPermissionShow.value = true;
+}
+const handlePublicPermission = () => {
+  isPublicPermissionShow.value = true;
 }
 </script>
 
