@@ -1,13 +1,13 @@
 <template>
     <div class="container">
-        <el-dialog v-model="props.visible" title="知识库权限" align-center width="500px" style="height: 500px;">
+        <el-dialog v-model="dialogVisible" title="知识库权限" align-center width="500px" style="height: 500px;" >
             <el-input class="input" v-model="searchName" type="text" placeholder="搜索" :prefix-icon="Search"
                 size="small" clearable/>
             <div class="scroll-container">
                 <el-table :data="filteredData" @selection-change="handleSelectedRows" ref="tableRef">
                     <el-table-column type="selection" width="60" />
-                    <el-table-column property="user" label="成员" width="240" />
-                    <el-table-column property="permission" label="权限" width="120">
+                    <el-table-column property="account_name" label="成员" width="240" />
+                    <el-table-column property="role_name" label="权限" width="120">
                         <template #default=scope>
                             <el-select class="select" v-model="scope.row.permission">
                                 <el-option v-for="item in permissionOptions" :key="item.value" :label="item.label"
@@ -40,10 +40,10 @@
 import { Search } from '@element-plus/icons-vue';
 import { ref, computed, onMounted  } from 'vue'
 import { getTeamMemberPermissionList } from '@/service/team';
-import { ElMessage, ElTable } from "element-plus";
+import { ElTable } from "element-plus";
+
 
 const searchName = ref('')
-// const dialogTableVisible = ref(true)
 const selectedRows = ref([])
 const tableRef = ref<InstanceType<typeof ElTable> | null>(null);
 const selectedToolbarPermission = ref('');
@@ -56,7 +56,13 @@ const props = defineProps<{
     visible:boolean;
     datasetId:string
 }>();
-const emit = defineEmits(['update:visible','refresh'])
+const dialogVisible = computed({
+    get:()=> props.visible,
+    set:(val)=> {
+        emits('update:visible',val)
+    }
+})
+const emits = defineEmits(['update:visible','refresh'])
 const datasetId = String(props.datasetId);
 
 const permissionOptions = [
@@ -96,18 +102,18 @@ const MockData = [
 const loadData = () => {
     getTeamMemberPermissionList(datasetId)
     .then((res)=>{
-        // console.log(res)
+
         memberPermissionList.value = res.data.results;
     })
-    .catch((error:any) => {
-        ElMessage.error('展示模拟数据')
-        memberPermissionList.value = MockData;
-        console.log(memberPermissionList)
-    })
+    // .catch((error:any) => {
+    //     memberPermissionList.value = MockData;
+    //     console.log(memberPermissionList)
+    // })
 } 
 const filteredData = computed(() => {
     if (!searchName.value.trim()) {
-        return memberPermissionList;
+        console.log(memberPermissionList);
+        return memberPermissionList.value;
     }
     return memberPermissionList.value.filter(item => {
         return item.account_name.toLowerCase().includes(searchName.value.trim().toLowerCase());
