@@ -49,8 +49,9 @@ const load = () => {
         return
     }
     loading.value = true
+    const account_id = userStore.getUserInfo.id
     getTenantList(
-        userStore.getUserInfo.id,
+        account_id,
         page.value,
         limit.value,
     ).then((res) => {
@@ -88,7 +89,7 @@ onMounted(() => {
 const handleTeamClick = (data: Team) => {
     teamStore.updateCurrentTeam(data)
     console.log('handleTeamClick', teamStore.getCurrentTeam)
-    router.push(`/team/${data.tenant_id}`)
+    router.push(`/team/${data.tenant_id}/datasets`)
 }
 
 const config = (data: Team) => {

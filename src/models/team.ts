@@ -9,17 +9,14 @@ export type Team = {
   tenant_id: string;
 };
 
-export type TeamNode = {
-  id: string;
-  name: string;
-  member: Member[];
-} & Team;
-
 export type Member = {
+  account_id: string;
+  account_name: string;
+  // id 是更新数据用
   id: string;
-  name: string;
-  role: string;
-  roleId: string;
+  role_id: string;
+  role_name: string;
+  tenant_id: string;
 };
 
 export type Role = {
