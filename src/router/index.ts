@@ -2,6 +2,8 @@ import { createRouter, createWebHashHistory } from "vue-router";
 import Layout from "@/views/Layout.vue";
 import { getQueryParam } from "@/utils/params";
 import { accessUnitlogin } from "@/utils/auth";
+import { getTenantList, postSwitchWorkspace } from "@/service/team";
+import { getAccountProfile } from "@/service/workspace";
 
 const routes = [
   {
@@ -13,6 +15,13 @@ const routes = [
         path: "private",
         name: "private",
         component: () => import("@/views/private/index.vue"),
+        // beforeEnter: async (to, from) => {
+        //   const profile = await getAccountProfile();
+        //   const res = await getTenantList(profile.id, 1, 1);
+        //   const tenantId = res.data.results[0].id;
+        //   await postSwitchWorkspace(tenantId);
+        //   return true
+        // },
       },
       {
         path: "create",
@@ -34,14 +43,27 @@ const routes = [
         name: "team",
         component: () => import("@/views/team/index.vue"),
       },
+      // 团队知识库列表
       {
-        path: "team/:teamId",
+        path: "team/:teamId/datasets",
         component: () => import("@/views/team/index.vue"),
+        meta: { requiresSwitch: true }, // 标记需要调用 switch 接口
+      },
+      // 创建团队知识库
+      {
+        path: "team/:teamId/create",
+        component: () => import("@/views/team/index.vue"),
+        meta: { requiresSwitch: true }, // 标记需要调用 switch 接口
+      },
+      // 团队知识库详情
+      {
+        path: "team/:teamId/dataset/:datasetId",
+        component: () => import("@/views/team/index.vue"),
+        meta: { requiresSwitch: true }, // 标记需要调用 switch 接口
       },
       {
         path: "team/:teamId/member",
         component: () => import("@/views/team/member.vue"),
-        props: true,
       },
       {
         path: "stat",
@@ -136,6 +158,19 @@ router.beforeEach(async (to, from) => {
     const cleanUrl =
       window.location.origin + window.location.pathname + window.location.hash;
     window.location.replace(cleanUrl);
+  }
+
+  // 检查是否需要切换团队
+  if (to.meta.requiresSwitch && to.params.teamId) {
+    const teamId = String(to.params.teamId);
+    try {
+      // 调用 switch 接口
+      await postSwitchWorkspace(teamId);
+      // 成功则继续导航
+    } catch (error) {
+      console.error("切换团队失败:", error);
+      // 可选：跳转到错误页或首页
+    }
   }
 });
 

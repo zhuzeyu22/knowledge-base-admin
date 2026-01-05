@@ -154,21 +154,19 @@ export const getPrivateDatasetList = (
   keyword: string = ""
 ) => {
   return request.get(
-    `/datasets?page=${page}&limit=${limit}&include_all=false&keyword=${keyword || ''}`
+    `/datasets?page=${page}&limit=${limit}&include_all=false&keyword=${
+      keyword || ""
+    }`
   );
 };
 
 // 查询共享知识库列表
 // todo 这个接口有问题，下个版本调试
-export const getPublicDatasetList = ({
-  include_all = false,
-  page = 1,
-  limit = 30,
-}: {
-  include_all: boolean;
-  page: number;
-  limit: number;
-}) => {
+export const getPublicDatasetList = (
+  page: number = 1,
+  limit: number = 30,
+  include_all: boolean = false
+) => {
   return request.get("/datasets", {
     params: { page, limit, include_all },
   });

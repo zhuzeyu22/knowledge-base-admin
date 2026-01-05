@@ -1,5 +1,5 @@
 import request from "./request";
-import { Team } from "@/models/team";
+import { Member, Team } from "@/models/team";
 
 const VITE_TENANT_API_BASE_URL = import.meta.env.VITE_TENANT_API_BASE_URL;
 
@@ -88,6 +88,7 @@ export const getTeamMemberList = (
     baseURL: VITE_TENANT_API_BASE_URL,
   });
 
+  
 //知识库成员权限列表
 //
 export const getTeamMemberPermissionList = (
@@ -103,3 +104,33 @@ export const getTeamMemberPermissionList = (
     },
     baseURL: VITE_TENANT_API_BASE_URL,
   });
+
+//当前用户角色
+// /tenant/api/app/user_tenant_role/role?tenant_id=8219d257-e383-441f-9c0f-07625e2c67e3&account_id=71aaf60f-544b-4478-ae57-612814946eb1
+export const getUserRole = (tenant_id: string, account_id: string) => {
+  return request.get("/app/user_tenant_role/role", {
+    params: {
+      tenant_id,
+      account_id,
+    },
+    baseURL: VITE_TENANT_API_BASE_URL,
+  });
+};
+
+// 修改团队成员角色
+// /tenant/api/app/user_tenant_role/modify/aeb6d00e-a098-4a02-8fc8-689af3ba7102
+export const putUserRole = (data: Member) => {
+  return request.put(`/app/user_tenant_role/modify/${data.id}`, {
+    data,
+    baseURL: VITE_TENANT_API_BASE_URL,
+  });
+};
+
+// 切换团队空间
+// https://www.finna.com.cn/console/api/workspaces/switch
+export const postSwitchWorkspace = (tenant_id: string) => {
+  return request.post("/workspaces/switch", {
+    tenant_id,
+  });
+};
+
