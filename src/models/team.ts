@@ -27,3 +27,11 @@ export type Role = {
   status?: true;
   updated_at?: string;
 };
+
+export type MemberPermission = {
+  id: string;//表格一行数据
+  role_name: string;//当前权限名称
+  role_id: string;
+  role: string;
+  account_name: string;
+}

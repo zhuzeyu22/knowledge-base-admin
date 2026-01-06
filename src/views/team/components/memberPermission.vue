@@ -9,7 +9,7 @@
                     <el-table-column property="account_name" label="成员" width="240" />
                     <el-table-column property="role_name" label="权限" width="120">
                         <template #default=scope>
-                            <el-select class="select" v-model="scope.row.permission">
+                            <el-select class="select" v-model="scope.row.permission" @change="handlePermissionChange(val, scope.row)">
                                 <el-option v-for="item in permissionOptions" :key="item.value" :label="item.label"
                                     :value="item.value" />
                             </el-select>
@@ -41,29 +41,32 @@ import { Search } from '@element-plus/icons-vue';
 import { ref, computed, onMounted  } from 'vue'
 import { getTeamMemberPermissionList } from '@/service/team';
 import { ElTable } from "element-plus";
+import { MemberPermission } from '@/models/team';
 
-
-const searchName = ref('')
-const selectedRows = ref([])
-const tableRef = ref<InstanceType<typeof ElTable> | null>(null);
-const selectedToolbarPermission = ref('');
-
-interface MemberPermission {
-  account_name: string,
-  role_name: string,
-}
 const props = defineProps<{
     visible:boolean;
     datasetId:string
 }>();
+const emits = defineEmits(['update:visible','refresh'])
+
+const searchName = ref('')
+const selectedRows = ref<MemberPermission[]>([])
+const tableRef = ref<InstanceType<typeof ElTable> | null>(null);
+const selectedToolbarPermission = ref('');
+const memberPermissionList = ref<MemberPermission[]>([]);
+const datasetId = String(props.datasetId);
+// interface MemberPermission {
+//   account_name: string,
+//   role_name: string,
+// }
+
 const dialogVisible = computed({
     get:()=> props.visible,
     set:(val)=> {
         emits('update:visible',val)
     }
 })
-const emits = defineEmits(['update:visible','refresh'])
-const datasetId = String(props.datasetId);
+
 
 const permissionOptions = [
     {
@@ -79,7 +82,7 @@ const permissionOptions = [
         label: '使用'
     },
 ]
-const memberPermissionList = ref<MemberPermission[]>([]);
+
 const MockData = [
     {
         account_name: '用户A',
@@ -102,13 +105,12 @@ const MockData = [
 const loadData = () => {
     getTeamMemberPermissionList(datasetId)
     .then((res)=>{
-
         memberPermissionList.value = res.data.results;
     })
-    // .catch((error:any) => {
-    //     memberPermissionList.value = MockData;
-    //     console.log(memberPermissionList)
-    // })
+    .catch((error:any) => {
+        memberPermissionList.value = MockData;
+        console.log(memberPermissionList)
+    })
 } 
 const filteredData = computed(() => {
     if (!searchName.value.trim()) {
@@ -119,7 +121,9 @@ const filteredData = computed(() => {
         return item.account_name.toLowerCase().includes(searchName.value.trim().toLowerCase());
     });
 });
-
+const handlePermissionChange = async(newRowName:string, row:MemberPermission) => {
+    
+}
 const handleSelectedRows = (rows:any) => {
     selectedRows.value = rows;
 }

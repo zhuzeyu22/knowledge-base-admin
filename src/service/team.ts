@@ -88,8 +88,8 @@ export const getTeamMemberList = (
     baseURL: VITE_TENANT_API_BASE_URL,
   });
 
-  
-//知识库成员权限列表
+
+//团队知识库成员权限列表
 //
 export const getTeamMemberPermissionList = (
   dataset_id: string,
@@ -104,6 +104,24 @@ export const getTeamMemberPermissionList = (
     },
     baseURL: VITE_TENANT_API_BASE_URL,
   });
+
+//修改团队知识库成员权限
+//
+export const putTeamMemberPermission =(
+  id:string,
+  role_id:string,
+  role_name:string,
+  role:string,
+) =>
+  request.put(`/app/user_datasets_role/modify/${id}`,{
+    params:{
+      id,
+      role_id,
+      role_name,
+      role
+    },
+    baseURL:VITE_TENANT_API_BASE_URL,
+  })
 
 //当前用户角色
 // /tenant/api/app/user_tenant_role/role?tenant_id=8219d257-e383-441f-9c0f-07625e2c67e3&account_id=71aaf60f-544b-4478-ae57-612814946eb1
