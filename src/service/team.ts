@@ -103,8 +103,15 @@ export const getUserRole = (tenant_id: string, account_id: string) => {
 // 修改团队成员角色
 // /tenant/api/app/user_tenant_role/modify/aeb6d00e-a098-4a02-8fc8-689af3ba7102
 export const putUserRole = (data: Member) => {
-  return request.put(`/app/user_tenant_role/modify/${data.id}`, {
-    data,
+  return request.put(`/app/user_tenant_role/modify/${data.id}`, data, {
+    baseURL: VITE_TENANT_API_BASE_URL,
+  });
+};
+
+// 删除团队成员
+// https://www.finna.com.cn/tenant/api/app/user_tenant_role/delete/a4b7e290-34bb-4981-88fc-e69a2aef5059
+export const deleteUser = (data: Member) => {
+  return request.delete(`/app/user_tenant_role/delete/${data.id}`, {
     baseURL: VITE_TENANT_API_BASE_URL,
   });
 };

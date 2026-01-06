@@ -20,7 +20,8 @@
                     </el-table-column>
                     <el-table-column label="权限" width="200" prop="role_name">
                         <template #default="scope">
-                            <el-select v-model="scope.row.role_id" @change="() => handleRoleChange(scope.row)"
+                            <el-select v-model="scope.row.role_id"
+                                @change="(data: string) => handleRoleChange(scope.row, data)"
                                 :disabled="!hasPermission(permissions, Permission.MEMBER_MANAGEMENT_DROPDOWN_ROLE_SETTING_BUTTON_VISIBLE)">
                                 <el-option v-for="item in roleOptions" :key="item.id" :label="item.name"
                                     :value="item.id">
@@ -30,7 +31,8 @@
                     </el-table-column>
                     <el-table-column label="" width="80" prop="role_name">
                         <template #default="scope">
-                            <el-icon class="delete-icon" @click="handleDeleteFile(file.id)" :size="20" color="#909399">
+                            <el-icon class="delete-icon" @click="() => handleMemberDelete(scope.row)" :size="20"
+                                color="#909399">
                                 <Delete />
                             </el-icon>
                         </template>
@@ -52,9 +54,11 @@
 import router from "@/router";
 import { computed, onMounted, ref, watch } from "vue";
 import AddMemberDialog from "./addMemberDialog.vue";
-import { getTeamMemberList } from "@/service/team";
+import { deleteUser, getTeamMemberList, putUserRole } from "@/service/team";
 import { useTeamStore } from "@/store/team";
 import { hasPermission, Permission } from "@/utils/permission";
+import { Member } from "@/models/team";
+import { ElMessage, ElMessageBox } from "element-plus";
 const teamStore = useTeamStore();
 const addMemberDialogvisible = ref(false);
 const memberList = ref([]);
@@ -101,8 +105,39 @@ const handlePageSizeChange = () => {
     updateData();
 }
 
-const handleRoleChange = (data) => {
-    console.log('handleRoleChange', data);
+const handleRoleChange = (row: Member, roleId: string) => {
+    console.log('handleRoleChange', row, roleId);
+    putUserRole(row).then((res) => {
+        ElMessage({
+            type: "success",
+            message: "修改成功",
+        });
+    }).catch(err => {
+        ElMessage({
+            type: "warning",
+            message: "修改失败",
+        });
+    })
+}
+
+const handleMemberDelete = (row: Member) => {
+    ElMessageBox.confirm(`删除成员${row.account_name}？`, "", {
+        confirmButtonText: "我确定",
+        cancelButtonText: "取消",
+        type: "warning",
+    }).then(() => {
+        deleteUser(row).then((res) => {
+            ElMessage({
+                type: "success",
+                message: "删除成功",
+            });
+        }).catch(err => {
+            ElMessage({
+                type: "warning",
+                message: "删除失败",
+            });
+        })
+    })
 }
 
 </script>
