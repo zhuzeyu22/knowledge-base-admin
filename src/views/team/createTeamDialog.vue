@@ -10,6 +10,8 @@
 </template>
 
 <script setup lang="ts">
+import { postAddTenant } from '@/service/team';
+import { ElMessage } from 'element-plus';
 import { ref } from 'vue';
 
 const newName = ref('')
@@ -22,7 +24,24 @@ const handleClose = () => {
 
 const handleCreateConfirm = () => {
     // 确定按钮的回调函数
-    visible.value = false;
+    postAddTenant({
+        name: newName.value,
+        is_public: true,
+        description: "",
+    }).then(() => {
+        ElMessage({
+            type: "success",
+            message: "创建成功",
+        });
+    }).catch((e) => {
+        console.log(e)
+        ElMessage({
+            type: "warning",
+            message: "创建失败",
+        });
+    }).finally(() => {
+        visible.value = false;
+    })
 };
 
 </script>

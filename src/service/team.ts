@@ -50,7 +50,7 @@ export const getDatasetList = (
 // is_public :true
 // name :"bigood"
 // owner :"f5a3c6c5-5670-46c8-bbf0-d95741a16c2a"
-export const postAddTenant = (data: Team) => {
+export const postAddTenant = (data: Partial<Team>) => {
   return request.post("/app/tenant/add", {
     data,
     baseURL: VITE_TENANT_API_BASE_URL,
