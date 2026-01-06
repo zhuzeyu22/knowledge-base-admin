@@ -1,5 +1,5 @@
 import request from "./request";
-import { Member, Team } from "@/models/team";
+import { Member, Team, MemberPermission } from "@/models/team";
 
 const VITE_TENANT_API_BASE_URL = import.meta.env.VITE_TENANT_API_BASE_URL;
 
@@ -108,20 +108,31 @@ export const getTeamMemberPermissionList = (
 //修改团队知识库成员权限
 //
 export const putTeamMemberPermission =(
-  id:string,
-  role_id:string,
-  role_name:string,
-  role:string,
+  member:MemberPermission
 ) =>
-  request.put(`/app/user_datasets_role/modify/${id}`,{
+  request.put(`/app/user_datasets_role/modify/${member.id}`,{
     params:{
-      id,
-      role_id,
-      role_name,
-      role
+      member
     },
     baseURL:VITE_TENANT_API_BASE_URL,
   })
+
+//公开团队知识库
+//
+export const postKnowledgePublic = (
+  team:string,
+  folder_ids:string[],
+  dataset_id:string,
+) => 
+  request.post("/add_public_dataset",{
+    params:{
+      team,
+      folder_ids,//公开到哪些目录
+      dataset_id
+    },
+    baseURL:VITE_TENANT_API_BASE_URL,
+  })
+
 
 //当前用户角色
 // /tenant/api/app/user_tenant_role/role?tenant_id=8219d257-e383-441f-9c0f-07625e2c67e3&account_id=71aaf60f-544b-4478-ae57-612814946eb1

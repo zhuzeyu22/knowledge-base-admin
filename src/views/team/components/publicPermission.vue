@@ -7,21 +7,27 @@
             <el-select v-model="selectedValues" popper-class="tree-select-dropdown"  multiple
                 placeholder="请选择公开的域名" :teleported="false" @remove-tag="handleRemoveTag">
                 <el-option value="" style="min-height: 200px;" class="tree-option">
-                    <el-tree ref="treeRef" :data="MockData" class="tree-ul" show-checkbox node-key="id" :props="treeProps"
+                    <el-tree ref="treeRef" :data="folderTree" class="tree-ul" show-checkbox node-key="id" :props="treeProps"
                         @check="handleDomainNameTag"></el-tree>
                 </el-option>
             </el-select>
             <div class="warning"><el-icon size="25px"><WarningFilled /></el-icon>知识库公开至公共知识库域后，全行均可查看使用</div>
             <div class="button">
                 <el-button @click="dialogVisible = false">取消</el-button>
-                <el-button type="primary">确定</el-button>
+                <el-button type="primary" @click="handleKnowledgePublic">确定</el-button>
             </div>
         </el-dialog>
     </div>
 </template>
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { ElTree } from 'element-plus'
+import { ElMessage, ElTree } from 'element-plus'
+import { usePublicStore } from '@/store/public'
+import { postKnowledgePublic } from '@/service/team'
+
+const publicStore = usePublicStore()
+const folderTree = computed(() => publicStore.folderTree)
+
 interface Tree {
     id:string
     label: string
@@ -31,6 +37,8 @@ interface Tree {
 const props = defineProps<{
     visible: boolean;
     datasetName: string;
+    team:string;
+    datasetId:string;
 }>();
 const dialogVisible = computed({
     get:()=> props.visible,
@@ -38,7 +46,7 @@ const dialogVisible = computed({
         emits('update:visible',val)
     }
 })
-const emits = defineEmits(['update:visible'])
+const emits = defineEmits(['update:visible','success'])
 const selectedValues = ref<string[]>([])
 const treeRef = ref<InstanceType<typeof ElTree>>()
 
@@ -138,7 +146,17 @@ const MockData: Tree[] = [
     },
     
 ]
-
+const handleKnowledgePublic = async () => {
+    const checkedKeys = treeRef.value.getCheckedKeys(true);
+    try {
+        await postKnowledgePublic(props.team,checkedKeys as string[],props.datasetId);
+        ElMessage.success('公开成功')
+        dialogVisible.value = false;
+        emits('success');
+    } catch (error:any) {
+        ElMessage('失败')
+    }
+}
 </script>
 <style scoped lang="scss">
 .container {

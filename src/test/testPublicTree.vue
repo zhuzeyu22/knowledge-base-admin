@@ -1,6 +1,6 @@
 <template>
     <section class="section">
-        <el-tree :data="folderTree" node-key="id" :load="loadNode" lazy>
+        <el-tree :data="folderTree" node-key="id" :load="loadNode" lazy  @node-click="handleNodeClick">
             <template #default="{ node, data }">
                 <span class="custom-tree-node hover-container">
                     <div class="label">{{ node.data.name }}</div>
@@ -63,7 +63,10 @@ const updateNode = ref<PublicFolderNode>({
     level: 0,
     children: []
 })
-
+//节点点击
+const handleNodeClick = (data:PublicFolderNode) => {
+    publicStore.currentNode = data; 
+}
 onMounted(() => {
     
 });

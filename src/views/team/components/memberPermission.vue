@@ -9,7 +9,7 @@
                     <el-table-column property="account_name" label="成员" width="240" />
                     <el-table-column property="role_name" label="权限" width="120">
                         <template #default=scope>
-                            <el-select class="select" v-model="scope.row.permission" @change="handlePermissionChange(val, scope.row)">
+                            <el-select class="select" v-model="scope.row.role_name" @change="(val:string)=>handlePermissionChange(val, scope.row)">
                                 <el-option v-for="item in permissionOptions" :key="item.value" :label="item.label"
                                     :value="item.value" />
                             </el-select>
@@ -29,7 +29,7 @@
                 </el-select></span>
                 <span class="permission-button">
                    <el-button type="info" plain style="width:100px" @click="handleCancelSelection">取消</el-button>
-                   <el-button type="primary" style="width:100px" @click="handleBatchUpdate">确认</el-button> 
+                   <el-button type="primary" style="width:100px" @click="handleBatchUpdate" >确认</el-button> 
                 </span>
                 
             </div>
@@ -38,9 +38,9 @@
 </template>
 <script setup lang="ts">
 import { Search } from '@element-plus/icons-vue';
-import { ref, computed, onMounted  } from 'vue'
-import { getTeamMemberPermissionList } from '@/service/team';
-import { ElTable } from "element-plus";
+import { ref, computed, onMounted, watch  } from 'vue'
+import { getTeamMemberPermissionList, putTeamMemberPermission } from '@/service/team';
+import { ElMessage, ElTable } from "element-plus";
 import { MemberPermission } from '@/models/team';
 
 const props = defineProps<{
@@ -53,12 +53,8 @@ const searchName = ref('')
 const selectedRows = ref<MemberPermission[]>([])
 const tableRef = ref<InstanceType<typeof ElTable> | null>(null);
 const selectedToolbarPermission = ref('');
-const memberPermissionList = ref<MemberPermission[]>([]);
+const memberPermissionList = ref([]);
 const datasetId = String(props.datasetId);
-// interface MemberPermission {
-//   account_name: string,
-//   role_name: string,
-// }
 
 const dialogVisible = computed({
     get:()=> props.visible,
@@ -67,19 +63,18 @@ const dialogVisible = computed({
     }
 })
 
-
 const permissionOptions = [
     {
         value: '管理',
-        label: '管理'
+        role_name:'管理',
     },
     {
         value: '协作',
-        label: '协作'
+        role_name:'协作',
     },
     {
         value: '使用',
-        label: '使用'
+        role_name:'使用',
     },
 ]
 
@@ -102,16 +97,6 @@ const MockData = [
     },
 
 ]
-const loadData = () => {
-    getTeamMemberPermissionList(datasetId)
-    .then((res)=>{
-        memberPermissionList.value = res.data.results;
-    })
-    .catch((error:any) => {
-        memberPermissionList.value = MockData;
-        console.log(memberPermissionList)
-    })
-} 
 const filteredData = computed(() => {
     if (!searchName.value.trim()) {
         console.log(memberPermissionList);
@@ -121,8 +106,31 @@ const filteredData = computed(() => {
         return item.account_name.toLowerCase().includes(searchName.value.trim().toLowerCase());
     });
 });
-const handlePermissionChange = async(newRowName:string, row:MemberPermission) => {
-    
+const loadData = async() => {
+    try {
+        const res = await getTeamMemberPermissionList(datasetId);
+        memberPermissionList.value = res.data.results;
+    }
+    catch(error:any) {
+        memberPermissionList.value = MockData;
+        console.log(memberPermissionList)
+    }
+} 
+
+//修改单个成员权限
+const handlePermissionChange = async(newRoleName:string, row:MemberPermission) => {
+    try {
+        const updatedMember:MemberPermission = {
+            ...row,
+            role_name:newRoleName,
+        }
+        await putTeamMemberPermission(updatedMember);
+        ElMessage.success('权限修改成功')
+        loadData()
+    } catch(error:any) {
+        ElMessage.error('权限修改失败')
+        loadData()
+    }
 }
 const handleSelectedRows = (rows:any) => {
     selectedRows.value = rows;
@@ -132,6 +140,31 @@ const handleCancelSelection = () => {
     selectedRows.value = [];
     selectedToolbarPermission.value = '';
 }
+const handleBatchUpdate = async () => {
+
+    try {
+        const updateRequestPromises = selectedRows.value.map((row)=>{
+            const updatedMember:MemberPermission = {
+                ...row,
+                role_name: selectedToolbarPermission.value,  
+            };
+            return putTeamMemberPermission(updatedMember)
+        });
+        await Promise.all(updateRequestPromises)
+        ElMessage.success("批量修改成功");
+        handleCancelSelection();
+        loadData(); 
+    } catch(error:any) {
+        ElMessage.error("修改失败");
+        loadData();
+    }
+}
+
+watch(() => props.visible, (val) => {
+    if(val) {
+        loadData();
+    }
+})
 onMounted(()=>{
     loadData()
 })

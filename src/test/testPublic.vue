@@ -7,9 +7,16 @@
     <!-- <el-main v-infinite-scroll="load" :infinite-scroll-disabled="loading" :infinite-scroll-distance="10"
       class="context-style" style="overflow: auto"> -->
     <el-main class="context-style" style="overflow: auto">
+      <div v-if="publicFolderList.length === 0 && datasetList.length === 0"  >
+        暂无内容"
+      </div>
       <el-space wrap :size="16" class="grid-container">
-        <KnowledgePublicCard v-for="item in datasetList" :key="item.id" :dataset="item" />
-        <DirectoryCard />
+        <!-- <KnowledgePublicCard v-for="item in datasetList" :key="item.id" :dataset="item" /> -->
+        <DirectoryCard 
+            v-for="folder in publicFolderList" 
+            :key="folder.id" 
+            :folderData="folder"
+        />
       </el-space>
     </el-main>
   </el-container>

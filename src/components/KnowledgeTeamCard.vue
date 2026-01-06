@@ -32,7 +32,7 @@
           </template>
         </el-dropdown>
         <memberPermission v-model:visible="isMemberPermissionShow" :dataset-id="props.dataset.id"/>
-        <publicPermission v-model:visible="isPublicPermissionShow" :dataset-name = "props.dataset.name"/>
+        <publicPermission v-model:visible="isPublicPermissionShow" :dataset-name = "props.dataset.name" :team = "props.dataset.team" :dataset-id="props.dataset.id" />
       </div>
     </div>
   </el-card>

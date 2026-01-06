@@ -1,17 +1,17 @@
 <template>
-  <el-card @click="goToNextLevelDirectory">
+  <el-card class="card-container" shadow="hover" @click="handleCardClick">
     <div class="knowledge-base-card">
       <div class="knowledge-base-card-background"></div>
-      <div class="knowledge-base-card-name">目录名称</div>
+      <div class="knowledge-base-card-name" :title="folderData.name">{{ folderData.name }}</div>
       <div class="knowledge-base-card-operate" @click.stop>
         <el-dropdown trigger="click" placement="bottom-end">
-          <el-icon style="cursor: pointer">
+          <el-icon style="cursor: pointer; padding: 5px;">
             <Operation />
           </el-icon>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item @click="handleUpdateDirectory">修改</el-dropdown-item>
-              <el-dropdown-item @click="handleDeleteDirectory">删除</el-dropdown-item>
+              <el-dropdown-item @click="$emit('update', folderData)">修改</el-dropdown-item>
+              <el-dropdown-item @click="$emit('delete', folderData)">删除</el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -21,25 +21,28 @@
 </template>
 
 <script lang="ts" setup>
+import { defineProps, defineEmits } from 'vue'
 
+const props = defineProps({
+  folderData: {
+    type: Object,
+    required: true,
+    default: () => ({ id: '', name: '' })
+  }
+});
 
+const emit = defineEmits(['enter-folder','update', 'delete']);
 
-const goToNextLevelDirectory = () => {
-  //todo
-  console.log('跳转下一级目录')
-}
-const handleUpdateDirectory = () => {
-  //todo
-  console.log('修改目录')
-}
-const handleDeleteDirectory = () => {
-  //todo
-  console.log('删除目录')
+const handleCardClick = () => {
+  emit('enter-folder', props.folderData)
 }
 
 </script>
 
 <style scoped>
+.card-container {
+    cursor: pointer; 
+}
 .knowledge-base-card {
   display: flex;
   flex-direction: column;

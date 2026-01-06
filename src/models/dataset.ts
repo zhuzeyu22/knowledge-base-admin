@@ -10,6 +10,8 @@ export type Dataset = {
   // 字符数量
   characterNumber: number;
   retrieval_model_dict: RetrievalModel;
+  team?:string;
+  creator?:string
 };
 
 export type RetrievalModel = {

@@ -29,9 +29,14 @@ export type Role = {
 };
 
 export type MemberPermission = {
-  id: string;//表格一行数据
   role_name: string;//当前权限名称
-  role_id: string;
-  role: string;
-  account_name: string;
+  role_id?: string;
+  role?: string;
+  id?: string;//表格一行数据id
+  account_name?: string;
+  account_avatar?:string;
+  account_id?:string;
+  dataset_id?:string;
+  meta_info?:string;
+  created_at?:string;
 }
