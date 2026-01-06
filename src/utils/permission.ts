@@ -9,10 +9,12 @@ export enum Permission {
   AUTH_LOG_MENU_BUTTON_VISIBLE = "auth-log_menu-button_visible",
   STAT_MENU_BUTTON_VISIBLE = "stat_menu-button_visible",
   OP_MENU_BUTTON_VISIBLE = "op_menu-button_visible",
+  // 团队相关权限
+  MEMBER_MANAGEMENT_DROPDOWN_ROLE_SETTING_BUTTON_VISIBLE = "member-management_dropdown-role-setting-button_visible",
 }
 export const hasPermission = (permissions: string[], isHas: string) => {
-  if (import.meta.env.MODE !== "production") {
-    return true;
-  }
+  // if (import.meta.env.MODE !== "production") {
+  //   return true;
+  // }
   return Boolean(permissions.find((p) => p === isHas));
 };

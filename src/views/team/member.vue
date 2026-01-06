@@ -20,7 +20,8 @@
                     </el-table-column>
                     <el-table-column label="权限" width="200" prop="role_name">
                         <template #default="scope">
-                            <el-select v-model="scope.row.role_id" @change="() => handleRoleChange(scope.row)">
+                            <el-select v-model="scope.row.role_id" @change="() => handleRoleChange(scope.row)"
+                                :disabled="!hasPermission(permissions, Permission.MEMBER_MANAGEMENT_DROPDOWN_ROLE_SETTING_BUTTON_VISIBLE)">
                                 <el-option v-for="item in roleOptions" :key="item.id" :label="item.name"
                                     :value="item.id">
                                 </el-option>
@@ -53,6 +54,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import AddMemberDialog from "./addMemberDialog.vue";
 import { getTeamMemberList } from "@/service/team";
 import { useTeamStore } from "@/store/team";
+import { hasPermission, Permission } from "@/utils/permission";
 const teamStore = useTeamStore();
 const addMemberDialogvisible = ref(false);
 const memberList = ref([]);
@@ -62,6 +64,8 @@ const total = ref(0);
 
 const roleOptions = computed(() => teamStore.getRoleList);
 const tenantId = computed(() => String(router.currentRoute.value.params.teamId));
+const permissions = computed(() => teamStore.getPermissions);
+
 const role = ref('')
 
 watch(tenantId, () => {
