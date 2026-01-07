@@ -2,9 +2,18 @@
     <el-dialog title="添加成员" v-model="addMemberDialogvisible" width="60%">
         <el-row class="add-member">
             <el-col :span="11" style="height: 100%;">
-                <el-input v-model="filterText" placeholder="搜索"></el-input>
+                <el-select v-model="filter" filterable remote reserve-keyword placeholder="搜索"
+                    :remote-method="remoteSearch" :loading="searchLoading" @change="handleFilterChange">
+                    <el-option v-for="item in searchoptions" :key="item.id" :label="item.name" :value="item.id">
+                    </el-option>
+                </el-select>
                 <div class="org">
-                    <el-tree ref="orgTree" :data="testTree" node-key="id" show-checkbox @check="handleCheckClick">
+                    <el-tree ref="orgTree" :data="orgTreeData" node-key="id" show-checkbox @check="handleCheckClick" highlight-current accordion>
+                        <template #default="{ node, data }">
+                            <span class="custom-tree-node hover-container">
+                                <div class="label">{{ data.name }}</div>
+                            </span>
+                        </template>
                     </el-tree>
                 </div>
             </el-col>
@@ -30,52 +39,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { OrganizationNode } from '@/models/organization';
+import { getOrganizationTree, searchOrganizationNode } from '@/service/organization';
+import { ref, onMounted } from 'vue';
 
 const addMemberDialogvisible = ref(false);
 
-function generateBfsTree(totalNodes = 20000, childrenPerNode = 20) {
-    if (totalNodes <= 0) return [];
-
-    // 第一个节点（根）
-    const root = { id: 1, label: 'Node 1', children: [], path: '1' };
-    if (totalNodes === 1) return [root];
-
-    const allNodes = [root]; // 用于按 BFS 顺序存储所有节点（方便找父节点）
-    const queue = [root];    // BFS 队列：存入待分配子节点的父节点
-    let nextId = 2;
-
-    while (nextId <= totalNodes && queue.length > 0) {
-        const parent = queue.shift(); // 取出队首父节点
-
-        // 为该 parent 创建子节点（最多 childrenPerNode 个，且不超过 totalNodes）
-        const remaining = totalNodes - nextId + 1; // 还能创建多少个
-        const childCount = Math.min(childrenPerNode, remaining);
-
-        for (let i = 0; i < childCount; i++) {
-            const child = {
-                id: nextId,
-                label: `Node ${nextId}`,
-                path: `${parent?.path || ''}/${nextId}`,
-                children: []
-            };
-            parent.children.push(child);
-            allNodes.push(child);
-            queue.push(child); // 子节点将来也可能有孩子
-            nextId++;
-
-            if (nextId > totalNodes) break;
-        }
-    }
-
-    return [root]; // el-tree 需要数组格式的根
-}
-
-const mockTree = generateBfsTree();
-const testTree = ref(mockTree);
-const filterText = ref('');
+const filter = ref('');
 const orgTree = ref();
+const orgTreeData = ref([])
 const selected = ref([]);
+
+// 远程搜索
+const searchLoading = ref(false);
+const searchoptions = ref<OrganizationNode[]>([]);
+
+onMounted(() => {
+    getOrganizationTree().then(res => {
+        orgTreeData.value = res.data;
+    });
+});
 
 const handleCheckClick = (node, obj) => {
     console.log(node, obj);
@@ -87,6 +70,18 @@ const handleSelectedMemberDelete = () => {
     console.log('handleSelectedMemberDelete');
 };
 
+const remoteSearch = (query: string) => {
+    searchLoading.value = true;
+    searchOrganizationNode(query).then(res => {
+        searchoptions.value = res.results;
+    }).finally(() => {
+        searchLoading.value = false;
+    });
+}
+
+const handleFilterChange = (val) => {
+    orgTree.value.store.nodesMap[id]?.expand() // 展开该节点
+}
 </script>
 
 <style scoped lang="less">

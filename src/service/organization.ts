@@ -1,13 +1,28 @@
+import { OrganizationNode } from "@/models/organization";
 import request from "./request";
-
-// 获取当前工作空间（租户）信息
-export const getWorkspaceCurrent = () => {
-  return request.get(`/workspaces/current`);
-};
-
 
 // 获取组织结构
 // organization/tree
 export const getOrganizationTree = () => {
   return request.get(`/organization/tree`);
+};
+
+// 组织架构节点模糊查询
+// /console/api/organization/search
+export const searchOrganizationNode = (
+  keyword: string,
+  type: string = "all",
+  max_count: number = 100
+) => {
+  return request.get<{
+    results: OrganizationNode[];
+    total: number;
+    keyword: string;
+  }>(`/organization/search`, {
+    params: {
+      keyword,
+      type,
+      max_count,
+    },
+  });
 };

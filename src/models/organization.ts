@@ -1,4 +1,4 @@
-// 知识库-文档 数据结构
+// 组织架构以及人员节点
 export type OrganizationNode = {
   // 人员 id
   id?: string | null;
