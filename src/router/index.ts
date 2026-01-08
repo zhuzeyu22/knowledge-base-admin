@@ -4,6 +4,7 @@ import { getQueryParam } from "@/utils/params";
 import { accessUnitlogin } from "@/utils/auth";
 import { getTenantList, postSwitchWorkspace } from "@/service/team";
 import { getAccountProfile } from "@/service/workspace";
+import { useTeamStore } from "@/store/team";
 
 const routes = [
   {
@@ -64,6 +65,7 @@ const routes = [
       {
         path: "team/:teamId/member",
         component: () => import("@/views/team/member.vue"),
+        meta: { requiresSwitch: true }, // 标记需要调用 switch 接口
       },
       {
         path: "stat",
@@ -166,6 +168,9 @@ router.beforeEach(async (to, from) => {
     try {
       // 调用 switch 接口
       await postSwitchWorkspace(teamId);
+      // 更新相关的权限信息
+      const teamStore = useTeamStore();
+      await teamStore.updateCurrentTeamById(teamId);
       // 成功则继续导航
     } catch (error) {
       console.error("切换团队失败:", error);

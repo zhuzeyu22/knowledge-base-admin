@@ -8,19 +8,21 @@
             </el-button>
             <div>成员权限管理</div>
         </el-header>
-        <el-main class="context-style" style="overflow: auto">
+        <el-main class="context-style" style="overflow: hidden">
             <div style="margin-bottom: 20px; display: flex; flex-direction: row-reverse;">
                 <el-button type="primary" size="default" @click="addMemberDialogvisible = true">添加成员</el-button>
             </div>
-            <div style="overflow: auto; height: 90%; width: 100%;">
+            <div style="overflow: auto; height: auto; width: 100%;">
                 <el-table :data="memberList" style="overflow-y: auto;">
                     <el-table-column label="成员" width="300" prop="account_name">
                     </el-table-column>
-                    <el-table-column label="组织" prop="org_name">
+                    <el-table-column label="组织" prop="organization">
                     </el-table-column>
                     <el-table-column label="权限" width="200" prop="role_name">
                         <template #default="scope">
-                            <el-select v-model="scope.row.role_id">
+                            <el-select v-model="scope.row.role_id"
+                                @change="(data: string) => handleRoleChange(scope.row, data)"
+                                :disabled="!hasPermission(permissions, Permission.MEMBER_MANAGEMENT_DROPDOWN_ROLE_SETTING_BUTTON_VISIBLE)">
                                 <el-option v-for="item in roleOptions" :key="item.id" :label="item.name"
                                     :value="item.id">
                                 </el-option>
@@ -29,12 +31,19 @@
                     </el-table-column>
                     <el-table-column label="" width="80" prop="role_name">
                         <template #default="scope">
-                            <el-icon class="delete-icon" @click="handleDeleteFile(file.id)" :size="20" color="#909399">
+                            <el-icon class="delete-icon" @click="() => handleMemberDelete(scope.row)" :size="20"
+                                color="#909399">
                                 <Delete />
                             </el-icon>
                         </template>
                     </el-table-column>
                 </el-table>
+            </div>
+            <div class="pagination-container">
+                <el-pagination layout="sizes, total, prev, pager, next" :total="total" v-model:current-page="page"
+                    v-model:page-size="page_size" @current-change="handlePageChange"
+                    @size-change="handlePageSizeChange">
+                </el-pagination>
             </div>
             <AddMemberDialog v-model="addMemberDialogvisible" />
         </el-main>
@@ -45,19 +54,29 @@
 import router from "@/router";
 import { computed, onMounted, ref, watch } from "vue";
 import AddMemberDialog from "./addMemberDialog.vue";
-import { getTeamMemberList } from "@/service/team";
+import { deleteUser, getTeamMemberList, putUserRole } from "@/service/team";
 import { useTeamStore } from "@/store/team";
+import { hasPermission, Permission } from "@/utils/permission";
+import { Member } from "@/models/team";
+import { ElMessage, ElMessageBox } from "element-plus";
 const teamStore = useTeamStore();
 const addMemberDialogvisible = ref(false);
 const memberList = ref([]);
 const page = ref(1);
-const page_size = ref(50);
+const page_size = ref(20);
+const total = ref(0);
 
 const roleOptions = computed(() => teamStore.getRoleList);
 const tenantId = computed(() => String(router.currentRoute.value.params.teamId));
+const permissions = computed(() => teamStore.getPermissions);
+
+const role = ref('')
 
 watch(tenantId, () => {
     console.log('tenantId', tenantId);
+    if (!tenantId.value) {
+        return;
+    }
     page.value = 1;
     updateData();
 });
@@ -67,10 +86,58 @@ onMounted(() => {
 });
 
 const updateData = () => {
+    if (!tenantId.value) {
+        return;
+    }
     getTeamMemberList(tenantId.value, page.value, page_size.value).then((res) => {
         console.log(res);
         memberList.value = res.data.results;
+        total.value = res.data.count;
+        console.log(total.value);
     });
+}
+
+const handlePageChange = () => {
+    updateData();
+}
+
+const handlePageSizeChange = () => {
+    updateData();
+}
+
+const handleRoleChange = (row: Member, roleId: string) => {
+    console.log('handleRoleChange', row, roleId);
+    putUserRole(row).then((res) => {
+        ElMessage({
+            type: "success",
+            message: "修改成功",
+        });
+    }).catch(err => {
+        ElMessage({
+            type: "warning",
+            message: "修改失败",
+        });
+    })
+}
+
+const handleMemberDelete = (row: Member) => {
+    ElMessageBox.confirm(`删除成员${row.account_name}？`, "", {
+        confirmButtonText: "我确定",
+        cancelButtonText: "取消",
+        type: "warning",
+    }).then(() => {
+        deleteUser(row).then((res) => {
+            ElMessage({
+                type: "success",
+                message: "删除成功",
+            });
+        }).catch(err => {
+            ElMessage({
+                type: "warning",
+                message: "删除失败",
+            });
+        })
+    })
 }
 
 </script>
@@ -94,6 +161,8 @@ const updateData = () => {
 }
 
 .context-style {
+    display: flex;
+    flex-direction: column;
     height: 100%;
     width: 100%;
 }
@@ -107,5 +176,11 @@ const updateData = () => {
     &:hover {
         color: #f56c6c !important;
     }
+}
+
+.pagination-container {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
 }
 </style>

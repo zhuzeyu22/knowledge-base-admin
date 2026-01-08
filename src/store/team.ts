@@ -11,6 +11,7 @@ export const useTeamStore = defineStore("team", {
     currentTeam: {} as Team,
     roleList: [] as Role[],
     role: {} as Role,
+    // 这里的权限只给团队模块使用
     permissions: [] as Permission[],
   }),
   getters: {
@@ -31,6 +32,13 @@ export const useTeamStore = defineStore("team", {
       await this.updateRole(); // 更新当前用户角色
       await this.updatePermissions(); // 更新当前用户权限
     },
+    async updateCurrentTeamById(tenantId: string) {
+      const userStore = useUserStore();
+      const account_id = userStore.getUserInfo?.id;
+      await this.updateRoleList(); // 更新角色列表
+      await this.updateRoleById(tenantId, account_id); // 更新当前用户角色
+      await this.updatePermissions(); // 更新当前用户权限
+    },
     async updateRoleList() {
       const roles = await getRoleList();
       console.log("roles", roles);
@@ -44,9 +52,15 @@ export const useTeamStore = defineStore("team", {
         this.role = await getUserRole(tenant_id, account_id);
       }
     },
+    async updateRoleById(tenantId: string, accountId: string) {
+      if (accountId && tenantId) {
+        this.role = await getUserRole(tenantId, accountId);
+      }
+    },
     async updatePermissions() {
       const permissions = await getRolePermissionNameList(this.role.id);
-      this.permissions = permissions;
+      this.permissions = permissions.data;
+      return permissions;
     },
   },
 });
