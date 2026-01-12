@@ -5,6 +5,7 @@ import { accessUnitlogin } from "@/utils/auth";
 import { getTenantList, postSwitchWorkspace } from "@/service/team";
 import { getAccountProfile } from "@/service/workspace";
 import { useTeamStore } from "@/store/team";
+import { useUserStore } from "@/store/user";
 
 const routes = [
   {
@@ -16,13 +17,37 @@ const routes = [
         path: "private",
         name: "private",
         component: () => import("@/views/private/index.vue"),
-        // beforeEnter: async (to, from) => {
-        //   const profile = await getAccountProfile();
-        //   const res = await getTenantList(profile.id, 1, 1);
-        //   const tenantId = res.data.results[0].id;
-        //   await postSwitchWorkspace(tenantId);
-        //   return true
-        // },
+        beforeEnter: async () => {
+          // 切换回个人知识库
+          try {
+            const profile = await getAccountProfile();
+            const account_id = profile.id;
+            let teamList = []
+            let page = 1
+            let limit = 50
+            let nowIndex = -1
+            let total = 1
+            while (nowIndex < total) {
+              const res = await getTenantList(
+                account_id,
+                page,
+                limit,
+              )
+              teamList.push(...res.data.results)
+              nowIndex = page * limit
+              total = res.data.count
+              page++
+            }
+            const findPrivate = teamList.find(t => t.is_public == false && t.account_id == account_id)
+            const tenantId = findPrivate?.tenant_id || ''
+            // 调用 switch 接口
+            await postSwitchWorkspace(tenantId);
+            // 成功则继续导航
+          } catch (error) {
+            console.error(error);
+          }
+          return true
+        },
       },
       {
         path: "create",
@@ -53,7 +78,7 @@ const routes = [
       // 创建团队知识库
       {
         path: "team/:teamId/create",
-        component: () => import("@/views/team/index.vue"),
+        component: () => import("@/views/private/create/index.vue"),
         meta: { requiresSwitch: true }, // 标记需要调用 switch 接口
       },
       // 团队知识库详情
@@ -65,6 +90,11 @@ const routes = [
       {
         path: "team/:teamId/member",
         component: () => import("@/views/team/member.vue"),
+        meta: { requiresSwitch: true }, // 标记需要调用 switch 接口
+      },
+      {
+        path: "team/:teamId/setting",
+        component: () => import("@/views/team/setting.vue"),
         meta: { requiresSwitch: true }, // 标记需要调用 switch 接口
       },
       {
@@ -118,32 +148,32 @@ const routes = [
     children:
       import.meta.env.MODE !== "production"
         ? [
-            {
-              path: "testHitTesting",
-              name: "testHitTesting",
-              component: () => import("@/test/testHitTesting.vue"),
-            },
-            {
-              path: "testCreateFinish",
-              name: "testCreateFinish",
-              component: () => import("@/test/testCreateFinish.vue"),
-            },
-            {
-              path: "testSegement",
-              name: "testSegement",
-              component: () => import("@/test/testSegement.vue"),
-            },
-            {
-              path: "testPublic",
-              name: "testPublic",
-              component: () => import("@/test/testPublic.vue"),
-            },
-            {
-              path: "testTeam",
-              name: "testTeam",
-              component: () => import("@/test/testPublic.vue"),
-            },
-          ]
+          {
+            path: "testHitTesting",
+            name: "testHitTesting",
+            component: () => import("@/test/testHitTesting.vue"),
+          },
+          {
+            path: "testCreateFinish",
+            name: "testCreateFinish",
+            component: () => import("@/test/testCreateFinish.vue"),
+          },
+          {
+            path: "testSegement",
+            name: "testSegement",
+            component: () => import("@/test/testSegement.vue"),
+          },
+          {
+            path: "testPublic",
+            name: "testPublic",
+            component: () => import("@/test/testPublic.vue"),
+          },
+          {
+            path: "testTeam",
+            name: "testTeam",
+            component: () => import("@/test/testPublic.vue"),
+          },
+        ]
         : [],
   },
 ];

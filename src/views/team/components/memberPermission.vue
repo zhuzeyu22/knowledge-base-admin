@@ -1,15 +1,15 @@
 <template>
     <div class="container">
-        <el-dialog v-model="props.visible" title="知识库权限" align-center width="500px" style="height: 500px;">
+        <el-dialog v-model="dialogVisible" title="知识库权限" align-center width="500px" style="height: 500px;" >
             <el-input class="input" v-model="searchName" type="text" placeholder="搜索" :prefix-icon="Search"
                 size="small" clearable/>
             <div class="scroll-container">
                 <el-table :data="filteredData" @selection-change="handleSelectedRows" ref="tableRef">
                     <el-table-column type="selection" width="60" />
-                    <el-table-column property="user" label="成员" width="240" />
-                    <el-table-column property="permission" label="权限" width="120">
+                    <el-table-column property="account_name" label="成员" width="240" />
+                    <el-table-column property="role_name" label="权限" width="120">
                         <template #default=scope>
-                            <el-select class="select" v-model="scope.row.permission">
+                            <el-select class="select" v-model="scope.row.role_name" @change="(val:string)=>handlePermissionChange(val, scope.row)">
                                 <el-option v-for="item in permissionOptions" :key="item.value" :label="item.label"
                                     :value="item.value" />
                             </el-select>
@@ -29,7 +29,7 @@
                 </el-select></span>
                 <span class="permission-button">
                    <el-button type="info" plain style="width:100px" @click="handleCancelSelection">取消</el-button>
-                   <el-button type="primary" style="width:100px" @click="handleBatchUpdate">确认</el-button> 
+                   <el-button type="primary" style="width:100px" @click="handleBatchUpdate" >确认</el-button> 
                 </span>
                 
             </div>
@@ -38,61 +38,128 @@
 </template>
 <script setup lang="ts">
 import { Search } from '@element-plus/icons-vue';
-import { ref, computed  } from 'vue'
+import { ref, computed, onMounted, watch  } from 'vue'
+import { getTeamMemberPermissionList, putTeamMemberPermission } from '@/service/team';
+import { ElMessage, ElTable } from "element-plus";
+import { MemberPermission } from '@/models/team';
 
-const searchName = ref('')
-// const dialogTableVisible = ref(true)
-const selectedRows = ref([])
-const tableRef = ref('')
-const selectedToolbarPermission = ref('');
 const props = defineProps<{
     visible:boolean;
     datasetId:string
 }>();
-const emit = defineEmits(['update:visible','refresh'])
+const emits = defineEmits(['update:visible','refresh'])
+
+const searchName = ref('')
+const selectedRows = ref<MemberPermission[]>([])
+const tableRef = ref<InstanceType<typeof ElTable> | null>(null);
+const selectedToolbarPermission = ref('');
+const memberPermissionList = ref([]);
+const datasetId = String(props.datasetId);
+
+const dialogVisible = computed({
+    get:()=> props.visible,
+    set:(val)=> {
+        emits('update:visible',val)
+    }
+})
 
 const permissionOptions = [
     {
-        value: 'management',
-        label: '管理'
+        value: '管理',
+        role_name:'管理',
     },
     {
-        value: 'collaboration',
-        label: '协作'
+        value: '协作',
+        role_name:'协作',
     },
     {
-        value: 'use',
-        label: '使用'
+        value: '使用',
+        role_name:'使用',
     },
 ]
 
-const filteredData = computed(() => {
-    if (!searchName.value.trim()) {
-        return MockData;
-    }
-    return MockData.filter(item => {
-        return item.user.toLowerCase().includes(searchName.value.trim().toLowerCase());
-    });
-});
 const MockData = [
     {
-        user: '用户A',
-        permission: 'collaboration',
+        account_name: '用户A',
+        role_name: '协作',
     },
     {
-        user: '用户B',
-        permission: 'use',
+        account_name: '用户B',
+        role_name: '使用',
     },
     {
-        user: '用户C',
-        permission: 'management',
+        account_name: '用户C',
+        role_name: '管理',
     },
     {
-        user: '用户D',
-        permission: 'use',
+        account_name: '用户D',
+        role_name: '使用',
     },
 
 ]
+const filteredData = computed(() => {
+    if (!searchName.value.trim()) {
+        console.log(memberPermissionList);
+        return memberPermissionList.value;
+    }
+    return memberPermissionList.value.filter(item => {
+        return item.account_name.toLowerCase().includes(searchName.value.trim().toLowerCase());
+    });
+});
+const loadData = async() => {
+    try {
+        const res = await getTeamMemberPermissionList(datasetId);
+        memberPermissionList.value = res.data.results;
+        console.log(res)
+    }
+    catch(error:any) {
+        memberPermissionList.value = MockData;
+        console.log(memberPermissionList)
+    }
+} 
+
+//修改单个成员权限
+const handlePermissionChange = async(newRoleName:string, row:MemberPermission) => {
+    try {
+        const updatedMember:MemberPermission[] = [
+            {
+                id:row.id,
+                role_name:newRoleName,
+            }
+        ]
+        await putTeamMemberPermission(updatedMember);
+        ElMessage.success('权限修改成功')
+        loadData()
+    } catch(error:any) {
+        ElMessage.error('权限修改失败')
+        console.log(error)
+        loadData()
+    }
+}
+
+//批量修改成员权限
+const handleBatchUpdate = async () => {
+    if(!selectedToolbarPermission.value) {
+        ElMessage.warning('未选择权限')
+        return
+    }
+    try {
+        const updatedMembers:MemberPermission[] = selectedRows.value.map((row) =>{
+            return {
+                id: row.id,
+                role_name: selectedToolbarPermission.value,  
+            } as MemberPermission
+        })
+        await putTeamMemberPermission(updatedMembers);
+        ElMessage.success("批量修改成功");
+        handleCancelSelection();
+        loadData(); 
+    } catch(error:any) {
+        ElMessage.error("修改失败");
+        loadData();
+    }
+}
+
 const handleSelectedRows = (rows:any) => {
     selectedRows.value = rows;
 }
@@ -102,6 +169,14 @@ const handleCancelSelection = () => {
     selectedToolbarPermission.value = '';
 }
 
+watch(() => props.visible, (val) => {
+    if(val) {
+        loadData();
+    }
+})
+onMounted(()=>{
+    loadData()
+})
 </script>
 <style scoped lang="scss">
 .container {
@@ -118,9 +193,6 @@ const handleCancelSelection = () => {
             background-color: transparent;
             box-shadow: none; 
         }
-        // :deep(.el-select__placeholder.is-transparent){
-        //     color:#409eff;
-        // }
         :deep(.el-select__placeholder){
             color:#409eff;
         }
@@ -129,7 +201,7 @@ const handleCancelSelection = () => {
         overflow-x: hidden;
         :deep(.el-select__wrapper) {
         background-color: transparent !important;
-        box-shadow: none !important; /* 建议平时把边框也去掉，看起来更像纯文字，体验更好 */
+        box-shadow: none !important; 
     }
     }
 

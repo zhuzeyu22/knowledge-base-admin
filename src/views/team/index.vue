@@ -7,6 +7,7 @@
     <el-main v-infinite-scroll="load" :infinite-scroll-disabled="loading" :infinite-scroll-distance="10"
       class="context-style" style="overflow: auto" v-loading="loading" element-loading-text="数据加载中...">
       <el-space wrap :size="16" class="grid-container">
+        <CreateCard v-if='tenantId' @create='handleCreate'/>
         <KnowledgeTeamCard v-for="item in datasetList" :key="item.id" :dataset="item" />
       </el-space>
     </el-main>
@@ -14,11 +15,13 @@
 </template>
 <script setup lang="ts">
 import router from "@/router";
+import CreateCard from '@/components/createCard/index.vue';
 import { ref, onMounted, computed, watch } from 'vue'
-import { Dataset } from '@/models/dataset'
+import { TeamDataset } from '@/models/dataset'
 import { getPublicDatasetList } from '@/service/datasets'
 import KnowledgeTeamCard from '@/components/KnowledgeTeamCard.vue'
-const datasetList = ref<Dataset[]>([])
+import { useTeamStore } from "@/store/team";
+const datasetList = ref<TeamDataset[]>([])
 const search = ref('')
 // const filterDataList = ref<Dataset[]>([])
 const page = ref(1)
@@ -26,11 +29,15 @@ const limit = ref(50)
 const loading = ref(false)
 const total = ref(1)
 
-const tenantId = computed(() => String(router.currentRoute.value.params.teamId));
+const tenantId = computed(() => router.currentRoute.value.params.teamId);
+const teamStore = useTeamStore()
+const showCreate = computed(() => teamStore.getCurrentTeam);
 
 watch(tenantId, () => {
   console.log('tenantId', tenantId);
   if (!tenantId.value) {
+    total.value = 0
+    datasetList.value = []
     return;
   }
   reload()
@@ -78,7 +85,9 @@ const reload = () => {
   load()
 }
 
-
+const handleCreate = ()=>{
+    router.push(`/team/${tenantId.value}/create`)
+}
 </script>
 <style scoped lang="scss">
 .content-container {

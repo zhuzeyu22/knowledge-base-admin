@@ -29,8 +29,12 @@ import { postLogin } from '@/service/login'
 import { reactive } from 'vue'
 import { useRouter } from "vue-router";
 import { ElMessage, ElMessageBox, rowContextKey } from "element-plus";
+import { useUserStore } from '@/store/user';
+import { useTeamStore } from '@/store/team';
 
 const router = useRouter();
+const userStore = useUserStore()
+const teamStore = useTeamStore()
 
 // do not use same name with ref
 const form = reactive({
@@ -43,6 +47,13 @@ const onSubmit = async () => {
     if (res?.result === 'success') {
         localStorage.setItem('console_token', res.data.access_token)
         localStorage.setItem('refresh_token', res.data.refresh_token)
+        
+        await userStore.updatePermission()
+        await userStore.updateUserInfo()
+        await teamStore.updatePrivateTenantId()
+        await teamStore.updateRoleList();
+        await teamStore.refreshTeamList();
+        
         router.replace('/private')
         ElMessage.success('登录成功')
     } else {

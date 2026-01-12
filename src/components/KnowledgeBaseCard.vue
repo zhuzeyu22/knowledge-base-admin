@@ -50,7 +50,10 @@ const router = useRouter();
 const goToDetails = () => {
   router.push({
     name: "details",
-    query: { id: props.dataset.id },
+    query: { 
+      id: props.dataset.id,
+      is_admin:String(true),
+    },
   });
 };
 

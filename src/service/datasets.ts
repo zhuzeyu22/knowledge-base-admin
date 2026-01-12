@@ -1,5 +1,6 @@
 import { RetrievalModel } from "@/models/dataset";
 import request from "./request";
+import router from "@/router";
 
 // 下面的这些参数后续具体再对下
 type CreateDocumentReq = {
@@ -144,6 +145,13 @@ export const initDataset = (body: {
   retrieval_model: any;
   official: string;
 }) => {
+  
+  // 团队知识库 trick surprise 
+  const tenantId = router.currentRoute.value.params.teamId
+  if(tenantId){
+    console.log('initDataset tenantId', tenantId)
+    body.tenantId = tenantId
+  }
   return request.post(`/datasets/init`, body);
 };
 
@@ -161,7 +169,6 @@ export const getPrivateDatasetList = (
 };
 
 // 查询共享知识库列表
-// todo 这个接口有问题，下个版本调试
 export const getPublicDatasetList = (
   page: number = 1,
   limit: number = 30,

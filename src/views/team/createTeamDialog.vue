@@ -11,11 +11,17 @@
 
 <script setup lang="ts">
 import { postAddTenant } from '@/service/team';
+import { useTeamStore } from '@/store/team';
+import { useUserStore } from '@/store/user';
 import { ElMessage } from 'element-plus';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 const newName = ref('')
 const visible = defineModel("visible")
+const userStore = useUserStore()
+const teamStore = useTeamStore()
+
+const id = computed(() => userStore?.getUserInfo?.id)
 
 const handleClose = () => {
     // 关闭对话框的回调函数
@@ -23,21 +29,28 @@ const handleClose = () => {
 };
 
 const handleCreateConfirm = () => {
+    const owner = id.value
     // 确定按钮的回调函数
     postAddTenant({
         name: newName.value,
         is_public: true,
         description: "",
+        avatar: '',
+        owner,
     }).then(() => {
         ElMessage({
             type: "success",
             message: "创建成功",
         });
+        teamStore.refreshTeamList()
     }).catch((e) => {
         console.log(e)
+        if(e.response){
+            
+        }
         ElMessage({
             type: "warning",
-            message: "创建失败",
+            message: e.message,
         });
     }).finally(() => {
         visible.value = false;

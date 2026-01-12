@@ -8,56 +8,59 @@
       class="context-style" style="overflow: auto"> -->
     <el-main class="context-style" style="overflow: auto">
       <el-space wrap :size="16" class="grid-container">
-        <KnowledgePublicCard v-for="item in datasetList" :key="item.id" :dataset="item" />
-        <DirectoryCard />
+        <KnowledgePublicCard v-for="item in datasetList" :key="item.id" :dataset="item" :folderId ="folderId" @status-updated="handleStatusUpdated"/>
+        <DirectoryCard v-for="item in publicFolderList" :key="item.id" :dirList="item" />
       </el-space>
     </el-main>
   </el-container>
 </template>
 <script setup lang="ts">
-import { Dataset } from '@/models/dataset'
+import { PublicDataset } from '@/models/dataset'
 import DirectoryCard from '@/components/DirectoryCard.vue'
 import KnowledgePublicCard from '@/components/KnowledgePublicCard.vue'
 import { usePublicStore } from '@/store/public'
 import { computed, ref, watch } from 'vue'
 import _ from 'lodash'
-import { getDatasetsByFolderId } from '@/service/public'
+import { getDatasetsByFolderId, getFolder } from '@/service/public'
 import { PublicFolderNode } from '@/models/public'
 
 const publicStore = usePublicStore()
 // 根据 currentNode level 切换展示列表
-const currentNode = computed(() => publicStore.currentNode)
+const currentNode = computed(() => publicStore.getCurrentNode)
+// const getCurrentNodeNumber = computed(() => publicStore.getCurrentNodeNumber)
 // 知识库列表
-const datasetList = ref<Dataset[]>([])
+const datasetList = ref<PublicDataset[]>([])
+const dirList = computed(() => currentNode.value?.children || [])
+const folderId = computed(() => [currentNode.value?.id])
 // 目录列表
 const publicFolderList = computed<PublicFolderNode[]>(() => publicStore.currentNode?.children || publicStore.getPublicTree)
 
-// const search = ref('')
-// const page = ref(1)
-// const limit = ref(50)
-// const loading = ref(false)
-// const total = ref(1)
-
-watch(() => currentNode.value, (newValue) => {
-  console.log('currentNode changed:', newValue)
-  load(newValue?.id || '')
+watch(
+  () => currentNode.value, 
+  async (newValue) => {
+  datasetList.value=[]
+  const id = newValue.id
+  const res = await getFolder(id).catch((err) => {
+      console.log(err);
+    });
+    if(res.data && res.data.length > 0 ){
+      dirList.value = res.data
+    } else {
+      load(id)
+    }
 })
-
-// 下一版本加
-// watch(() => search.value, (newValue) => {
-//   console.log('search changed:', newValue)
-// })
-
-// const handleSearchChange = () => {
-//   console.log('Search changed:', search.value)
-// }
 
 const load = _.debounce((folderId: string) => {
   getDatasetsByFolderId(folderId).then((res) => {
-    datasetList.value = res.data.data
+    datasetList.value = res.data
   })
 }, 500)
 
+const handleStatusUpdated = () => {
+  if(currentNode.value?.id) {
+    load(currentNode.value.id)
+  }
+}
 </script>
 
 <style scoped lang="scss">

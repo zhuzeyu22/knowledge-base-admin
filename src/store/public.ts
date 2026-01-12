@@ -34,7 +34,7 @@ export const usePublicStore = defineStore("public", {
   ({
     folderTree: [] as PublicFolderNode[],
     nodeMap: {} as Record<string, PublicFolderNode>,
-    currentNode: null as PublicFolderNode | null,
+    currentNode: {} as PublicFolderNode | null,
   }),
   getters: {
     // 计算属性
@@ -127,11 +127,11 @@ export const usePublicStore = defineStore("public", {
     },
     async renameNode(node: PublicFolderNode, name: string) {
       return await renameFolder(node.id, name).then((res) => {
-        this.nodeMap[node.id].name = name 
+        this.nodeMap[node.id].name = name
       });
     },
     updateCurrentNode(node: PublicFolderNode) {
-      this.currentNode = this.nodeMap[node.id];
+      this.currentNode = node
     },
   },
 });

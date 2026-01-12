@@ -10,6 +10,39 @@ export type Dataset = {
   // 字符数量
   characterNumber: number;
   retrieval_model_dict: RetrievalModel;
+  is_admin:boolean;
+};
+
+//团队知识库数据结构
+export type TeamDataset = {
+  id: string;
+  name: string;
+  official: "official" | "unofficial";
+  imageUrl: string;
+  description: string;
+  // 文档数量
+  documentNumber: number;
+  // 字符数量
+  characterNumber: number;
+  retrieval_model_dict: RetrievalModel;
+  creator:string;
+  is_admin:boolean;
+};
+
+//公开知识库数据结构
+export type PublicDataset = {
+  id: string;
+  name: string;
+  official: "official" | "unofficial";
+  imageUrl: string;
+  description: string;
+  // 文档数量
+  documentNumber: number;
+  // 字符数量
+  characterNumber: number;
+  retrieval_model_dict: RetrievalModel;
+  team:string;
+  is_admin:boolean;
 };
 
 export type RetrievalModel = {

@@ -34,6 +34,7 @@
         <SegementSetting
           :document="currentDocument"
           :datasetId="datasetId"
+          :isAdmin="isAdmin"
           @close="showDocumentDetail = false"
           @update_status="handleUpdateDocumentStatus"
           @rename="handleDocumentRename"
@@ -63,7 +64,7 @@
             @clear="onClearSearch"
             @input="loadData"
           />
-          <el-button type="primary" size="default" @click="handleCreateClick"
+          <el-button type="primary" size="default" @click="handleCreateClick" :disabled="!isAdmin"
             >添加文件</el-button
           >
         </div>
@@ -73,8 +74,9 @@
           :data="documentList" 
           @cell-click="handleDocumentClick" 
           @selection-change="handleSelectionChange"
+          :class="{ 'disable-header-selection': !isAdmin }" 
           >
-            <el-table-column type="selection" width="40" />
+            <el-table-column type="selection" width="40" :selectable="() => isAdmin"/>
             <el-table-column type="index" label="" width="20" />
             <el-table-column prop="name" label="名称" min-width="200" >
               <template #default="{ row }">
@@ -118,7 +120,7 @@
                 <el-switch 
                 :model-value="row.display_status === 'error' ? false : row.enabled" 
                 @update:model-value="(newVal) => handleSwitchChange(row, newVal)"
-                :disabled="row.display_status === 'error'"
+                :disabled="row.display_status === 'error' || !isAdmin"
                 />
               </template>
             </el-table-column>
@@ -129,6 +131,7 @@
                   class="icon-btn"
                   title="分段设置"
                   @click="handleSegementClick(row)"
+                  :disabled="!isAdmin"
                 >
                   <el-icon :size="16">
                     <List />
@@ -146,10 +149,10 @@
                   </el-button>
                   <template #dropdown>
                     <el-dropdown-menu>
-                      <el-dropdown-item @click="handleRename(scope.row)"
+                      <el-dropdown-item @click="handleRename(scope.row)" :disabled="!isAdmin"
                         >重命名</el-dropdown-item
                       >
-                      <el-dropdown-item @click="handleDelete(scope.row)"
+                      <el-dropdown-item @click="handleDelete(scope.row)" :disabled="!isAdmin"
                         >删除</el-dropdown-item
                       >
                     </el-dropdown-menu>
@@ -225,6 +228,7 @@
       <el-main v-else-if="activeTab === 'settings'" class="page-main">
         <DocumentSettings
           :datasetId="datasetId"
+          :isAdmin="isAdmin"
           :retrieval_model="datasetInfo.retrieval_model_dict"
           @refresh="loadDatasetInfo"
         />
@@ -311,6 +315,8 @@ const currentDocument = ref<Document>({
   mime_type: "",
   size: 0,
 });
+// 权限管理
+const isAdmin = ref(route.query.is_admin === 'true')
 
 // 分段设置
 const showSegementSetting = ref(false);
@@ -673,7 +679,6 @@ onUnmounted(() => {
       display: flex;
       flex-direction: column;
       justify-content: center;
-      height: auto;
       min-height: 100px;
       padding: 20px;
       border-radius: 20px;
@@ -717,7 +722,8 @@ onUnmounted(() => {
 
           .info {
             flex: 1;
-            min-width: 0;
+            min-width: 40px;
+            max-height: 80px;
             overflow: hidden;
 
             h3 {
@@ -808,6 +814,13 @@ onUnmounted(() => {
       }
 
       .table {
+        :deep(.disable-header-selection thead .el-table-column--selection) {
+          cursor: not-allowed !important;
+          }
+
+          :deep(.disable-header-selection thead .el-table-column--selection .el-checkbox) {
+          pointer-events: none;
+          }
         :deep(.el-table) {
           .segment-btn {
             background-color: #e2e5eb;

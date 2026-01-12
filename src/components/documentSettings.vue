@@ -4,16 +4,16 @@
         <h2>知识库设置</h2>
         <div class="form-item">
             <label class="form-label">知识库名称</label>
-            <el-input v-model="localName" placeholder="输入知识库新名称" clearable />
+            <el-input v-model="localName" placeholder="输入知识库新名称" clearable :disabled="!isAdmin"/>
         </div>
 
         <div class="form-item">
             <label class="form-label">知识库描述</label>
-            <el-input v-model="localDescription" placeholder="输入知识库新描述" clearable />
+            <el-input v-model="localDescription" placeholder="输入知识库新描述" clearable :disabled="!isAdmin"/>
         </div>
         <div class="form-item">
             <label class="form-label">知识库类型</label>
-            <el-radio-group v-model="official">
+            <el-radio-group v-model="official" :disabled="!isAdmin">
                 <el-radio-button value="official">官方</el-radio-button>
                 <el-radio-button value="unofficial">非官方</el-radio-button>
             </el-radio-group>
@@ -22,8 +22,8 @@
             <label class="form-label">知识库存储路径</label>
             <el-input v-model="storagePath" placeholder="知识库存储路径" disabled/>
         </div>
-        <div class="form-actions">
-            <el-button type="primary" @click="handleSave" :loading="saveLoading">保存修改</el-button>
+        <div>
+            <el-button class="form-actions" type="primary" @click="handleSave" :loading="saveLoading" :disabled="!isAdmin">保存修改</el-button>
         </div>
     </section>
 </template>
@@ -34,7 +34,7 @@ import { ElMessage } from 'element-plus';
 import apiService from '@/service/knowledge/use-document-list';
 import { updateKnowledgeBase } from '@/service/datasets';
 
-const { datasetId } = defineProps(['datasetId'])
+const { datasetId, isAdmin } = defineProps(['datasetId','isAdmin'])
 
 const localName = ref<string>('')
 const localDescription = ref<string>('')
@@ -128,8 +128,7 @@ onMounted(() => {
     }
 
     .form-actions {
-        position: absolute;
-        bottom: 30px;
+        margin: 20px 0 10px;
     }
 }
 </style>

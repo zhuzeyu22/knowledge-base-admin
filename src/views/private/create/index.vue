@@ -518,6 +518,7 @@ import {
 import CreateFinish from "@/components/createFinish.vue";
 import UploadFiles from "@/components/uploadFiles/index.vue";
 import { RetrievalModel } from "@/models/dataset";
+import { postUserDatasetsRolBatchAdd } from "@/service/tenant";
 
 const radio = ref("datasets");
 
@@ -772,7 +773,16 @@ const handleInit = () => {
   initDataset(params).then((res) => {
     dataset.value = res;
     step.value = 3;
-  });
+    
+    // 团队知识库 trick surprise 
+    const tenantId = router.currentRoute.value.params.teamId
+    const datasetId = res?.dataset?.id
+    if(tenantId && datasetId){
+      console.log('initDataset tenantId', tenantId)
+      postUserDatasetsRolBatchAdd(tenantId as string, datasetId)
+    }
+  }
+  );
 };
 
 // 获取文件预览内容

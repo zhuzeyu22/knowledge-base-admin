@@ -5,8 +5,11 @@ export type Team = {
   // 个人空间还是团队空间
   is_public: true | boolean;
   name: string;
-  owner: string;
+  // 创建的时候用
+  owner?: string;
   tenant_id: string;
+  // 获取数据的时候用
+  account_id?: string;
 };
 
 export type Member = {
@@ -27,3 +30,16 @@ export type Role = {
   status?: true;
   updated_at?: string;
 };
+
+export type MemberPermission = {
+  role_name: string;//当前权限名称
+  id: string;//表格一行数据id
+  role_id?: string;
+  role?: string;
+  account_name?: string;
+  account_avatar?:string;
+  account_id?:string;
+  dataset_id?:string;
+  meta_info?:string;
+  created_at?:string;
+}
