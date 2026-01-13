@@ -8,7 +8,7 @@
                 placeholder="请选择公开的域名" :teleported="false" @remove-tag="handleRemoveTag">
                 <el-option value="" style="min-height: 200px;" class="tree-option">
                     <el-tree ref='publicTree' :data="folderTree" class="tree-ul" show-checkbox node-key="id" :props="treeProps"
-                        @check="handleDomainNameTag" :load="loadNode" lazy @node-click='handleNodeClick'>
+                        @check="handleDomainNameTag">
                           <template #default="{ data }">
                             <span class="custom-tree-node hover-container">
                                 <div class="label">{{ data.name }}</div>
@@ -26,7 +26,7 @@
     </div>
 </template>
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { ElMessage, ElTree } from 'element-plus'
 import { usePublicStore } from '@/store/public'
 import { getDatasetFolder, postKnowledgePublic } from '@/service/team'
@@ -34,7 +34,6 @@ import { useRoute } from "vue-router";
 
 const route = useRoute()
 const tenantName = route.query.tenant_name
-console.log("name",tenantName)
 const publicStore = usePublicStore()
 
 const folderTree = computed(() => publicStore.folderTree)
@@ -60,24 +59,6 @@ const emits = defineEmits(['update:visible','success'])
 const selectedValues = ref<string[]>([])
 const publicTree = ref<InstanceType<typeof ElTree>>()
 
-function loadNode(node: any, resolve: any) {
-    publicStore.getNodeChildren(node.data).then((res) => {
-        console.log('loadNode res11', res)
-        resolve(res)
-    }).catch((err) => {
-        console.log(err)
-        ElMessage({
-            type: "warning",
-            message: "加载失败",
-        });
-        resolve([])
-    })
-}
-
-const handleNodeClick = () =>{
-    // todo
-}
-
 watch(() => props.visible, async (val) => {
     if (val) {
         await initSelectedData();
@@ -90,10 +71,15 @@ watch(() => props.visible, async (val) => {
     }
 });
 
+onMounted(() => {
+    publicStore.initPublicTree()
+});
+
 const initSelectedData = async () => {
     try {
         const res = await getDatasetFolder(props.datasetId);
         const serverSelectedIds = res.data; 
+        // await loadNodesIntoStore(serverSelectedIds);
         await nextTick();
 
         if (publicTree.value && serverSelectedIds.length > 0) {
@@ -103,9 +89,12 @@ const initSelectedData = async () => {
                 const treeNode = publicTree.value.getNode(id);
                 if (treeNode) {
                     tags.push(getNodePath(treeNode));
+                    console.log("treenode",treeNode)
                 } else {
                     const pathStr = getPathFromStore(id);
                     if(pathStr) tags.push(pathStr);
+                    console.log("pathStr::",pathStr)
+                    console.log("---")
                 }
             }
             selectedValues.value = tags;
@@ -116,10 +105,15 @@ const initSelectedData = async () => {
 };
 
 // 【辅助】从 Store 的 nodeMap 中回溯路径 (解决懒加载未渲染 DOM 导致 getNode 为空的问题)
-const getPathFromStore = (id: string): string => {
+const getPathFromStore = (id: string): string => { 
     const nodeMap = publicStore.nodeMap; 
+    console.log("nodeMap:",Object.keys(nodeMap));
+    console.log("id:",id)
+    console.log(publicStore.nodeMap)
     let currentNode = nodeMap[id];
-    if (!currentNode) return ''; 
+    if (!currentNode){ 
+        console.log("meizhaodao jiedian  id shi ",id)
+        return ''; } 
     const pathArr: string[] = [];
     while (currentNode) {
         pathArr.unshift(currentNode.name);
@@ -158,6 +152,11 @@ const checkedNodesId = computed(() => {
     const checkedNodes = publicTree.value.getCheckedNodes(true,false);
     return checkedNodes.map(node => node.id)
 })
+const checkedNodesName = computed(() => {
+    if(!publicTree.value) return [];
+    const checkedNodes = publicTree.value.getCheckedNodes(true,false);
+    return checkedNodes.map(node => node.name)
+})
 const handleRemoveTag = (tagToRemove:string) => {
     if (!publicTree.value) return;
     //获取all选中节点
@@ -180,62 +179,10 @@ const handleDomainNameTag = () => {
     selectedValues.value = checkedNodes.map(data => getNodePath(publicTree.value!.getNode(data)));
 }
 
-const MockData: Tree[] = [
-    {
-        id:'1',
-        name: '科技',
-        children: [
-            {
-                id:'1.1',
-                name: '开发',
-                children: [
-                    {
-                        id:'1.1.1',
-                        name: '规范'
-                    },
-                    {
-                        id:'1.1.2',
-                        name: '操作手册'
-                    }
-                ],
-            }
-        ],
-    },
-    {
-        id:'2',
-        name: '对公',
-        children: [
-            {
-                id:'2.1',
-                name: '公布',
-                children: [
-                    {
-                        id:'2.1.1',
-                        name: '文档'
-                    },
-                    {
-                        id:'2.1.2',
-                        name: '知识库'
-                    },
-                    {
-                        id:'2.1.3',
-                        name: '规范'
-                    },
-                    {
-                        id:'2.1.4',
-                        name: '操作手册'
-                    }
-                ],
-            }
-        ],
-    },
-    
-]
-
 const handleKnowledgePublic = async () => {
     if (!publicTree.value) return;
     try {
-        await postKnowledgePublic(tenantName as string, checkedNodesId.value as string[], props.datasetId);
+        await postKnowledgePublic(tenantName as string, checkedNodesId.value as string[], props.datasetId,checkedNodesName.value as string[], props.datasetName);
         ElMessage.success('公开成功')
         dialogVisible.value = false;
         emits('success');

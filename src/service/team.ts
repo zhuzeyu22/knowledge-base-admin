@@ -132,11 +132,15 @@ export const postKnowledgePublic = (
   team: string,
   folder_ids: string[],
   dataset_id: string,
+  folder_names:string[],
+  dataset_name:string
 ) => {
   return request.post("/add_public_dataset", {
     team,
     folder_ids,//公开到哪些目录
-    dataset_id
+    dataset_id,
+    folder_names,
+    dataset_name
   })
 }
 
@@ -145,10 +149,14 @@ export const postKnowledgePublic = (
 export const putCancelKnowledgePublic = (
   folder_ids: string[],
   dataset_id: string,
+  folder_names:string[],
+  dataset_name:string
 ) =>
   request.put("/cancel_public_dataset", {
     folder_ids,
-    dataset_id
+    dataset_id,
+    folder_names,
+    dataset_name
   })
 
 
@@ -242,5 +250,15 @@ export const deleteTeam = (tenant_id: string) => {
   });
 };
 
-
+// 查询当前用户在团队中的权限
+// /tenant/api/app/user_tenant_role/tenant_permission 
+export const getTeamPermission = (account_id: string, tenant_id: string) => {
+  return request.get(`/app/user_tenant_role/tenant_permission`, {
+    params: {
+      tenant_id,
+      account_id,
+    },
+    baseURL: VITE_TENANT_API_BASE_URL,
+  });
+};
 

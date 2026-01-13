@@ -11,7 +11,7 @@
                 <div class="query-table">
                     <el-form :inline="true" :model="formInline">
                         <el-form-item label="操作类型">
-                            <el-select class="input" v-model="formInline.action_type" clearable >
+                            <el-select class="input" v-model="formInline.action_type" clearable @change="handleActionTypeChange">
                                 <el-option
                                 v-for="value in actionTypeOptions"
                                 :key="value.value"
@@ -25,12 +25,12 @@
                 <!-- 登录表单 -->
                 <div class="login-table">
                     <el-table class="table" :data="loginList" style="width: 100%" :border="false" >
-                        <el-table-column type="created_at" label="时间" min-width="100" />
+                        <el-table-column prop="created_at" label="时间" min-width="100" />
                         <el-table-column prop="operator_name" label="操作人" min-width="80" />
                         <el-table-column prop="action_type" label="操作" min-width="80" >
                             <template #default="scope">
                                 <span>
-                                    {{ scope.row.action_type /* todo */}}
+                                    {{ actionTypeOptions.find(x => x.value == scope.row.action_type)?.label || scope.row.action_type }}
                                 </span>
                             </template>
                         </el-table-column>
@@ -88,14 +88,30 @@ const loadLoginLogs = async () => {
     }
     apiService.getOptionLog(params).then((res) => {
         console.log(res);
-        loginList.value = res.data;
+        loginList.value = res.data.map(item => ({
+            ...item,
+            created_at:formatTime(item.created_at),
+            // action_type:
+        }));
+        console.log(loginList.value)
+        
         total.value = res.total;
         console.log(total.value);
     }).finally(() => {
         queryLoading.value = false
     })
 }
-
+const formatTime = (time:string) => {
+    const date = new Date(time) 
+    return date.toLocaleString('zh-CN', {
+        year:'numeric',
+        month:'2-digit',
+        day:'2-digit',
+        hour:'2-digit',
+        minute:'2-digit',
+        second:'2-digit'
+    })
+}
 const updateActionTypeOptions = async () => {
     const res = await apiService.getOptionLogTypes()
     actionTypeOptions.value = res.data
@@ -112,6 +128,11 @@ const handlePageChange = () => {
 }
 
 const handlePageSizeChange = () => {
+    loadLoginLogs();
+}
+
+const handleActionTypeChange = () =>{
+    page.value = 1
     loadLoginLogs();
 }
 </script>

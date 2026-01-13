@@ -7,7 +7,7 @@
                     <el-menu-item index="2" @click="$router.push('/public')" class="hover-container">
                         <div style="flex: 1;">公共知识库</div>
                         <el-icon @click.stop="handleAddPublic" class="hover-button"
-                            v-if="$router.currentRoute.value.fullPath?.toString().match('/public')">
+                            v-if="$router.currentRoute.value.fullPath?.toString().match('/public') && isAdmin">
                             <plus />
                         </el-icon>
                     </el-menu-item>
@@ -49,17 +49,16 @@ import { useUserStore } from "@/store/user";
 import { useTeamStore } from "@/store/team";
 
 const userStore = useUserStore()
-const teamStore = useTeamStore()
 
 const showStat = computed(() => userStore.getIsAdmin)
 const showConversationLog = computed(() => userStore.getIsAdmin)
 const showLoginLog = computed(() => userStore.getIsAdmin)
 const showAuthLog = computed(() => userStore.getIsAdmin)
 const showOpLog = computed(() => userStore.getIsAdmin)
+const isAdmin = computed(() => userStore.getIsAdmin)
 
 const pbTreeRef = ref(null);
 const addTeamDialogVisible = ref(false);
-
 
 onBeforeMount(async () => {
     const { id: userId } = await getAccountProfile();

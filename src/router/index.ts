@@ -67,7 +67,7 @@ const routes = [
       {
         path: "team",
         name: "team",
-        component: () => import("@/views/team/index.vue"),
+        component: () => import("@/views/team/blank.vue"),
       },
       // 团队知识库列表
       {

@@ -47,8 +47,10 @@ const emit = defineEmits(["delete","status-updated"]);
 
 const props = defineProps<{
   dataset: PublicDataset;
-  folderId:string[]
+  folderId:string[],
+  folderNames:string[],
 }>();
+console.log("文件id",props.folderNames)//没有传递过去
 const router = useRouter();
 
 // 跳转到详情页
@@ -57,7 +59,6 @@ const goToDetails = () => {
     name: "details",
     query: { 
       id: props.dataset.id,
-      is_admin:String(props.dataset.is_admin),
     },
   });
 };
@@ -73,7 +74,7 @@ const handleCanclePublic = () => {
     }
   ).then( async()=>{
     try {
-    await putCancelKnowledgePublic(props.folderId, props.dataset.id);
+    await putCancelKnowledgePublic(props.folderId, props.dataset.id, props.folderNames, props.dataset.name);
     ElMessage.success("取消公开成功")
     emit('status-updated')
     } catch (error) {

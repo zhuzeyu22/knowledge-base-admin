@@ -2,11 +2,11 @@ import { getToken } from "@/service/auth";
 import router from '@/router'
 
 export function goUnifiedlogin() {
-  const urlParams = location.protocol + "//" + location.host + "";
+  const urlParams = location.protocol + "//" + location.host + "/";
   const encodestr: string = encodeURIComponent(urlParams);
   // 这里后续做开发环境的登陆跳转对接
   location.href = `${import.meta.env.VITE_SSO_LOGIN_URL
-    }?redirectUrl=${encodestr}&respoense_type=code&state=${Date.now()}`;
+    }?redirect_url=${encodestr}&response_type=code&state=${Date.now()}`;
 }
 
 // 同步登录中台信息

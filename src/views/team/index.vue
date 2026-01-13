@@ -1,13 +1,13 @@
 <template>
   <el-container class="content-container">
     <el-header class="header-style">
-      <div>团队知识库</div>
+      <div>{{teamName || '团队知识库'}}</div>
       <el-input placeholder="请输入内容" v-model="search" class="search-style" clearable @input="handleSearchChange" />
     </el-header>
     <el-main v-infinite-scroll="load" :infinite-scroll-disabled="loading" :infinite-scroll-distance="10"
       class="context-style" style="overflow: auto" v-loading="loading" element-loading-text="数据加载中...">
       <el-space wrap :size="16" class="grid-container">
-        <CreateCard v-if='tenantId' @create='handleCreate'/>
+        <CreateCard v-if='showCreate' @create='handleCreate'/>
         <KnowledgeTeamCard v-for="item in datasetList" :key="item.id" :dataset="item" />
       </el-space>
     </el-main>
@@ -21,6 +21,11 @@ import { TeamDataset } from '@/models/dataset'
 import { getPublicDatasetList } from '@/service/datasets'
 import KnowledgeTeamCard from '@/components/KnowledgeTeamCard.vue'
 import { useTeamStore } from "@/store/team";
+import { getTeamInfo, getTeamPermission } from "@/service/team";
+import { useUserStore } from "@/store/user";
+
+const teamName = ref('')
+
 const datasetList = ref<TeamDataset[]>([])
 const search = ref('')
 // const filterDataList = ref<Dataset[]>([])
@@ -30,16 +35,29 @@ const loading = ref(false)
 const total = ref(1)
 
 const tenantId = computed(() => router.currentRoute.value.params.teamId);
-const teamStore = useTeamStore()
-const showCreate = computed(() => teamStore.getCurrentTeam);
+const userStore = useUserStore()
+const showCreate = ref(false)
 
-watch(tenantId, () => {
+watch(tenantId, async (newVal) => {
   console.log('tenantId', tenantId);
   if (!tenantId.value) {
     total.value = 0
     datasetList.value = []
+    teamName.value = ''
+    showCreate.value = false
     return;
   }
+  // 更新名字
+  const teamInfo = await getTeamInfo(newVal as string)
+  console.log(teamInfo.data.name)
+  teamName.value = teamInfo.data.name
+
+  // 更新权限
+  const account_id = userStore.getUserInfo.id
+  const teamPermission = await getTeamPermission( account_id, newVal)
+  showCreate.value = teamPermission?.data?.is_created || false
+
+  // 更新数据
   reload()
 });
 
@@ -53,7 +71,17 @@ const getTotal = async () => {
     total.value = res.total
   })
 }
-onMounted(() => {
+onMounted(async () => {
+  // 更新名字
+  const teamInfo = await getTeamInfo(tenantId.value as string)
+  console.log(teamInfo.data.name)
+  teamName.value = teamInfo.data.name
+
+  // 更新权限
+  const account_id = userStore.getUserInfo.id
+  const teamPermission = await getTeamPermission( account_id, tenantId.value as string)
+  showCreate.value = teamPermission?.data?.is_created || false
+
   getTotal().then(() => {
     load()
   })

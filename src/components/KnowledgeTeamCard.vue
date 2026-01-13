@@ -64,7 +64,6 @@ const goToDetails = () => {
     name: "details",
     query: { 
       id: props.dataset.id,
-      is_admin:String(props.dataset.is_admin),
     },
   });
 };

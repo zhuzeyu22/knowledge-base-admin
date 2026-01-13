@@ -8,7 +8,7 @@
       class="context-style" style="overflow: auto"> -->
     <el-main class="context-style" style="overflow: auto">
       <el-space wrap :size="16" class="grid-container">
-        <KnowledgePublicCard v-for="item in datasetList" :key="item.id" :dataset="item" :folderId ="folderId" @status-updated="handleStatusUpdated"/>
+        <KnowledgePublicCard v-for="item in datasetList" :key="item.id" :dataset="item" :folderId ="folderId" :folderNames ="folderNames" @status-updated="handleStatusUpdated"/>
         <DirectoryCard v-for="item in publicFolderList" :key="item.id" :dirList="item" />
       </el-space>
     </el-main>
@@ -32,6 +32,7 @@ const currentNode = computed(() => publicStore.getCurrentNode)
 const datasetList = ref<PublicDataset[]>([])
 const dirList = computed(() => currentNode.value?.children || [])
 const folderId = computed(() => [currentNode.value?.id])
+const folderNames = computed(() =>[currentNode.value?.name])
 // 目录列表
 const publicFolderList = computed<PublicFolderNode[]>(() => publicStore.currentNode?.children || publicStore.getPublicTree)
 

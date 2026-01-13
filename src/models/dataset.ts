@@ -10,6 +10,7 @@ export type Dataset = {
   // 字符数量
   characterNumber: number;
   retrieval_model_dict: RetrievalModel;
+  is_edit:boolean;
   is_admin:boolean;
 };
 
@@ -141,9 +142,19 @@ export enum ProcessMode {
 }
 
 export const ProcessModeText: Record<ProcessMode, string> = {
-  [ProcessMode.general]: "自定义",
+  [ProcessMode.general]: "通用",
   [ProcessMode.parentChild]: "父子分段",
 };
+
+export enum OpLogType {
+  addMember = 'team_member_add',
+  removeMember = 'team_member_remove',
+}
+
+export const OpLogTypeText: Record<OpLogType, string> ={
+  [OpLogType.addMember]:"添加成员",
+  [OpLogType.removeMember]:"成员",
+}
 
 export type Rules = {
   pre_processing_rules: PreProcessingRule[]

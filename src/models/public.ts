@@ -10,3 +10,11 @@ export type PublicFolderNode = {
   updated_at?: number;
   children: PublicFolderNode[];
 };
+// 公开知识库目录数据结构
+export type PublicTree = {
+  id:string,
+  name: string,
+  parent_id: string,
+  path: string,
+  children: PublicTree[]
+}

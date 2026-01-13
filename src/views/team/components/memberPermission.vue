@@ -6,7 +6,7 @@
             <div class="scroll-container">
                 <el-table :data="filteredData" @selection-change="handleSelectedRows" ref="tableRef">
                     <el-table-column type="selection" width="60" />
-                    <el-table-column property="account_name" label="成员" width="240" />
+                    <el-table-column property="account_name" label="成员" width="220" />
                     <el-table-column property="role_name" label="权限" width="120">
                         <template #default=scope>
                             <el-select class="select" v-model="scope.row.role_name" @change="(val:string)=>handlePermissionChange(val, scope.row)">
@@ -38,7 +38,7 @@
 </template>
 <script setup lang="ts">
 import { Search } from '@element-plus/icons-vue';
-import { ref, computed, onMounted, watch  } from 'vue'
+import { ref, computed, watch  } from 'vue'
 import { getTeamMemberPermissionList, putTeamMemberPermission } from '@/service/team';
 import { ElMessage, ElTable } from "element-plus";
 import { MemberPermission } from '@/models/team';
@@ -174,9 +174,6 @@ watch(() => props.visible, (val) => {
         loadData();
     }
 })
-onMounted(()=>{
-    loadData()
-})
 </script>
 <style scoped lang="scss">
 .container {
@@ -199,10 +196,11 @@ onMounted(()=>{
     }
     .scroll-container {
         overflow-x: hidden;
+        height: 300px;
         :deep(.el-select__wrapper) {
-        background-color: transparent !important;
-        box-shadow: none !important; 
-    }
+            background-color: transparent !important;
+            box-shadow: none !important; 
+        }
     }
 
     .input {

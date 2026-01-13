@@ -1,4 +1,4 @@
-import { PublicFolder } from "@/models/public";
+import { PublicFolder, PublicTree } from "@/models/public";
 import request from "./request";
 import { PublicDataset } from "@/models/dataset";
 
@@ -49,3 +49,9 @@ export const getDatasetsByFolderId = (id: string = "") => {
     data: PublicDataset[];
   }>(`/folder_datasets?folder_id=${id}`);
 };
+
+export const getPublicTree = () => {
+  return request.get<{
+    data:PublicTree[]
+  }>(`/get_folder_tree`);
+}

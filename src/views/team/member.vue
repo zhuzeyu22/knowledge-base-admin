@@ -21,16 +21,16 @@
                     <el-table-column label="权限" width="200" prop="role_name">
                         <template #default="scope">
                             <el-select v-model="scope.row.role_id"
-                                @change="(data: string) => handleRoleChange(scope.row, data)">
+                                @change="(data: string) => handleRoleChange(scope.row, data)" :disabled="ownerAccountId == scope.row.account_id">
                                 <el-option v-for="item in roleOptions" :key="item.id" :label="item.name"
                                     :value="item.id">
                                 </el-option>
                             </el-select>
                         </template>
                     </el-table-column>
-                    <el-table-column label="" width="80" prop="role_name">
+                    <el-table-column label="" width="80">
                         <template #default="scope">
-                            <el-icon class="delete-icon" @click="() => handleMemberDelete(scope.row)" :size="20"
+                            <el-icon v-if="ownerAccountId != scope.row.account_id" class="delete-icon" @click="() => handleMemberDelete(scope.row)" :size="20"
                                 color="#909399">
                                 <Delete />
                             </el-icon>
@@ -67,6 +67,8 @@ const total = ref(0);
 const roleOptions = computed(() => teamStore.getRoleList);
 const tenantId = computed(() => router.currentRoute.value.params.teamId);
 
+const ownerAccountId = ref('')
+
 watch(tenantId, () => {
     console.log('tenantId', tenantId);
     if (!tenantId.value) {
@@ -89,6 +91,7 @@ const updateData = () => {
         console.log(res);
         memberList.value = res.data.results;
         total.value = res.data.count;
+        ownerAccountId.value = res.data.created_by.account_id
         console.log(total.value);
     });
 }
