@@ -165,7 +165,7 @@ onMounted(() => {
         overflow-y: auto;
         .el-dialog__body { 
             padding: 16px;
-            height: calc(100% -40px);
+            height: calc(100% - 40px);
             display: flex;
             flex-direction: column;
             .context{

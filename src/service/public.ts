@@ -1,6 +1,6 @@
 import { PublicFolder } from "@/models/public";
 import request from "./request";
-import { Dataset } from "@/models/dataset";
+import { PublicDataset } from "@/models/dataset";
 
 export type FolderOptResponse = {
   code: string;
@@ -46,6 +46,6 @@ export const getFolder = (parent_id: string = "") => {
 // todo 暂不考虑分页，下一版本优化
 export const getDatasetsByFolderId = (id: string = "") => {
   return request.get<{
-    data: Dataset[];
-  }>(`/folder_datasets/folder_id=${id}`);
+    data: PublicDataset[];
+  }>(`/folder_datasets?folder_id=${id}`);
 };

@@ -1,14 +1,14 @@
 <template>
     <section class="section">
-        <el-tree ref='publicTree' :data="folderTree" node-key="id" :load="loadNode" lazy>
+        <el-tree ref='publicTree' :data="folderTree" node-key="id" :load="loadNode" lazy @node-click='handleNodeClick'>
             <template #default="{ node, data }">
                 <span class="custom-tree-node hover-container">
                     <div class="label">{{ data.name }}</div>
-                    <el-icon v-if="data.level < MAX_LEVEL" class="append hover-item"
+                    <el-icon v-if="data.level < MAX_LEVEL && hasPermission" class="append hover-item"
                         @click.stop="handleNodeCreateClick(data)">
                         <plus />
                     </el-icon>
-                    <el-dropdown class="more hover-item" placement="bottom-end">
+                    <el-dropdown v-if="hasPermission" class="more hover-item" placement="bottom-end">
                         <el-icon style="cursor: pointer">
                             <MoreFilled />
                         </el-icon>
@@ -24,7 +24,7 @@
         </el-tree>
         <el-dialog title="新建文件夹" v-model="nodeCreateDialogVisible" width="30%">
             <div style="margin-bottom: 8px;">文件夹名称：</div>
-            <el-input v-model="newName" placeholder="请输入名称"></el-input>
+            <el-input v-model="newName" placeholder="请输入名称" maxlength='30' show-word-limit></el-input>
             <span slot="footer" class="dialog-footer">
                 <el-button type="primary" @click="handleNodeCreateConfirm">确 定</el-button>
                 <el-button @click="nodeCreateDialogVisible = false">取 消</el-button>
@@ -32,7 +32,7 @@
         </el-dialog>
         <el-dialog title="重命名文件夹" v-model="nodeRenameDialogVisible" width="30%">
             <div style="margin-bottom: 8px;">文件夹名称：</div>
-            <el-input v-model="newName" placeholder="请输入名称"></el-input>
+            <el-input v-model="newName" placeholder="请输入名称" maxlength='30' show-word-limit></el-input>
             <span slot="footer" class="dialog-footer">
                 <el-button type="primary" @click="handleNodeRenameConfirm">确 定</el-button>
                 <el-button @click="nodeRenameDialogVisible = false">取 消</el-button>
@@ -46,8 +46,12 @@ import { PublicFolderNode } from '@/models/public';
 import { MAX_LEVEL, usePublicStore } from '@/store/public';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { computed, onMounted, ref } from 'vue';
+import { useUserStore } from "@/store/user";
 
+const userStore = useUserStore()
 const publicStore = usePublicStore()
+
+const hasPermission = computed(() => userStore.getIsAdmin)
 const folderTree = computed(() => publicStore.folderTree)
 
 const newName = ref('')
@@ -177,6 +181,10 @@ const handleNodeRenameConfirm = () => {
 defineExpose({
     handleNodeCreateClick
 })
+
+const handleNodeClick = (data: PublicFolderNode, node:any, vnode:any) =>{
+    publicStore.updateCurrentNode(data)
+}
 
 </script>
 

@@ -11,7 +11,7 @@
       </div>
     </div>
     <div class="header-right">
-      <el-button @click="handleCreateSegementClick">添加分段</el-button>
+      <el-button @click="handleCreateSegementClick" :disabled="!isAdmin">添加分段</el-button>
       <div>{{ document.display_status === 'error' ? "错误" : display_status ? "可用" : "已禁用" }}
       </div>
       <el-suitch :model_value="document.display_status === 'error' ? false : display_status" @change="handleChange"
@@ -23,8 +23,8 @@
         </el-icon>
         <template #dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item @click="showRenameModel = true">重命名</el-dropdown-item>
-            <el-dropdown-item divided @click="handleDeleteClick">删除</el-dropdown-item>
+            <el-dropdown-item @click="showRenameModel = true" :disabled="!isAdmin">重命名</el-dropdown-item>
+            <el-dropdown-item divided @click="handleDeleteClick" :disabled="!isAdmin">删除</el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>
@@ -33,8 +33,8 @@
   <div>
     <el-row>
       <el-col :span="11">
-        <el-table :data="segementList" @selection-change="handleSelectionChange">
-          <el-table-column type="selection" width="30" />
+        <el-table :data="segementList" @selection-change="handleSelectionChange" :class="{ 'disable-header-selection': !isAdmin }" >
+          <el-table-column type="selection" width="30" :selectable="() => isAdmin"/>
           <el-table-column :label="`${total} 分段`">
             <template #default="scope">
               <el-row>
@@ -50,8 +50,8 @@
                     </el-icon>
                     <template #dropdown>
                       <el-dropdown-menu>
-                        <el-dropdown-item @click="handleUpdateSegementClick(scope.row)">编辑</el-dropdown-item>
-                        <el-dropdown-item divided @click="handleDeleteSegement(scope.row)">删除</el-dropdown-item>
+                        <el-dropdown-item @click="handleUpdateSegementClick(scope.row)" :disabled="!isAdmin">编辑</el-dropdown-item>
+                        <el-dropdown-item divided @click="handleDeleteSegement(scope.row)" :disabled="!isAdmin">删除</el-dropdown-item>
                       </el-dropdown-menu>
                     </template>
                   </el-dropdown>
@@ -125,7 +125,7 @@ import { getDocumentMetaData } from "@/service/document";
 import { formatTimestamp } from "@/utils/time";
 import { DataSourceType, DataSourceTypeText, ProcessMode, ProcessModeText } from "@/models/dataset";
 
-const { document, datasetId } = defineProps(["document", "datasetId"]);
+const { document, datasetId, isAdmin } = defineProps(["document", "datasetId", "isAdmin"]);
 const emit = defineEmits(["close", "update_status", "rename"]);
 const showRenameModel = ref(false);
 const rename = ref(document.name);
@@ -278,6 +278,13 @@ const handleUpdateSegementClick = (row) => {
   font-weight: 700;
 }
 
+:deep(.disable-header-selection thead .el-table-column--selection) {
+  cursor: not-allowed !important;
+}
+
+:deep(.disable-header-selection thead .el-table-column--selection .el-checkbox) {
+  pointer-events: none;
+}
 :deep(.documen-message .el-form .el-form-item__label) {
   text-align: left;
   width: 100px;

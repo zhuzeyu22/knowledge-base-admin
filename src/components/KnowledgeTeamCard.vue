@@ -6,7 +6,7 @@
       <div class="knowledge-base-card-creator">
         <el-icon class="icon"><User /></el-icon>
         <!-- 这里展示团队知识库的创建者 字段未给   -->
-        <span>@创建者{{ dataset.creator }}</span>
+        <span>{{ dataset.created_by_name }}</span>
       </div>
       <div class="knowledge-base-card-tags">
         <el-tag type="info" style="margin-right: 2px;">{{ dataset.documentNumber }} 文档</el-tag>
@@ -40,9 +40,9 @@
 
 <script lang="ts" setup>
 import { MoreFilled } from "@element-plus/icons-vue";
-import { Dataset } from "@/models/dataset";
+import { TeamDataset } from "@/models/dataset";
 import { ref, computed, watch } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter,useRoute } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { deleteDataset } from "@/service/datasets";
 import memberPermission from "@/views/team/components/memberPermission.vue";
@@ -50,10 +50,11 @@ import publicPermission from "@/views/team/components/publicPermission.vue";
 const emit = defineEmits(["delete"]);
 
 const props = defineProps<{
-  dataset: Dataset;
+  dataset: TeamDataset;
 }>();
 
 const router = useRouter();
+const route = useRoute()
 const isMemberPermissionShow = ref(false)
 const isPublicPermissionShow = ref(false)
 
@@ -61,7 +62,10 @@ const isPublicPermissionShow = ref(false)
 const goToDetails = () => {
   router.push({
     name: "details",
-    query: { id: props.dataset.id },
+    query: { 
+      id: props.dataset.id,
+      is_admin:String(props.dataset.is_admin),
+    },
   });
 };
 

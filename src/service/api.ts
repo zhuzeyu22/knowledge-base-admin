@@ -4,13 +4,13 @@ import request from './request'
 //周数据统计
 export interface WeeklyData {
     currentDatasetQueries: number
-    currentDatasetUsers:number
-    currentActiveUsers:number
-    currentResources:number
-    datasetQueriesGrowthRate:number
-    datasetUsersGrowthRate:number
-    activeUsersGrowthRate:number
-    resourcesGrowthRate:number
+    currentDatasetUsers: number
+    currentActiveUsers: number
+    currentResources: number
+    datasetQueriesGrowthRate: number
+    datasetUsersGrowthRate: number
+    activeUsersGrowthRate: number
+    resourcesGrowthRate: number
 }
 // //用户分布 目前缺失
 // export interface UserDistributionData {
@@ -19,23 +19,23 @@ export interface WeeklyData {
 // }
 //访问趋势
 export interface VisitStatsParams {
-    startDate?:string
-    endDate?:string
+    startDate?: string
+    endDate?: string
 }
 export interface DailyVisitData {
-    date:string
-    visitorCount:number
-    visitCount:number
+    date: string
+    visitorCount: number
+    visitCount: number
 }
 export interface VisitStatsResponse {
-    data:DailyVisitData[]
+    data: DailyVisitData[]
 }
 
 //文档类型饼图
 export interface DocumentTypeData {
     type: string
     count: number
-    proportion:number
+    proportion: number
 }
 
 //文档调用次数排行榜
@@ -50,9 +50,9 @@ export interface ConversationLog {
     conversationId: number
     name: string
     userName: string
-    mode:string
-    createdAt:string
-    dialogueCount:number
+    mode: string
+    createdAt: string
+    dialogueCount: number
 }
 
 export interface ConversationQueryParams {
@@ -67,7 +67,7 @@ export interface ConversationListResponse {
     records: ConversationLog[]
     total: number
     size: number//每页条数
-    current:number//当前页码
+    current: number//当前页码
     pages: number//总页
 }
 
@@ -109,11 +109,11 @@ export interface LoginListResponse {
 //授权记录
 export interface AuthLog {
     permissionId: number
-    tenantName:string
-    datasetId:string
-    authorizerName:string
-    hasPermission:boolean
-    createdAt:string
+    tenantName: string
+    datasetId: string
+    authorizerName: string
+    hasPermission: boolean
+    createdAt: string
 }
 
 export interface AuthQueryParams {
@@ -135,6 +135,43 @@ export interface AuthListResponse {
     pages: number
 }
 
+// 操作记录
+export interface OptionLog {
+    id: string
+    tenant_id: string
+    operator_name: string
+    account_id: string
+    action_type: string
+    created_at: string
+    details: any
+    description: string
+}
+
+export interface OptionQueryParams {
+    page?: number,
+    limit?: number,
+    operator_name?: undefined,
+    action_type?: string,
+}
+
+export interface OptionListResponse {
+    data: OptionLog[],
+    page: number,
+    limit: number,
+    total: number,
+    has_more: boolean
+}
+
+export interface OptionType {
+    value: string,
+    label: string,
+}
+
+export interface OptionTypesResponse {
+    data: OptionType[],
+    total: number,
+}
+
 //接口定义
 export const apiService = {
     //数据统计
@@ -147,11 +184,11 @@ export const apiService = {
         return request.post('/statistics/visit-trend', params)
     },
     //饼图
-    async getDocumentTypeData(): Promise<DocumentTypeData[]>{
+    async getDocumentTypeData(): Promise<DocumentTypeData[]> {
         return request.post('/statistics/document-type-pie')
     },
     //排行榜
-    async getDocumentRankingData(): Promise<DocumentRankingData[]>{
+    async getDocumentRankingData(): Promise<DocumentRankingData[]> {
         return request.post('/statistics/document-usage-ranking')
     },
 
@@ -169,6 +206,16 @@ export const apiService = {
     //auth
     async getAuthLogs(params: AuthQueryParams = {}): Promise<AuthListResponse> {
         return request.post('/statistics/permission-list', params)
+    },
+    // op log types
+    async getOptionLogTypes(): Promise<OptionTypesResponse> {
+        return request.get('/console/api/operation-logs/types')
+    },
+    // op log
+    async getOptionLog(params: OptionQueryParams = {}): Promise<OptionListResponse> {
+        return request.get('/operation-logs', {
+            params
+        })
     }
 }
 

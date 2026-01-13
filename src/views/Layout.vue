@@ -14,7 +14,7 @@
                     <PublicTree ref="pbTreeRef" v-if="$router.currentRoute.value.fullPath?.toString().match('/public')"
                         class="tree">
                     </PublicTree>
-                    <el-menu-item index="8" @click="$router.push('/team')" class="hover-container">
+                    <el-menu-item index="3" @click="handleTeamClick" class="hover-container">
                         <div style="flex: 1;">团队知识库</div>
                         <el-icon @click="handleAddTeam" class="hover-button"
                             v-if="$router.currentRoute.value.fullPath?.toString().match('/team')">
@@ -39,39 +39,37 @@
     </div>
 </template>
 <script setup lang="ts">
-import { getRolePermissionNameList, getTenantRole } from "@/service/tenant";
+import router from "@/router";
 import { getAccountProfile, getWorkspaceCurrent } from "@/service/workspace";
-import { computed, onBeforeMount, ref } from "vue";
-import { Permission, hasPermission } from "@/utils/permission";
+import { computed, onBeforeMount, ref, onMounted } from "vue";
 import PublicTree from "@/components/publicTree/index.vue";
 import TeamTree from "@/components/teamTree/index.vue";
 import CreateTeamDialog from "@/views/team/createTeamDialog.vue";
+import { useUserStore } from "@/store/user";
+import { useTeamStore } from "@/store/team";
 
-const permissions = ref([]);
-const showStat = computed(() => hasPermission(permissions.value, Permission.STAT_MENU_BUTTON_VISIBLE));
-const showConversationLog = computed(() => hasPermission(permissions.value, Permission.CONVERSATION_LOG_MENU_BUTTON_VISIBLE));
-const showLoginLog = computed(() => hasPermission(permissions.value, Permission.LOGIN_LOG_MENU_BUTTON_VISIBLE));
-const showAuthLog = computed(() => hasPermission(permissions.value, Permission.AUTH_LOG_MENU_BUTTON_VISIBLE));
-const showOpLog = computed(() => hasPermission(permissions.value, Permission.OP_MENU_BUTTON_VISIBLE));
+const userStore = useUserStore()
+const teamStore = useTeamStore()
+
+const showStat = computed(() => userStore.getIsAdmin)
+const showConversationLog = computed(() => userStore.getIsAdmin)
+const showLoginLog = computed(() => userStore.getIsAdmin)
+const showAuthLog = computed(() => userStore.getIsAdmin)
+const showOpLog = computed(() => userStore.getIsAdmin)
 
 const pbTreeRef = ref(null);
-
 const addTeamDialogVisible = ref(false);
+
 
 onBeforeMount(async () => {
     const { id: userId } = await getAccountProfile();
     localStorage.setItem("authId", userId);
     localStorage.removeItem("roleId");
-
-    const { id: tenantId } = await getWorkspaceCurrent();
-    const { data } = (await getTenantRole(tenantId, userId)) || {};
-
-    if (data && data[0]) {
-        const roleId = data[0].role_id;
-        localStorage.setItem("roleId", roleId);
-        permissions.value = (await getRolePermissionNameList(roleId)).data;
-    }
 });
+
+onMounted(() => {
+    console.log('showOpLog', showOpLog.value)
+})
 
 const handleAddPublic = () => {
     pbTreeRef.value.handleNodeCreateClick();
@@ -80,6 +78,9 @@ const handleAddTeam = () => {
     addTeamDialogVisible.value = true;
 }
 
+const handleTeamClick = ()=>{
+    router.push('/team')
+}
 </script>
 
 <style scoped lang="less">

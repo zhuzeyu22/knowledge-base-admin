@@ -120,16 +120,41 @@ const loadData = async() => {
 //修改单个成员权限
 const handlePermissionChange = async(newRoleName:string, row:MemberPermission) => {
     try {
-        const updatedMember:MemberPermission = {
-            ...row,
-            role_name:newRoleName,
-        }
+        const updatedMember:MemberPermission[] = [
+            {
+                id:row.id,
+                role_name:newRoleName,
+            }
+        ]
         await putTeamMemberPermission(updatedMember);
         ElMessage.success('权限修改成功')
         loadData()
     } catch(error:any) {
         ElMessage.error('权限修改失败')
         loadData()
+    }
+}
+
+//批量修改成员权限
+const handleBatchUpdate = async () => {
+    if(!selectedToolbarPermission.value) {
+        ElMessage.warning('未选择权限')
+        return
+    }
+    try {
+        const updatedMembers:MemberPermission[] = selectedRows.value.map((row) =>{
+            return {
+                id: row.id,
+                role_name: selectedToolbarPermission.value,  
+            } as MemberPermission
+        })
+        await putTeamMemberPermission(updatedMembers);
+        ElMessage.success("批量修改成功");
+        handleCancelSelection();
+        loadData(); 
+    } catch(error:any) {
+        ElMessage.error("修改失败");
+        loadData();
     }
 }
 const handleSelectedRows = (rows:any) => {
@@ -140,26 +165,6 @@ const handleCancelSelection = () => {
     selectedRows.value = [];
     selectedToolbarPermission.value = '';
 }
-const handleBatchUpdate = async () => {
-
-    try {
-        const updateRequestPromises = selectedRows.value.map((row)=>{
-            const updatedMember:MemberPermission = {
-                ...row,
-                role_name: selectedToolbarPermission.value,  
-            };
-            return putTeamMemberPermission(updatedMember)
-        });
-        await Promise.all(updateRequestPromises)
-        ElMessage.success("批量修改成功");
-        handleCancelSelection();
-        loadData(); 
-    } catch(error:any) {
-        ElMessage.error("修改失败");
-        loadData();
-    }
-}
-
 watch(() => props.visible, (val) => {
     if(val) {
         loadData();

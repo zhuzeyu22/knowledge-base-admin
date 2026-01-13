@@ -7,7 +7,7 @@
         <el-main v-infinite-scroll="load" :infinite-scroll-disabled="loading" :infinite-scroll-distance="10"
             class="context-style" style="overflow: auto" v-loading="loading" element-loading-text="数据加载中...">
             <el-space wrap :size="16" class="grid-container">
-                <CreateCard />
+                <CreateCard @create='handleCreate'/>
                 <KnowledgeBaseCard v-for="item in datasetList" :key="item.id" :dataset="item" @delete='reload' />
             </el-space>
         </el-main>
@@ -15,6 +15,7 @@
 </template>
 
 <script setup lang="ts">
+import router from '@/router'
 import { onMounted, ref } from 'vue'
 import KnowledgeBaseCard from '@/components/KnowledgeBaseCard.vue'
 import { Dataset } from '@/models/dataset';
@@ -76,6 +77,9 @@ const reload = () => {
 
 load()
 
+const handleCreate = ()=>{
+    router.push({ name: 'create' })
+}
 </script>
 
 <style scoped lang="scss">

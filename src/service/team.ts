@@ -51,10 +51,11 @@ export const getDatasetList = (
 // name :"bigood"
 // owner :"f5a3c6c5-5670-46c8-bbf0-d95741a16c2a"
 export const postAddTenant = (data: Partial<Team>) => {
-  return request.post("/app/tenant/add", {
+  return request.post("/app/tenant/add",
     data,
-    baseURL: VITE_TENANT_API_BASE_URL,
-  });
+    {
+      baseURL: VITE_TENANT_API_BASE_URL,
+    });
 };
 
 //  http://172.16.6.129:30720/tenant/api/app/tenant/delete/145160f4-ad15-4054-bcb0-cd01daadf2a5\
@@ -88,7 +89,6 @@ export const getTeamMemberList = (
     baseURL: VITE_TENANT_API_BASE_URL,
   });
 
-
 //团队知识库成员权限列表
 //
 export const getTeamMemberPermissionList = (
@@ -106,31 +106,48 @@ export const getTeamMemberPermissionList = (
   });
 
 //修改团队知识库成员权限
-//
-export const putTeamMemberPermission =(
-  member:MemberPermission
-) =>
-  request.put(`/app/user_datasets_role/modify/${member.id}`,{
-    params:{
-      member
-    },
-    baseURL:VITE_TENANT_API_BASE_URL,
-  })
+//http://172.16.6.129:30720/tenant/api/app/user_datasets_role/batch_modify
+export const putTeamMemberPermission = (data: MemberPermission[]) => {
+  return request.put(`/app/user_datasets_role/batch_modify`,
+    {
+      data
+    }, {
+    baseURL: VITE_TENANT_API_BASE_URL,
+  });
+};
+
+//获取知识库所属目录
+//http://127.0.0.1:5001/console/api/get_dataset_folder?dataset_id=80ec29a5-b145-4dc8-87dd-f86480774d2e
+export const getDatasetFolder = (dataset_id: string) =>
+  request.get(`/get_dataset_folder?dataset_id=${dataset_id}`, {
+    params: {
+      dataset_id,
+    }
+  });
 
 //公开团队知识库
-//
+//http://127.0.0.1:5001/console/api/add_public_dataset
 export const postKnowledgePublic = (
-  team:string,
-  folder_ids:string[],
-  dataset_id:string,
-) => 
-  request.post("/add_public_dataset",{
-    params:{
-      team,
-      folder_ids,//公开到哪些目录
-      dataset_id
-    },
-    baseURL:VITE_TENANT_API_BASE_URL,
+  team: string,
+  folder_ids: string[],
+  dataset_id: string,
+) => {
+  return request.post("/add_public_dataset", {
+    team,
+    folder_ids,//公开到哪些目录
+    dataset_id
+  })
+}
+
+//取消公开知识库
+//http://127.0.0.1:5001/console/api/cancel_public_dataset
+export const putCancelKnowledgePublic = (
+  folder_ids: string[],
+  dataset_id: string,
+) =>
+  request.put("/cancel_public_dataset", {
+    folder_ids,
+    dataset_id
   })
 
 
@@ -170,3 +187,56 @@ export const postSwitchWorkspace = (tenant_id: string) => {
   });
 };
 
+// 增加团队成员
+// http://172.16.6.129:30720/tenant/api/app/user_tenant_role/add
+export const postUser = (tenant_id: string, users: {
+  user: string,
+  name: string,
+}[]) => {
+  return request.post("/app/user_tenant_role/add", {
+    tenant_id,
+    users
+  }, {
+    baseURL: VITE_TENANT_API_BASE_URL,
+  }
+  );
+}
+
+//
+// curl --request PUT \
+//   --url http://172.16.6.129:30720/tenant/api/app/tenant/modify/4e7290bd-f4b6-4ec0-ab41-c2e2d716a8bd \
+//   --header 'Accept: */*' \
+//   --header 'Accept-Encoding: gzip, deflate, br' \
+//   --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNWIyOTg0ZDMtNjM3MS00OGI1LWJiY2YtYWFhOGUyNDY4YzA2IiwiZXhwIjoxNzY3OTMwMzM5LCJpc3MiOiJTRUxGX0hPU1RFRCIsInN1YiI6IkNvbnNvbGUgQVBJIFBhc3Nwb3J0In0.7W05YOJSLf6Jr6cVw6NJLpy8xYvQzVpDkRGxynhysn4' \
+//   --header 'Connection: keep-alive' \
+//   --header 'Content-Type: application/json' \
+//   --header 'User-Agent: PostmanRuntime-ApipostRuntime/1.1.0' \
+//   --data '{
+//     "name":"测试修改名字"
+// }'
+// 修改团队名称
+//http://172.16.6.129:30720/tenant/api/app/tenant/modify/4e7290bd-f4b6-4ec0-ab41-c2e2d716a8bd
+export const putTeamNameModify = (tenantId: string, name: string) => {
+  return request.put(`/app/tenant/modify/${tenantId}`,
+    {
+      name
+    }, {
+    baseURL: VITE_TENANT_API_BASE_URL,
+  });
+};
+
+// 当前团队信息
+// /tenant/api/app/user_tenant_role/role?tenant_id=8219d257-e383-441f-9c0f-07625e2c67e3&account_id=71aaf60f-544b-4478-ae57-612814946eb1
+export const getTeamInfo = (tenant_id: string) => {
+  return request.get(`/app/tenant/info/${tenant_id}`, {
+    baseURL: VITE_TENANT_API_BASE_URL,
+  });
+};
+
+// 删除团队
+// /tenant/api/app/tenant/delete/145160f4-ad15-4054-bcb0-cd01daadf2a5 \
+export const deleteTeam = (tenant_id: string) => {
+  return request.delete(`/app/tenant/delete/${tenant_id}`, {
+    baseURL: VITE_TENANT_API_BASE_URL,
+  });
+};

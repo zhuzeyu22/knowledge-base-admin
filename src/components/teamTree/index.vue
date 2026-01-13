@@ -5,13 +5,13 @@
             <template #default="{ node, data }">
                 <span class="custom-tree-node hover-container" @click.stop="handleTeamClick(data)">
                     <div class="label">{{ data.tenant_name }}</div>
-                    <el-dropdown class="more hover-item" placement="bottom-end">
+                    <el-dropdown v-if="data.is_admin" class="more hover-item" placement="bottom-end">
                         <el-icon style="cursor: pointer">
                             <MoreFilled />
                         </el-icon>
                         <template #dropdown>
                             <el-dropdown-menu>
-                                <el-dropdown-item @click="() => config(data)">基本信息</el-dropdown-item>
+                                <el-dropdown-item @click="() => setting(data)">基本信息</el-dropdown-item>
                                 <el-dropdown-item @click="() => member(data)">成员权限管理</el-dropdown-item>
                             </el-dropdown-menu>
                         </template>
@@ -79,6 +79,9 @@ watch(
         if (userInfo?.id) {
             reload()
         }
+    },
+    {
+        deep: true
     }
 );
 
@@ -89,17 +92,39 @@ onMounted(() => {
 const handleTeamClick = (data: Team) => {
     teamStore.updateCurrentTeam(data)
     console.log('handleTeamClick', teamStore.getCurrentTeam)
-    router.push(`/team/${data.tenant_id}/datasets`)
+    router.push({
+        path:`/team/${data.tenant_id}/datasets`,
+        query:{
+            tenant_name:data.tenant_name
+        },
+        state: data,
+    })
 }
 
-const config = (data: Team) => {
-    console.log('config', data)
+const setting = async (data: Team) => {
+    console.log('setting', data)
+    await teamStore.updateCurrentTeam(data)
+    router.push({
+        path: `/team/${data.tenant_id}/setting`,
+        state: data,
+    })
 }
-const member = (data: Team) => {
+const member = async (data: Team) => {
     console.log('member', data)
-    router.push(`/team/${data.tenant_id}/member`)
+    await teamStore.updateCurrentTeam(data)
+    router.push({
+        path: `/team/${data.tenant_id}/member`,
+        state: data,
+    })
 }
 
+const refresh = computed(() => teamStore.getRefresh)
+watch(
+    refresh,
+    () => {
+        reload()
+    }
+)
 </script>
 
 <style scoped lang="less">

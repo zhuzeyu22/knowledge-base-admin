@@ -6,7 +6,7 @@
       <div class="knowledge-base-card-creator">
         <el-icon class="icon"><User /></el-icon>
         <!-- 这里展示公共知识库的来源团队 字段：team-->
-        <span>@来源团队{{ dataset.team }}</span>
+        <span>{{ dataset.team }}</span>
       </div>
       <div class="knowledge-base-card-tags">
         <el-tag type="info" style="margin-right: 2px;">{{ dataset.documentNumber }} 文档</el-tag>
@@ -26,7 +26,7 @@
           </el-icon>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item @click="">取消公开</el-dropdown-item>
+              <el-dropdown-item @click="handleCanclePublic">取消公开</el-dropdown-item>
               <!-- <el-dropdown-item @click="handleDeleteClick">删除</el-dropdown-item> -->
             </el-dropdown-menu>
           </template>
@@ -38,25 +38,51 @@
 
 <script lang="ts" setup>
 import { MoreFilled } from "@element-plus/icons-vue";
-import { Dataset } from "@/models/dataset";
+import { PublicDataset } from "@/models/dataset";
 import { useRouter } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { deleteDataset } from "@/service/datasets";
-const emit = defineEmits(["delete"]);
+import { putCancelKnowledgePublic } from "@/service/team"
+const emit = defineEmits(["delete","status-updated"]);
 
 const props = defineProps<{
-  dataset: Dataset;
+  dataset: PublicDataset;
+  folderId:string[]
 }>();
-
 const router = useRouter();
 
 // 跳转到详情页
 const goToDetails = () => {
   router.push({
     name: "details",
-    query: { id: props.dataset.id },
+    query: { 
+      id: props.dataset.id,
+      is_admin:String(props.dataset.is_admin),
+    },
   });
 };
+
+const handleCanclePublic = () => {
+  ElMessageBox.confirm(
+    "取消公开后，知识库将在公共知识库中不可见。",
+    "确定要取消公开吗？",
+    {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    }
+  ).then( async()=>{
+    try {
+    await putCancelKnowledgePublic(props.folderId, props.dataset.id);
+    ElMessage.success("取消公开成功")
+    emit('status-updated')
+    } catch (error) {
+      ElMessage.error("取消公开失败")
+    }
+  }) 
+};
+
+
 
 const handleDeleteClick = () => {
   ElMessageBox.confirm(

@@ -8,6 +8,8 @@ import './style.css'
 import '../src/assets/less/index.less'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import { createPinia } from 'pinia'
+import { useUserStore } from '@/store/user'
+import { useTeamStore } from '@/store/team'
 
 const pinia = createPinia()
 
@@ -17,8 +19,23 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 }
 
 app.use(pinia)
+
+// 全局初始化
+const userStore = useUserStore()
+const teamStore = useTeamStore()
+try {
+  userStore.updatePermission()
+  userStore.updateUserInfo().then(async () => {
+    await teamStore.updatePrivateTenantId()
+    await teamStore.updateRoleList();
+    await teamStore.refreshTeamList();
+  });
+} catch (e) {
+  console.log(e)
+}
+
 app.use(router)
 app.use(ElementPlus, {
-    locale: zhCn,
+  locale: zhCn,
 })
 app.mount('#app')
