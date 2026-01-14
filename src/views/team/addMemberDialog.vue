@@ -40,7 +40,7 @@
 import { OrganizationNode } from '@/models/organization';
 import { getOrganizationTree, searchOrganizationNode } from '@/service/organization';
 import { postUser } from '@/service/team';
-import { ref, onMounted, watch, computed } from 'vue';
+import { ref, onMounted, watch, computed, nextTick } from 'vue';
 import router from "@/router";
 import { ElMessage, ElMessageBox } from 'element-plus';
 
@@ -78,9 +78,7 @@ watch(
 )
 
 const handleCheckClick = (node, obj) => {
-    console.log(node, obj);
     selected.value = obj.checkedNodes.filter(n => n.type == 'user')
-    console.log('selected.value', selected.value)
 };
 
 const handleSelectedMemberDelete = (data) => {
@@ -129,15 +127,31 @@ const expandPathTo = (targetId: string) => {
   expandNode(targetId)
 }
 
-const handleFilterChange = (id) => {
+const handleFilterChange = async (id) => {
     console.log('id', id)
     highlightNode(id)
+    await nextTick()
+    orgTreeRef.value?.setCurrentKey(id)
+
+    await nextTick()
+    // 3. 获取目标节点的 DOM 元素
+    // const node = orgTreeRef.value?.store.nodesMap[id]
+    const nodeElement = document.querySelector(`[data-key="${id}"] .el-tree-node__content`)
+    // console.log(nodeElement)
+    if (nodeElement) {
+        // 4. 滚动到屏幕中央
+        setTimeout(() =>{ nodeElement.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'center' 
+        }) }, 500)
+    } else {
+      console.warn('未找到目标节点 DOM')
+    }
     // orgTreeRef.value.
-    // orgTreeRef.value?.setCurrentKey(id)
 }
 
 // todo
-const handleEnsureClick = () => {
+const handleEnsureClick = () => {                                                                                               
     const users = selected.value.map(s => {
         const user = s.code
         const name = s.name

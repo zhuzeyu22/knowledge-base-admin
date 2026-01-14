@@ -78,14 +78,14 @@ onBeforeMount(async () => {
     const userStore = useUserStore()
     const teamStore = useTeamStore()
     try {
-    userStore.updatePermission()
-    userStore.updateUserInfo().then(async () => {
-        await teamStore.updatePrivateTenantId()
-        await teamStore.updateRoleList();
-        await teamStore.refreshTeamList();
-    });
+        userStore.updatePermission()
+        userStore.updateUserInfo().then(async () => {
+            await teamStore.updatePrivateTenantId()
+            await teamStore.updateRoleList();
+            await teamStore.refreshTeamList();
+        });
     } catch (e) {
-    console.log(e)
+        console.log(e)
     }
 
 });

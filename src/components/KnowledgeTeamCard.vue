@@ -2,7 +2,10 @@
   <el-card @click="goToDetails">
     <div class="knowledge-base-card">
       <div class="knowledge-base-card-background"></div>
-      <div class="knowledge-base-card-name">{{ dataset.name }}</div>
+      <div class="knowledge-base-card-name">
+        <div>{{ dataset.name }}</div>
+        <div v-if="dataset.is_public" class="knowledge-base-card-public-token">公开</div>
+      </div>
       <div class="knowledge-base-card-creator">
         <el-icon class="icon"><User /></el-icon>
         <!-- 这里展示团队知识库的创建者 字段未给   -->
@@ -32,7 +35,7 @@
             </el-dropdown-menu>
           </template>
         </el-dropdown>
-        <memberPermission v-model:visible="isMemberPermissionShow" :dataset-id="props.dataset.id"/>
+        <memberPermission v-model:visible="isMemberPermissionShow" :dataset-id="props.dataset.id"  :created-by="props.dataset.created_by"/>
         <publicPermission v-model:visible="isPublicPermissionShow" :dataset-name = "props.dataset.name" :dataset-id="props.dataset.id"/>
       </div>
     </div>
@@ -141,6 +144,20 @@ const handlePublicPermission = () => {
   font-size: 15px;
   font-weight: bold;
   margin-bottom: 4px;
+  display: flex;
+}
+.knowledge-base-card-public-token {
+  position: relative;
+  left: 8px;
+  border-radius: 4px;
+  width: 32px;
+  height: 16px;
+  background-color: #8080ff;
+  font-size: 10px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .knowledge-base-card-creator {
   display: flex;

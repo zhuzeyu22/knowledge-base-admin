@@ -6,7 +6,14 @@
             <div class="scroll-container">
                 <el-table :data="filteredData" @selection-change="handleSelectedRows" ref="tableRef">
                     <el-table-column type="selection" width="60" />
-                    <el-table-column property="account_name" label="成员" width="220" />
+                    <el-table-column property="account_name" label="成员" width="220" >
+                        <template #default=scope >
+                            <div style="display: flex; align-items: center; justify-content: center;">
+                                <div>{{ scope.row.account_name }}</div>
+                                <div v-if="scope.row.account_id == createdBy" class="token">创建</div>
+                            </div>
+                        </template>
+                    </el-table-column>
                     <el-table-column property="role_name" label="权限" width="120">
                         <template #default=scope>
                             <el-select class="select" :disabled="scope.row.account_id == id" v-model="scope.row.role_name" @change="(val:string)=>handlePermissionChange(val, scope.row)">
@@ -48,8 +55,9 @@ const userStore = useUserStore()
 const id = computed(() => userStore?.getUserInfo?.id)
 
 const props = defineProps<{
-    visible:boolean;
-    datasetId:string
+    visible: boolean;
+    datasetId: string;
+    createdBy: string;
 }>();
 const emits = defineEmits(['update:visible','refresh'])
 
@@ -59,6 +67,7 @@ const tableRef = ref<InstanceType<typeof ElTable> | null>(null);
 const selectedToolbarPermission = ref('');
 const memberPermissionList = ref([]);
 const datasetId = String(props.datasetId);
+const createdBy = String(props.createdBy);
 
 const dialogVisible = computed({
     get:()=> props.visible,
@@ -218,5 +227,18 @@ watch(() => props.visible, (val) => {
             align-items: center;
         }
     }
+}
+.token {
+  position: relative;
+  left: 8px;
+  border-radius: 4px;
+  width: 32px;
+  height: 16px;
+  background-color: #8080ff;
+  font-size: 10px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

@@ -26,10 +26,11 @@ export type TeamDataset = {
   // 字符数量
   characterNumber: number;
   retrieval_model_dict: RetrievalModel;
-  creator:string;
-  is_admin:boolean;
-  dataset_permission:boolean;
-  public_permission:boolean;
+  creator: string;
+  is_admin: boolean;
+  dataset_permission: boolean;
+  public_permission: boolean;
+  created_by: string;
 };
 
 //公开知识库数据结构

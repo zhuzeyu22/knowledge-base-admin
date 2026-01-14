@@ -36,29 +36,33 @@ const total = ref(1)
 
 const tenantId = computed(() => router.currentRoute.value.params.teamId);
 const userStore = useUserStore()
+const id = computed(() => userStore?.getUserInfo?.id)
+
 const showCreate = ref(false)
 
-watch(tenantId, async (newVal) => {
+watch([tenantId, id], async ([newTenantId, newId]) => {
   console.log('tenantId', tenantId);
-  if (!tenantId.value) {
+  if (!newTenantId || !newId) {
     total.value = 0
     datasetList.value = []
     teamName.value = ''
     showCreate.value = false
     return;
   }
+
   // 更新名字
-  const teamInfo = await getTeamInfo(newVal as string)
+  const teamInfo = await getTeamInfo(newTenantId as string)
   console.log(teamInfo.data.name)
   teamName.value = teamInfo.data.name
 
   // 更新权限
-  const account_id = userStore.getUserInfo.id
-  const teamPermission = await getTeamPermission( account_id, newVal)
+  const teamPermission = await getTeamPermission( newId, newTenantId as string)
   showCreate.value = teamPermission?.data?.is_created || false
 
   // 更新数据
   reload()
+}, {
+  immediate: true
 });
 
 
@@ -71,21 +75,21 @@ const getTotal = async () => {
     total.value = res.total
   })
 }
-onMounted(async () => {
-  // 更新名字
-  const teamInfo = await getTeamInfo(tenantId.value as string)
-  console.log(teamInfo.data.name)
-  teamName.value = teamInfo.data.name
+// onMounted(async () => {
+//   // 更新名字
+//   const teamInfo = await getTeamInfo(tenantId.value as string)
+//   console.log(teamInfo.data.name)
+//   teamName.value = teamInfo.data.name
 
-  // 更新权限
-  const account_id = userStore.getUserInfo.id
-  const teamPermission = await getTeamPermission( account_id, tenantId.value as string)
-  showCreate.value = teamPermission?.data?.is_created || false
+//   // 更新权限
+//   const account_id = userStore.getUserInfo.id
+//   const teamPermission = await getTeamPermission( account_id, tenantId.value as string)
+//   showCreate.value = teamPermission?.data?.is_created || false
 
-  getTotal().then(() => {
-    load()
-  })
-})
+//   getTotal().then(() => {
+//     load()
+//   })
+// })
 
 const load = () => {
   if (datasetList.value.length >= total.value) {

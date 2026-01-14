@@ -77,7 +77,7 @@ const handleUploadChange: UploadProps["onChange"] = (
 
     // 校验文件大小
     if (uploadFile.size > MAX_FILE_SIZE) {
-        ElMessage.error(`文件大小不能超过 ${MAX_FILE_SIZE / 1024 / 1024}MB！`)
+        ElMessage.error(`上传文件不得超过 ${MAX_FILE_SIZE / 1024 / 1024}MB！`)
         uploadFiles.pop();
         return
     }

@@ -21,7 +21,7 @@
                     <el-table-column label="权限" width="200" prop="role_name">
                         <template #default="scope">
                             <el-select v-model="scope.row.role_id"
-                                @change="(data: string) => handleRoleChange(scope.row, data)" :disabled="ownerAccountId == scope.row.account_id">
+                                @change="(data: string) => handleRoleChange(scope.row, data)" :disabled="ownerAccountId == scope.row.account_id || id == scope.row.account_id">
                                 <el-option v-for="item in roleOptions" :key="item.id" :label="item.name"
                                     :value="item.id">
                                 </el-option>
@@ -66,6 +66,10 @@ const total = ref(0);
 
 const roleOptions = computed(() => teamStore.getRoleList);
 const tenantId = computed(() => router.currentRoute.value.params.teamId);
+
+import { useUserStore } from '@/store/user';
+const userStore = useUserStore()
+const id = computed(() => userStore?.getUserInfo?.id)
 
 const ownerAccountId = ref('')
 

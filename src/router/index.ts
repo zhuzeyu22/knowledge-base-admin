@@ -186,7 +186,7 @@ const router = createRouter({
 router.beforeEach(async (to, from) => {
   const code = getQueryParam("code");
   if (code) {
-    await accessUnitlogin();
+    await accessUnitlogin({ code });
     const cleanUrl =
       window.location.origin + window.location.pathname + window.location.hash;
     window.location.replace(cleanUrl);
