@@ -19,7 +19,7 @@
       <div class="knowledge-base-card-label">
         {{ dataset.official == "official" ? "官方" : "非官方" }}
       </div>
-      <div class="knowledge-base-card-operate" @click.stop>
+      <div class="knowledge-base-card-operate" @click.stop v-if="hasPermission">
         <el-dropdown trigger="click" placement="bottom-end">
           <el-icon style="cursor: pointer">
             <MoreFilled />
@@ -43,14 +43,18 @@ import { useRouter } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { deleteDataset } from "@/service/datasets";
 import { putCancelKnowledgePublic } from "@/service/team"
+import { useUserStore } from "@/store/user";
+import { computed } from "vue";
 const emit = defineEmits(["delete","status-updated"]);
+
+const userStore = useUserStore()
+const hasPermission = computed(() => userStore.getIsAdmin)
 
 const props = defineProps<{
   dataset: PublicDataset;
   folderId:string[],
   folderNames:string[],
 }>();
-console.log("文件id",props.folderNames)//没有传递过去
 const router = useRouter();
 
 // 跳转到详情页
@@ -112,7 +116,6 @@ const handleDeleteClick = () => {
         message: "已取消",
       });
     });
-  console.log("删除");
 };
 
 </script>

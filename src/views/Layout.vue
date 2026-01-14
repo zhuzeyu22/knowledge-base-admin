@@ -47,6 +47,7 @@ import TeamTree from "@/components/teamTree/index.vue";
 import CreateTeamDialog from "@/views/team/createTeamDialog.vue";
 import { useUserStore } from "@/store/user";
 import { useTeamStore } from "@/store/team";
+import { getTenantRole } from "@/service/tenant";
 
 const userStore = useUserStore()
 
@@ -64,6 +65,29 @@ onBeforeMount(async () => {
     const { id: userId } = await getAccountProfile();
     localStorage.setItem("authId", userId);
     localStorage.removeItem("roleId");
+    
+    const { id: tenantId } = await getWorkspaceCurrent();
+    const { data } = (await getTenantRole(tenantId, userId)) || {};
+
+    if (data && data[0]) {
+        const roleId = data[0].role_id;
+        localStorage.setItem("roleId", roleId);
+    }
+
+    // 全局初始化
+    const userStore = useUserStore()
+    const teamStore = useTeamStore()
+    try {
+    userStore.updatePermission()
+    userStore.updateUserInfo().then(async () => {
+        await teamStore.updatePrivateTenantId()
+        await teamStore.updateRoleList();
+        await teamStore.refreshTeamList();
+    });
+    } catch (e) {
+    console.log(e)
+    }
+
 });
 
 onMounted(() => {

@@ -10,7 +10,7 @@
         </el-header>
         <el-main class="context-style" style="overflow: hidden">
             <div style="margin-bottom: 20px; display: flex; flex-direction: row-reverse;">
-                <el-button type="primary" size="default" @click="addMemberDialogvisible = true">添加成员</el-button>
+                <el-button type="primary" size="default" @click="addMemberDialogVisible = true">添加成员</el-button>
             </div>
             <div style="overflow: auto; height: auto; width: 100%;">
                 <el-table :data="memberList" style="overflow-y: auto;">
@@ -44,7 +44,7 @@
                     @size-change="handlePageSizeChange">
                 </el-pagination>
             </div>
-            <AddMemberDialog v-model="addMemberDialogvisible" @add="handleMemberAdd"/>
+            <AddMemberDialog v-model:visible="addMemberDialogVisible" @add="handleMemberAdd" @cancel="handleCancel"/>
         </el-main>
     </section>
 </template>
@@ -58,7 +58,7 @@ import { useTeamStore } from "@/store/team";
 import { Member } from "@/models/team";
 import { ElMessage, ElMessageBox } from "element-plus";
 const teamStore = useTeamStore();
-const addMemberDialogvisible = ref(false);
+const addMemberDialogVisible = ref(false);
 const memberList = ref([]);
 const page = ref(1);
 const pageSize = ref(20);
@@ -146,8 +146,11 @@ const handleMemberDelete = (row: Member) => {
 
 const handleMemberAdd = ()=>{
     console.log('handleMemberAdd updateData')
-    addMemberDialogvisible.value = false
+    addMemberDialogVisible.value = false
     updateData()
+}
+const handleCancel = () => {
+    addMemberDialogVisible.value = false
 }
 
 </script>

@@ -8,7 +8,7 @@
       class="context-style" style="overflow: auto" v-loading="loading" element-loading-text="数据加载中...">
       <el-space wrap :size="16" class="grid-container">
         <CreateCard v-if='showCreate' @create='handleCreate'/>
-        <KnowledgeTeamCard v-for="item in datasetList" :key="item.id" :dataset="item" />
+        <KnowledgeTeamCard v-for="item in datasetList" :key="item.id" :dataset="item" @delete='reload'/>
       </el-space>
     </el-main>
   </el-container>

@@ -43,6 +43,8 @@
 import { uploadDocument } from "@/service/datasets";
 import { ElMessage, type UploadProps, } from "element-plus";
 
+const MAX_FILE_SIZE = 40 * 1024 * 1024 // 40MB
+
 // .pdf,.doc,.docx,.txt,.html,.markdown,.md,.xls,.xlsx,.csv
 const { accept } = defineProps({
     accept: {
@@ -69,6 +71,15 @@ const handleUploadChange: UploadProps["onChange"] = (
         ElMessage.error("文件格式错误，请上传正确的文件格式");
         uploadFiles.pop();
         return;
+    }
+
+    console.log('uploadFile', uploadFile)
+
+    // 校验文件大小
+    if (uploadFile.size > MAX_FILE_SIZE) {
+        ElMessage.error(`文件大小不能超过 ${MAX_FILE_SIZE / 1024 / 1024}MB！`)
+        uploadFiles.pop();
+        return
     }
 
     // 开始上传文件
@@ -101,6 +112,13 @@ const handleExceed: UploadProps["onExceed"] = (uploadFile, uploadFiles) => {
             ElMessage.error("文件格式错误，请上传正确的文件格式");
             return false;
         }
+
+        // 校验文件大小
+        if (uploadFile.size > MAX_FILE_SIZE) {
+            ElMessage.error(`文件大小不能超过 ${MAX_FILE_SIZE / 1024 / 1024}MB！`)
+            return false
+        }
+
 
         // 开始上传文件
         const formData = new FormData();

@@ -19,15 +19,16 @@
       <div class="knowledge-base-card-label">
         {{ dataset.official == "official" ? "官方" : "非官方" }}
       </div>
-      <div class="knowledge-base-card-operate" @click.stop>
+      <div class="knowledge-base-card-operate" @click.stop v-if="dataset.dataset_permission || dataset.public_permission">
         <el-dropdown trigger="click" placement="bottom-end">
           <el-icon style="cursor: pointer">
             <MoreFilled />
           </el-icon>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item @click="handleMemberPermission">知识库权限</el-dropdown-item>
-              <el-dropdown-item @click="handlePublicPermission">公开</el-dropdown-item>
+              <el-dropdown-item @click="handleMemberPermission" :disabled="!dataset.dataset_permission">知识库权限</el-dropdown-item>
+              <el-dropdown-item @click="handlePublicPermission" :disabled="!dataset.public_permission">公开</el-dropdown-item>
+              <el-dropdown-item @click="handleDeleteClick" :disabled="!dataset.public_permission">删除</el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -104,6 +105,7 @@ const handleMemberPermission = () => {
 const handlePublicPermission = () => {
   isPublicPermissionShow.value = true;
 }
+
 </script>
 
 <style scoped>

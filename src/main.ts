@@ -19,21 +19,6 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 }
 
 app.use(pinia)
-
-// 全局初始化
-const userStore = useUserStore()
-const teamStore = useTeamStore()
-try {
-  userStore.updatePermission()
-  userStore.updateUserInfo().then(async () => {
-    await teamStore.updatePrivateTenantId()
-    await teamStore.updateRoleList();
-    await teamStore.refreshTeamList();
-  });
-} catch (e) {
-  console.log(e)
-}
-
 app.use(router)
 app.use(ElementPlus, {
   locale: zhCn,

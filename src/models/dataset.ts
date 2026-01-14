@@ -28,6 +28,8 @@ export type TeamDataset = {
   retrieval_model_dict: RetrievalModel;
   creator:string;
   is_admin:boolean;
+  dataset_permission:boolean;
+  public_permission:boolean;
 };
 
 //公开知识库数据结构

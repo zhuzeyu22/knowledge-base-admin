@@ -9,7 +9,7 @@
                     <el-table-column property="account_name" label="成员" width="220" />
                     <el-table-column property="role_name" label="权限" width="120">
                         <template #default=scope>
-                            <el-select class="select" v-model="scope.row.role_name" @change="(val:string)=>handlePermissionChange(val, scope.row)">
+                            <el-select class="select" :disabled="scope.row.account_id == id" v-model="scope.row.role_name" @change="(val:string)=>handlePermissionChange(val, scope.row)">
                                 <el-option v-for="item in permissionOptions" :key="item.value" :label="item.label"
                                     :value="item.value" />
                             </el-select>
@@ -42,6 +42,10 @@ import { ref, computed, watch  } from 'vue'
 import { getTeamMemberPermissionList, putTeamMemberPermission } from '@/service/team';
 import { ElMessage, ElTable } from "element-plus";
 import { MemberPermission } from '@/models/team';
+
+import { useUserStore } from '@/store/user';
+const userStore = useUserStore()
+const id = computed(() => userStore?.getUserInfo?.id)
 
 const props = defineProps<{
     visible:boolean;
@@ -78,25 +82,6 @@ const permissionOptions = [
     },
 ]
 
-const MockData = [
-    {
-        account_name: '用户A',
-        role_name: '协作',
-    },
-    {
-        account_name: '用户B',
-        role_name: '使用',
-    },
-    {
-        account_name: '用户C',
-        role_name: '管理',
-    },
-    {
-        account_name: '用户D',
-        role_name: '使用',
-    },
-
-]
 const filteredData = computed(() => {
     if (!searchName.value.trim()) {
         console.log(memberPermissionList);
@@ -106,6 +91,7 @@ const filteredData = computed(() => {
         return item.account_name.toLowerCase().includes(searchName.value.trim().toLowerCase());
     });
 });
+
 const loadData = async() => {
     try {
         const res = await getTeamMemberPermissionList(datasetId);
@@ -113,8 +99,7 @@ const loadData = async() => {
         console.log(res)
     }
     catch(error:any) {
-        memberPermissionList.value = MockData;
-        console.log(memberPermissionList)
+        console.log(error, memberPermissionList)
     }
 } 
 

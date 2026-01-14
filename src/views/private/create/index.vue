@@ -65,7 +65,7 @@
                         <el-button style="color: skyblue" @click="handlePreviewButton">预览</el-button>
                       </el-col>
                       <el-col :span="8">
-                        <el-button style="border: none; color: black" :disabled="radio == 'qa_pairs'">重置</el-button>
+                        <el-button style="border: none; color: black" @click="handleResetClick" :disabled="radio == 'qa_pairs'">重置</el-button>
                       </el-col>
                     </el-row>
                   </el-collapse-item>
@@ -124,6 +124,14 @@
                       </el-col>
                       <el-col :span="24">
                         <el-checkbox v-model="hierarchical.pre_processing_rules[1].enabled" label="删除所有 URL 和电子邮件地址" />
+                      </el-col>
+                    </el-row>
+                    <el-row>
+                      <el-col :span="4">
+                        <el-button style="color: skyblue" @click="handlePreviewButton">预览</el-button>
+                      </el-col>
+                      <el-col :span="8">
+                        <el-button style="border: none; color: black" @click="handleResetClick" :disabled="radio == 'qa_pairs'">重置</el-button>
                       </el-col>
                     </el-row>
                   </el-collapse-item>
@@ -857,6 +865,49 @@ const handlePreviewButton = () => {
     ElMessage.warning("请先上传文件");
   }
 };
+
+const handleResetClick = () =>{
+  custom.value = {
+    pre_processing_rules: [
+      {
+        id: "remove_extra_spaces",
+        enabled: false,
+      },
+      {
+        id: "remove_urls_emails",
+        enabled: false,
+      },
+    ],
+    segmentation: {
+      separator: "\\n\\n",
+      max_tokens: 500,
+      chunk_overlap: 50,
+    },
+  }
+  
+  hierarchical.value = {
+    parent_mode: "paragraph",
+    pre_processing_rules: [
+      {
+        id: "remove_extra_spaces",
+        enabled: false,
+      },
+      {
+        id: "remove_urls_and_emails",
+        enabled: false,
+      },
+    ],
+    segmentation: {
+      separator: "\\n\\n",
+      max_tokens: 500,
+    },
+    subchunk_segmentation: {
+      separator: "\\n\\n",
+      max_tokens: 500,
+    },
+  }
+
+}
 
 // 点击文件名显示预览
 const handleFileClick = (fileId: string) => {
