@@ -45,9 +45,9 @@
                       <el-col :span="8"><el-input v-model="custom.segmentation.separator"
                           :disabled="radio == 'qa_pairs'"></el-input></el-col>
                       <el-col :span="8"><el-input-number v-model="custom.segmentation.max_tokens"
-                          :disabled="radio == 'qa_pairs'" :min="50"></el-input-number></el-col>
+                          :disabled="radio == 'qa_pairs'" :min="50" :max="4000"></el-input-number></el-col>
                       <el-col :span="8"><el-input-number v-model="custom.segmentation.chunk_overlap"
-                          :disabled="radio == 'qa_pairs'" :min="50"></el-input-number></el-col>
+                          :disabled="radio == 'qa_pairs'" :min="50" :max="4000"></el-input-number></el-col>
                     </el-row>
                     <el-row>
                       <el-col :span="24"> 文本预处理规则 </el-col>
@@ -90,7 +90,7 @@
                                 <el-col :span="10"><el-input v-model="hierarchical.segmentation.separator
                                   "></el-input></el-col>
                                 <el-col :span="10"><el-input-number v-model="hierarchical.segmentation.max_tokens
-                                  " :min="50"></el-input-number></el-col>
+                                  " :min="50" :max="4000"></el-input-number></el-col>
                               </el-row>
                             </el-card>
                           </el-collapse-item>
@@ -114,7 +114,7 @@
                         <el-col :span="10"><el-input v-model="hierarchical.subchunk_segmentation.separator
                           "></el-input></el-col>
                         <el-col :span="10"><el-input-number v-model="hierarchical.subchunk_segmentation.max_tokens
-                          " :min="50"></el-input-number></el-col>
+                          " :min="50" :max="4000"></el-input-number></el-col>
                       </el-row>
                     </el-row>
                     <el-row style="width: 100%; margin-bottom: 10px">
