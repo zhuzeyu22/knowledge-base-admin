@@ -193,7 +193,7 @@ const handleNodeClick = (data: PublicFolderNode, node:any, vnode:any) =>{
     display: flex;
     flex-direction: column;
     width: 100%;
-    height: 100%;
+    // height: 100%;
 }
 
 .custom-tree-node {

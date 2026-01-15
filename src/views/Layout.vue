@@ -124,7 +124,7 @@ const handleTeamClick = ()=>{
     flex-direction: column;
 
     .tree {
-        flex: 1;
+        // flex: 1;
         padding: 0px 10px;
     }
 }

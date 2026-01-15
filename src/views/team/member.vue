@@ -30,7 +30,7 @@
                     </el-table-column>
                     <el-table-column label="" width="80">
                         <template #default="scope">
-                            <el-icon v-if="ownerAccountId != scope.row.account_id" class="delete-icon" @click="() => handleMemberDelete(scope.row)" :size="20"
+                            <el-icon v-if="ownerAccountId != scope.row.account_id && id != scope.row.account_id" class="delete-icon" @click="() => handleMemberDelete(scope.row)" :size="20"
                                 color="#909399">
                                 <Delete />
                             </el-icon>

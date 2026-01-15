@@ -465,7 +465,7 @@
                   ">
                   <span style="font-weight: 600">Chunk {{ index + 1 }}</span>
                   <el-tag size="small" style="border: 'none'">
-                    {{ (segment?.content?.length | 0) + (segment?.question?.length | 0) + segment?.answer?.length | 0
+                    {{ (segment?.content?.length | 0) + (segment?.question?.length | 0) + (segment?.answer?.length | 0)
                     }} 字符
                   </el-tag>
                 </div>
@@ -843,7 +843,6 @@ const handlePreviewButton = () => {
 
     fetchFileIndexingEstimate(params)
       .then((response) => {
-        console.log("分段预览结果:", response);
         // 处理返回的分段内容,且不为空的
         if (response && response.preview) {
           if (radio.value === "datasets") {

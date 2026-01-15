@@ -8,7 +8,7 @@
       class="context-style" style="overflow: auto" v-loading="loading" element-loading-text="数据加载中...">
       <el-space wrap :size="16" class="grid-container">
         <CreateCard v-if='showCreate' @create='handleCreate'/>
-        <KnowledgeTeamCard v-for="item in datasetList" :key="item.id" :dataset="item" @delete='reload'/>
+        <KnowledgeTeamCard v-for="item in datasetList" :key="item.id" :dataset="item" :tenant-id="tenantId" @delete='reload'/>
       </el-space>
     </el-main>
   </el-container>
@@ -31,7 +31,7 @@ const search = ref('')
 // const filterDataList = ref<Dataset[]>([])
 const page = ref(1)
 const limit = ref(50)
-const loading = ref(false)
+const loading = ref(true)
 const total = ref(1)
 
 const tenantId = computed(() => router.currentRoute.value.params.teamId);
@@ -40,56 +40,12 @@ const id = computed(() => userStore?.getUserInfo?.id)
 
 const showCreate = ref(false)
 
-watch([tenantId, id], async ([newTenantId, newId]) => {
-  console.log('tenantId', tenantId);
-  if (!newTenantId || !newId) {
-    total.value = 0
-    datasetList.value = []
-    teamName.value = ''
-    showCreate.value = false
-    return;
-  }
-
-  // 更新名字
-  const teamInfo = await getTeamInfo(newTenantId as string)
-  console.log(teamInfo.data.name)
-  teamName.value = teamInfo.data.name
-
-  // 更新权限
-  const teamPermission = await getTeamPermission( newId, newTenantId as string)
-  showCreate.value = teamPermission?.data?.is_created || false
-
-  // 更新数据
-  reload()
-}, {
-  immediate: true
-});
-
-
-const handleSearchChange = () => {
-  // 搜索逻辑待实现
+const reload = () => {
+  datasetList.value = []
+  page.value = 1
+  total.value = 1
+  load()
 }
-
-const getTotal = async () => {
-  await getPublicDatasetList(page.value, limit.value).then((res) => {
-    total.value = res.total
-  })
-}
-// onMounted(async () => {
-//   // 更新名字
-//   const teamInfo = await getTeamInfo(tenantId.value as string)
-//   console.log(teamInfo.data.name)
-//   teamName.value = teamInfo.data.name
-
-//   // 更新权限
-//   const account_id = userStore.getUserInfo.id
-//   const teamPermission = await getTeamPermission( account_id, tenantId.value as string)
-//   showCreate.value = teamPermission?.data?.is_created || false
-
-//   getTotal().then(() => {
-//     load()
-//   })
-// })
 
 const load = () => {
   if (datasetList.value.length >= total.value) {
@@ -109,12 +65,41 @@ const load = () => {
   })
 }
 
+watch([tenantId, id], async ([newTenantId, newId]) => {
+  console.log('tenantId', tenantId);
+  if (!newTenantId || !newId) {
+    total.value = 0
+    datasetList.value = []
+    return;
+  }
 
-const reload = () => {
-  datasetList.value = []
-  page.value = 1
-  total.value = 1
-  load()
+  // 更新数据
+  reload()
+}, {
+  immediate: true
+});
+
+watch([tenantId, id], async ([newTenantId, newId]) => {
+  console.log('tenantId', tenantId);
+  if (!newTenantId || !newId) {
+    teamName.value = ''
+    showCreate.value = false
+    return;
+  }
+
+  // 更新名字
+  const teamInfo = await getTeamInfo(newTenantId as string)
+  teamName.value = teamInfo.data.name
+
+  // 更新权限
+  const teamPermission = await getTeamPermission( newId, newTenantId as string)
+  showCreate.value = teamPermission?.data?.is_created || false
+}, {
+  immediate: true
+});
+
+const handleSearchChange = () => {
+  // 搜索逻辑待实现
 }
 
 const handleCreate = ()=>{
