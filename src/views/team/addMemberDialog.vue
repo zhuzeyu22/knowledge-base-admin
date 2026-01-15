@@ -1,5 +1,5 @@
 <template>
-    <el-dialog title="添加成员" v-model="addMemberDialogvisible" width="60%">
+    <el-dialog title="添加成员" v-model="addMemberDialogVisible" width="60%">
         <el-row class="add-member">
             <el-col :span="11" style="height: 100%;">
                 <el-select v-model="filter" filterable remote reserve-keyword placeholder="搜索"
@@ -29,7 +29,7 @@
                 </div>
                 <span class="dialog-footer">
                     <el-button type="primary" @click='handleEnsureClick'>确 定</el-button>
-                    <el-button @click="addMemberDialogvisible = false">取 消</el-button>
+                    <el-button @click="handleCancelClick">取 消</el-button>
                 </span>
             </el-col>
         </el-row>
@@ -40,12 +40,12 @@
 import { OrganizationNode } from '@/models/organization';
 import { getOrganizationTree, searchOrganizationNode } from '@/service/organization';
 import { postUser } from '@/service/team';
-import { ref, onMounted, watch, computed } from 'vue';
+import { ref, onMounted, watch, computed, nextTick } from 'vue';
 import router from "@/router";
+import { ElMessage, ElMessageBox } from 'element-plus';
 
-const emit = defineEmits(["add"]);
-
-const addMemberDialogvisible = ref(false);
+const emit = defineEmits(["add","cancel"]);
+const addMemberDialogVisible = defineModel("visible");
 
 const filter = ref('');
 const orgTreeRef = ref();
@@ -64,9 +64,9 @@ onMounted(()=>{
 });
 
 watch(
-    addMemberDialogvisible,
-    (addMemberDialogvisible) =>{
-        if(addMemberDialogvisible){
+    addMemberDialogVisible,
+    (addMemberDialogVisible) =>{
+        if(addMemberDialogVisible){
             getOrganizationTree().then(res => {
                 orgTreeData.value = res.tree;
             });
@@ -78,9 +78,7 @@ watch(
 )
 
 const handleCheckClick = (node, obj) => {
-    console.log(node, obj);
     selected.value = obj.checkedNodes.filter(n => n.type == 'user')
-    console.log('selected.value', selected.value)
 };
 
 const handleSelectedMemberDelete = (data) => {
@@ -92,7 +90,7 @@ const handleSelectedMemberDelete = (data) => {
         return acc
     },[])
     selected.value = nkeys
-    orgTreeRef.value.setCheckedNodes(nkeys)
+    orgTreeRef.value.setChecked(data, false)
 };
 
 const remoteSearch = (query: string) => {
@@ -107,9 +105,6 @@ const remoteSearch = (query: string) => {
 
 const highlightNode = (id: string) => {
     if (!orgTreeRef.value) return
-
-    // 1. 【关键】先收起所有根节点（清空展开状态）
-    // todo 不知道为啥没生效
 
     // 2. 递归展开目标路径
     expandPathTo(id)
@@ -132,15 +127,31 @@ const expandPathTo = (targetId: string) => {
   expandNode(targetId)
 }
 
-const handleFilterChange = (id) => {
+const handleFilterChange = async (id) => {
     console.log('id', id)
     highlightNode(id)
+    await nextTick()
+    orgTreeRef.value?.setCurrentKey(id)
+
+    await nextTick()
+    // 3. 获取目标节点的 DOM 元素
+    // const node = orgTreeRef.value?.store.nodesMap[id]
+    const nodeElement = document.querySelector(`[data-key="${id}"] .el-tree-node__content`)
+    // console.log(nodeElement)
+    if (nodeElement) {
+        // 4. 滚动到屏幕中央
+        setTimeout(() =>{ nodeElement.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'center' 
+        }) }, 500)
+    } else {
+      console.warn('未找到目标节点 DOM')
+    }
     // orgTreeRef.value.
-    // orgTreeRef.value?.setCurrentKey(id)
 }
 
 // todo
-const handleEnsureClick = () => {
+const handleEnsureClick = () => {                                                                                               
     const users = selected.value.map(s => {
         const user = s.code
         const name = s.name
@@ -150,8 +161,22 @@ const handleEnsureClick = () => {
     console.log('handleEnsureClick', t)
     postUser(t, users).then(()=>{
         console.log('handleEnsureClick add')
+        ElMessage({
+            type: "success",
+            message: "添加成员成功",
+        });
         emit("add");
+    }).catch(err => {
+        console.log(err)
+        ElMessage({
+            type: "warning",
+            message: "添加成员失败",
+        });
     })
+}
+
+const handleCancelClick = () => {
+    emit("cancel");
 }
 
 </script>
@@ -172,7 +197,6 @@ const handleEnsureClick = () => {
 
 .custom-tree-node {
     width: calc(100% - 30px);
-    overflow: auto;
     display: flex;
     align-items: center;
     justify-content: space-between;

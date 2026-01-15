@@ -4,9 +4,11 @@ export type Team = {
   description: string;
   // 个人空间还是团队空间
   is_public: true | boolean;
+  is_admin: boolean;
   name: string;
   // 创建的时候用
   owner?: string;
+  tenant_name: string;
   tenant_id: string;
   // 获取数据的时候用
   account_id?: string;

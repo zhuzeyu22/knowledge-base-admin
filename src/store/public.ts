@@ -3,12 +3,13 @@ import { PublicFolderNode } from "@/models/public";
 import {
   deleteFolder,
   getFolder,
+  getPublicTree,
   postCreateFolder,
   renameFolder,
 } from "@/service/public";
 
-// 只有 0,1,2,3
-export const MAX_LEVEL = 3;
+// 只有 0,1,2
+export const MAX_LEVEL = 2;
 
 // 后续可以放到 utils 里面
 function flat(tree: PublicFolderNode[], nodeMap: Record<string, PublicFolderNode>) {
@@ -48,7 +49,7 @@ export const usePublicStore = defineStore("public", {
   },
   actions: {
     async initPublicTree() {
-      const res = await getFolder()
+      const res = await getPublicTree()
       console.log(res)
       this.nodeMap = {};
       this.folderTree = res.data as unknown as PublicFolderNode[];

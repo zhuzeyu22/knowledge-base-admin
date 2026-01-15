@@ -2,7 +2,10 @@
   <el-card @click="goToDetails">
     <div class="knowledge-base-card">
       <div class="knowledge-base-card-background"></div>
-      <div class="knowledge-base-card-name">{{ dataset.name }}</div>
+      <div class="knowledge-base-card-name">
+        <div>{{ dataset.name }}</div>
+        <div v-if="dataset.is_public" class="knowledge-base-card-public-token">公开</div>
+      </div>
       <div class="knowledge-base-card-creator">
         <el-icon class="icon"><User /></el-icon>
         <!-- 这里展示团队知识库的创建者 字段未给   -->
@@ -19,20 +22,21 @@
       <div class="knowledge-base-card-label">
         {{ dataset.official == "official" ? "官方" : "非官方" }}
       </div>
-      <div class="knowledge-base-card-operate" @click.stop>
+      <div class="knowledge-base-card-operate" @click.stop v-if="dataset.dataset_permission || dataset.public_permission">
         <el-dropdown trigger="click" placement="bottom-end">
           <el-icon style="cursor: pointer">
             <MoreFilled />
           </el-icon>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item @click="handleMemberPermission">知识库权限</el-dropdown-item>
-              <el-dropdown-item @click="handlePublicPermission">公开</el-dropdown-item>
+              <el-dropdown-item @click="handleMemberPermission" :disabled="!dataset.dataset_permission">知识库权限</el-dropdown-item>
+              <el-dropdown-item @click="handlePublicPermission" :disabled="!dataset.public_permission">公开</el-dropdown-item>
+              <el-dropdown-item @click="handleDeleteClick" :disabled="!dataset.public_permission">删除</el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
-        <memberPermission v-model:visible="isMemberPermissionShow" :dataset-id="props.dataset.id"/>
-        <publicPermission v-model:visible="isPublicPermissionShow" :dataset-name = "props.dataset.name" :team = "props.dataset.team" :dataset-id="props.dataset.id" />
+        <memberPermission v-model:visible="isMemberPermissionShow" :dataset-id="props.dataset.id"  :created-by="props.dataset.created_by"/>
+        <publicPermission v-model:visible="isPublicPermissionShow" :dataset-name = "props.dataset.name" :dataset-id="props.dataset.id"/>
       </div>
     </div>
   </el-card>
@@ -64,7 +68,6 @@ const goToDetails = () => {
     name: "details",
     query: { 
       id: props.dataset.id,
-      is_admin:String(props.dataset.is_admin),
     },
   });
 };
@@ -105,6 +108,7 @@ const handleMemberPermission = () => {
 const handlePublicPermission = () => {
   isPublicPermissionShow.value = true;
 }
+
 </script>
 
 <style scoped>
@@ -140,6 +144,20 @@ const handlePublicPermission = () => {
   font-size: 15px;
   font-weight: bold;
   margin-bottom: 4px;
+  display: flex;
+}
+.knowledge-base-card-public-token {
+  position: relative;
+  left: 8px;
+  border-radius: 4px;
+  width: 32px;
+  height: 16px;
+  background-color: #8080ff;
+  font-size: 10px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .knowledge-base-card-creator {
   display: flex;

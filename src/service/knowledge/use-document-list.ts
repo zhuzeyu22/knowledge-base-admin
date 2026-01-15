@@ -15,7 +15,8 @@ export interface DocumentList {
 }
 export interface DocumentListParams {
     keyword?: string
-    
+    page?: number
+    limit?: number
 }
 export interface DocumentListResponse {
     data:DocumentList[]

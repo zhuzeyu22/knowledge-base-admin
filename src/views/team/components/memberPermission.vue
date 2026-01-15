@@ -6,10 +6,17 @@
             <div class="scroll-container">
                 <el-table :data="filteredData" @selection-change="handleSelectedRows" ref="tableRef">
                     <el-table-column type="selection" width="60" />
-                    <el-table-column property="account_name" label="成员" width="240" />
+                    <el-table-column property="account_name" label="成员" width="220" >
+                        <template #default=scope >
+                            <div style="display: flex; align-items: center; justify-content: center;">
+                                <div>{{ scope.row.account_name }}</div>
+                                <div v-if="scope.row.account_id == createdBy" class="token">创建</div>
+                            </div>
+                        </template>
+                    </el-table-column>
                     <el-table-column property="role_name" label="权限" width="120">
                         <template #default=scope>
-                            <el-select class="select" v-model="scope.row.role_name" @change="(val:string)=>handlePermissionChange(val, scope.row)">
+                            <el-select class="select" :disabled="scope.row.account_id == id" v-model="scope.row.role_name" @change="(val:string)=>handlePermissionChange(val, scope.row)">
                                 <el-option v-for="item in permissionOptions" :key="item.value" :label="item.label"
                                     :value="item.value" />
                             </el-select>
@@ -38,14 +45,19 @@
 </template>
 <script setup lang="ts">
 import { Search } from '@element-plus/icons-vue';
-import { ref, computed, onMounted, watch  } from 'vue'
+import { ref, computed, watch  } from 'vue'
 import { getTeamMemberPermissionList, putTeamMemberPermission } from '@/service/team';
 import { ElMessage, ElTable } from "element-plus";
 import { MemberPermission } from '@/models/team';
 
+import { useUserStore } from '@/store/user';
+const userStore = useUserStore()
+const id = computed(() => userStore?.getUserInfo?.id)
+
 const props = defineProps<{
-    visible:boolean;
-    datasetId:string
+    visible: boolean;
+    datasetId: string;
+    createdBy: string;
 }>();
 const emits = defineEmits(['update:visible','refresh'])
 
@@ -55,6 +67,7 @@ const tableRef = ref<InstanceType<typeof ElTable> | null>(null);
 const selectedToolbarPermission = ref('');
 const memberPermissionList = ref([]);
 const datasetId = String(props.datasetId);
+const createdBy = String(props.createdBy);
 
 const dialogVisible = computed({
     get:()=> props.visible,
@@ -78,25 +91,6 @@ const permissionOptions = [
     },
 ]
 
-const MockData = [
-    {
-        account_name: '用户A',
-        role_name: '协作',
-    },
-    {
-        account_name: '用户B',
-        role_name: '使用',
-    },
-    {
-        account_name: '用户C',
-        role_name: '管理',
-    },
-    {
-        account_name: '用户D',
-        role_name: '使用',
-    },
-
-]
 const filteredData = computed(() => {
     if (!searchName.value.trim()) {
         console.log(memberPermissionList);
@@ -106,14 +100,14 @@ const filteredData = computed(() => {
         return item.account_name.toLowerCase().includes(searchName.value.trim().toLowerCase());
     });
 });
+
 const loadData = async() => {
     try {
         const res = await getTeamMemberPermissionList(datasetId);
         memberPermissionList.value = res.data.results;
     }
     catch(error:any) {
-        memberPermissionList.value = MockData;
-        console.log(memberPermissionList)
+        console.log(error, memberPermissionList)
     }
 } 
 
@@ -170,9 +164,6 @@ watch(() => props.visible, (val) => {
         loadData();
     }
 })
-onMounted(()=>{
-    loadData()
-})
 </script>
 <style scoped lang="scss">
 .container {
@@ -195,10 +186,11 @@ onMounted(()=>{
     }
     .scroll-container {
         overflow-x: hidden;
+        height: 300px;
         :deep(.el-select__wrapper) {
-        background-color: transparent !important;
-        box-shadow: none !important; 
-    }
+            background-color: transparent !important;
+            box-shadow: none !important; 
+        }
     }
 
     .input {
@@ -231,5 +223,18 @@ onMounted(()=>{
             align-items: center;
         }
     }
+}
+.token {
+  position: relative;
+  left: 8px;
+  border-radius: 4px;
+  width: 32px;
+  height: 16px;
+  background-color: #8080ff;
+  font-size: 10px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

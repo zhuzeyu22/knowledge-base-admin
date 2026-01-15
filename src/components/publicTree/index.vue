@@ -1,6 +1,6 @@
 <template>
     <section class="section">
-        <el-tree ref='publicTree' :data="folderTree" node-key="id" :load="loadNode" lazy @node-click='handleNodeClick'>
+        <el-tree ref='publicTree' :data="folderTree" node-key="id" @node-click='handleNodeClick'>
             <template #default="{ node, data }">
                 <span class="custom-tree-node hover-container">
                     <div class="label">{{ data.name }}</div>
@@ -69,9 +69,9 @@ const updateNode = ref<Partial<PublicFolderNode>>({
     children: []
 })
 
-// onMounted(() => {
-//     // publicStore.initPublicTree()
-// });
+onMounted(() => {
+    publicStore.initPublicTree()
+});
 
 function rename(data: PublicFolderNode) {
     newName.value = data.name
@@ -114,19 +114,19 @@ async function remove(node: any, data: PublicFolderNode) {
         });
 }
 
-function loadNode(node: any, resolve: any) {
-    publicStore.getNodeChildren(node.data).then((res) => {
-        console.log('loadNode res11', res)
-        resolve(res)
-    }).catch((err) => {
-        console.log(err)
-        ElMessage({
-            type: "warning",
-            message: "加载失败",
-        });
-        resolve([])
-    })
-}
+// function loadNode(node: any, resolve: any) {
+//     publicStore.getNodeChildren(node.data).then((res) => {
+//         console.log('loadNode res11', res)
+//         resolve(res)
+//     }).catch((err) => {
+//         console.log(err)
+//         ElMessage({
+//             type: "warning",
+//             message: "加载失败",
+//         });
+//         resolve([])
+//     })
+// }
 
 const handleNodeCreateClick = (node?: Partial<PublicFolderNode>) => {
     console.log('handleNodeCreateClick node', node)

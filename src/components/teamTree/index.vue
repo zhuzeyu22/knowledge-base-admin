@@ -1,9 +1,10 @@
 <template>
     <section class="section">
-        <el-tree :data="teamList" node-key="id" v-infinite-scroll="load" :infinite-scroll-disabled="loading"
-            :infinite-scroll-distance="10">
-            <template #default="{ node, data }">
-                <span class="custom-tree-node hover-container" @click.stop="handleTeamClick(data)">
+        <div :data="teamList" node-key="id" v-infinite-scroll="load" :infinite-scroll-disabled="loading"
+            :infinite-scroll-distance="10" class="el-tree">
+            <div v-for="data in teamList" class="el-tree-node">
+                <!-- router.currentRoute.value.params.teamId -->
+                <span :class="`el-tree-node__content custom-tree-node hover-container ${router.currentRoute.value.params.teamId == data.tenant_id ? 'bg-highlight' : ''}`" @click.stop="handleTeamClick(data)">
                     <div class="label">{{ data.tenant_name }}</div>
                     <el-dropdown v-if="data.is_admin" class="more hover-item" placement="bottom-end">
                         <el-icon style="cursor: pointer">
@@ -17,8 +18,8 @@
                         </template>
                     </el-dropdown>
                 </span>
-            </template>
-        </el-tree>
+            </div>
+        </div>
     </section>
 </template>
 
@@ -89,9 +90,8 @@ onMounted(() => {
     reload()
 })
 
-const handleTeamClick = (data: Team) => {
-    teamStore.updateCurrentTeam(data)
-    console.log('handleTeamClick', teamStore.getCurrentTeam)
+const handleTeamClick = async (data: Team) => {
+    await teamStore.updateCurrentTeam(data)
     router.push({
         path:`/team/${data.tenant_id}/datasets`,
         query:{
@@ -143,13 +143,14 @@ watch(
 }
 
 .custom-tree-node {
-    width: calc(100% - 30px);
+    width: 100%;
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: space-between;
     font-size: 14px;
     padding-right: 8px;
+    padding-left: 24px;
     flex-shrink: 0;
 
     .label {
@@ -170,5 +171,9 @@ watch(
         color: var(--el-color-primary);
     }
 
+}
+
+.bg-highlight {
+    background-color: #f5f7fa;
 }
 </style>

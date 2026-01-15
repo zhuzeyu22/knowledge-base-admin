@@ -19,7 +19,7 @@
       <div class="knowledge-base-card-label">
         {{ dataset.official == "official" ? "官方" : "非官方" }}
       </div>
-      <div class="knowledge-base-card-operate" @click.stop>
+      <div class="knowledge-base-card-operate" @click.stop v-if="hasPermission">
         <el-dropdown trigger="click" placement="bottom-end">
           <el-icon style="cursor: pointer">
             <MoreFilled />
@@ -43,11 +43,17 @@ import { useRouter } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { deleteDataset } from "@/service/datasets";
 import { putCancelKnowledgePublic } from "@/service/team"
+import { useUserStore } from "@/store/user";
+import { computed } from "vue";
 const emit = defineEmits(["delete","status-updated"]);
+
+const userStore = useUserStore()
+const hasPermission = computed(() => userStore.getIsAdmin)
 
 const props = defineProps<{
   dataset: PublicDataset;
-  folderId:string[]
+  folderId:string[],
+  folderNames:string[],
 }>();
 const router = useRouter();
 
@@ -57,7 +63,6 @@ const goToDetails = () => {
     name: "details",
     query: { 
       id: props.dataset.id,
-      is_admin:String(props.dataset.is_admin),
     },
   });
 };
@@ -73,7 +78,7 @@ const handleCanclePublic = () => {
     }
   ).then( async()=>{
     try {
-    await putCancelKnowledgePublic(props.folderId, props.dataset.id);
+    await putCancelKnowledgePublic(props.folderId, props.dataset.id, props.folderNames, props.dataset.name);
     ElMessage.success("取消公开成功")
     emit('status-updated')
     } catch (error) {
@@ -111,7 +116,6 @@ const handleDeleteClick = () => {
         message: "已取消",
       });
     });
-  console.log("删除");
 };
 
 </script>

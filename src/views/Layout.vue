@@ -7,7 +7,7 @@
                     <el-menu-item index="2" @click="$router.push('/public')" class="hover-container">
                         <div style="flex: 1;">公共知识库</div>
                         <el-icon @click.stop="handleAddPublic" class="hover-button"
-                            v-if="$router.currentRoute.value.fullPath?.toString().match('/public')">
+                            v-if="$router.currentRoute.value.fullPath?.toString().match('/public') && isAdmin">
                             <plus />
                         </el-icon>
                     </el-menu-item>
@@ -47,24 +47,47 @@ import TeamTree from "@/components/teamTree/index.vue";
 import CreateTeamDialog from "@/views/team/createTeamDialog.vue";
 import { useUserStore } from "@/store/user";
 import { useTeamStore } from "@/store/team";
+import { getTenantRole } from "@/service/tenant";
 
 const userStore = useUserStore()
-const teamStore = useTeamStore()
 
 const showStat = computed(() => userStore.getIsAdmin)
 const showConversationLog = computed(() => userStore.getIsAdmin)
 const showLoginLog = computed(() => userStore.getIsAdmin)
 const showAuthLog = computed(() => userStore.getIsAdmin)
 const showOpLog = computed(() => userStore.getIsAdmin)
+const isAdmin = computed(() => userStore.getIsAdmin)
 
 const pbTreeRef = ref(null);
 const addTeamDialogVisible = ref(false);
-
 
 onBeforeMount(async () => {
     const { id: userId } = await getAccountProfile();
     localStorage.setItem("authId", userId);
     localStorage.removeItem("roleId");
+    
+    const { id: tenantId } = await getWorkspaceCurrent();
+    const { data } = (await getTenantRole(tenantId, userId)) || {};
+
+    if (data && data[0]) {
+        const roleId = data[0].role_id;
+        localStorage.setItem("roleId", roleId);
+    }
+
+    // 全局初始化
+    const userStore = useUserStore()
+    const teamStore = useTeamStore()
+    try {
+        userStore.updatePermission()
+        userStore.updateUserInfo().then(async () => {
+            await teamStore.updatePrivateTenantId()
+            await teamStore.updateRoleList();
+            await teamStore.refreshTeamList();
+        });
+    } catch (e) {
+        console.log(e)
+    }
+
 });
 
 onMounted(() => {

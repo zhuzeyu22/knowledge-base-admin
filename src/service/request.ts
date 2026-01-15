@@ -3,7 +3,7 @@ import { accessUnitlogin, goUnifiedlogin } from "../utils/auth";
 
 const service: AxiosInstance = axios.create({
   // 5 分钟，回归测试查询比较慢
-  timeout: 5 * 60 * 1000,
+  timeout: 60 * 1000,
 });
 
 service.interceptors.request.use(
@@ -15,12 +15,24 @@ service.interceptors.request.use(
       config.headers["Content-Type"] = "application/json";
     }
     config.headers["Authorization"] = getAccessToken();
+    config.headers["authId"] = getAuthId();
+    config.headers["roleId"] = getRoleId();
     return config;
   },
   (error) => {
     return Promise.reject(error);
   }
 );
+
+function getAuthId(): string | undefined {
+  const authId = localStorage.getItem("authId")
+  return authId || undefined
+}
+
+function getRoleId(): string | undefined {
+  const roleId = localStorage.getItem("roleId")
+  return roleId || undefined
+}
 
 function getAccessToken(): string | undefined {
   const token = localStorage.getItem("console_token");
@@ -41,7 +53,10 @@ service.interceptors.response.use(
     }
   },
   (error) => {
-    if (error.response.status === 401) {
+    // 超时异常处理
+    if (axios.isAxiosError(error) && error.code == "ECONNABORTED" && error.message.includes("timeout")) {
+      return Promise.reject(error);
+    } else if (error.response.status === 401) {
       accessUnitlogin();
     } else {
       return Promise.reject(error);

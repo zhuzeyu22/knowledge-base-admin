@@ -10,7 +10,7 @@
         </el-header>
         <el-main class="context-style" style="overflow: hidden">
             <div style="margin-bottom: 20px; display: flex; flex-direction: row-reverse;">
-                <el-button type="primary" size="default" @click="addMemberDialogvisible = true">添加成员</el-button>
+                <el-button type="primary" size="default" @click="addMemberDialogVisible = true">添加成员</el-button>
             </div>
             <div style="overflow: auto; height: auto; width: 100%;">
                 <el-table :data="memberList" style="overflow-y: auto;">
@@ -21,16 +21,16 @@
                     <el-table-column label="权限" width="200" prop="role_name">
                         <template #default="scope">
                             <el-select v-model="scope.row.role_id"
-                                @change="(data: string) => handleRoleChange(scope.row, data)">
+                                @change="(data: string) => handleRoleChange(scope.row, data)" :disabled="ownerAccountId == scope.row.account_id || id == scope.row.account_id">
                                 <el-option v-for="item in roleOptions" :key="item.id" :label="item.name"
                                     :value="item.id">
                                 </el-option>
                             </el-select>
                         </template>
                     </el-table-column>
-                    <el-table-column label="" width="80" prop="role_name">
+                    <el-table-column label="" width="80">
                         <template #default="scope">
-                            <el-icon class="delete-icon" @click="() => handleMemberDelete(scope.row)" :size="20"
+                            <el-icon v-if="ownerAccountId != scope.row.account_id" class="delete-icon" @click="() => handleMemberDelete(scope.row)" :size="20"
                                 color="#909399">
                                 <Delete />
                             </el-icon>
@@ -44,7 +44,7 @@
                     @size-change="handlePageSizeChange">
                 </el-pagination>
             </div>
-            <AddMemberDialog v-model="addMemberDialogvisible" @add="handleMemberAdd"/>
+            <AddMemberDialog v-model:visible="addMemberDialogVisible" @add="handleMemberAdd" @cancel="handleCancel"/>
         </el-main>
     </section>
 </template>
@@ -58,7 +58,7 @@ import { useTeamStore } from "@/store/team";
 import { Member } from "@/models/team";
 import { ElMessage, ElMessageBox } from "element-plus";
 const teamStore = useTeamStore();
-const addMemberDialogvisible = ref(false);
+const addMemberDialogVisible = ref(false);
 const memberList = ref([]);
 const page = ref(1);
 const pageSize = ref(20);
@@ -66,6 +66,12 @@ const total = ref(0);
 
 const roleOptions = computed(() => teamStore.getRoleList);
 const tenantId = computed(() => router.currentRoute.value.params.teamId);
+
+import { useUserStore } from '@/store/user';
+const userStore = useUserStore()
+const id = computed(() => userStore?.getUserInfo?.id)
+
+const ownerAccountId = ref('')
 
 watch(tenantId, () => {
     console.log('tenantId', tenantId);
@@ -89,6 +95,7 @@ const updateData = () => {
         console.log(res);
         memberList.value = res.data.results;
         total.value = res.data.count;
+        ownerAccountId.value = res.data.created_by.account_id
         console.log(total.value);
     });
 }
@@ -143,8 +150,11 @@ const handleMemberDelete = (row: Member) => {
 
 const handleMemberAdd = ()=>{
     console.log('handleMemberAdd updateData')
-    addMemberDialogvisible.value = false
+    addMemberDialogVisible.value = false
     updateData()
+}
+const handleCancel = () => {
+    addMemberDialogVisible.value = false
 }
 
 </script>

@@ -209,7 +209,7 @@ export const apiService = {
     },
     // op log types
     async getOptionLogTypes(): Promise<OptionTypesResponse> {
-        return request.get('/console/api/operation-logs/types')
+        return request.get('/operation-logs/types')
     },
     // op log
     async getOptionLog(params: OptionQueryParams = {}): Promise<OptionListResponse> {

@@ -61,7 +61,6 @@
             placeholder="搜索文档名称"
             :prefix-icon="Search"
             clearable
-            @clear="onClearSearch"
             @input="loadData"
           />
           <el-button type="primary" size="default" @click="handleCreateClick" :disabled="!isAdmin"
@@ -161,6 +160,12 @@
               </template>
             </el-table-column>
           </el-table>
+          <div class="pagination-container">
+              <el-pagination layout="sizes, total, prev, pager, next" :total="total" v-model:current-page="page"
+                  v-model:page-size="pageSize" @current-change="handlePageChange"
+                  @size-change="handlePageSizeChange">
+              </el-pagination>
+          </div>
           <div class="toolbar" v-if="selectedRows.length > 0" ref="toolbarRef">
             <div class="selected">
               <span class="selected-number" disabled>{{ selectedRows.length }}</span>
@@ -279,6 +284,8 @@ const datasetInfo = ref<Dataset>({
   description: "",
   documentNumber: 0,
   characterNumber: 0,
+  // 是否有编辑权限
+  is_edit: false,
   // 下面这一坨先准备好的话，就不用在这里做初始化了
   retrieval_model_dict: {
     search_method: "semantic_search",
@@ -315,12 +322,18 @@ const currentDocument = ref<Document>({
   mime_type: "",
   size: 0,
 });
+
 // 权限管理
-const isAdmin = ref(route.query.is_admin === 'true')
+const isAdmin = ref(false)
 
 // 分段设置
 const showSegementSetting = ref(false);
 const documentSettingDetail = ref<Document | null>(null);
+
+// 分页
+const page = ref(1);
+const pageSize = ref(20);
+const total = ref(0);
 
 const handleTabClick = (tab: TabsPaneContext) => {
   showDocumentDetail.value = false;
@@ -433,6 +446,7 @@ const loadDatasetInfo = async () => {
 
     const response = await apiService.getDatasetById(datasetId.value);
     datasetInfo.value = response;
+    isAdmin.value = response.is_edit
   } catch (error: any) {
     ElMessage.error(error.message || "获取知识库id等信息失败");
   } finally {
@@ -445,6 +459,8 @@ const loadData = async () => {
     queryLoading.value = true;
     const queryParams = {
       keyword: searchName.value,
+      limit: pageSize.value,
+      page: page.value,
     };
     const response = await apiService.getDocumentList(
       datasetId.value,
@@ -459,6 +475,15 @@ const loadData = async () => {
     queryLoading.value = false;
   }
 };
+
+const handlePageChange = () => {
+    loadData();
+}
+
+const handlePageSizeChange = () => {
+    loadData();
+}
+
 const formatTime = (timestamp: number) => {
   if (!timestamp) return "-";
   const msTimestamp =
@@ -472,11 +497,7 @@ const formatTime = (timestamp: number) => {
 
   return `${year}-${month}-${day} ${hours}:${minutes}`;
 };
-//清空搜索
-const onClearSearch = () => {
-  searchName.value = "";
-  loadData();
-};
+
 //按时间排序
 const sortByUploadTime = (a: DocumentList, b: DocumentList) => {
   const timeA = new Date(a.created_at).getTime();
@@ -933,4 +954,9 @@ onUnmounted(() => {
   }
 }
 
+.pagination-container {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+}
 </style>

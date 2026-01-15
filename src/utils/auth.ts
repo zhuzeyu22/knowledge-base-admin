@@ -2,20 +2,20 @@ import { getToken } from "@/service/auth";
 import router from '@/router'
 
 export function goUnifiedlogin() {
-  const urlParams = location.protocol + "//" + location.host + "";
+  const urlParams = location.protocol + "//" + location.host + "/";
   const encodestr: string = encodeURIComponent(urlParams);
   // 这里后续做开发环境的登陆跳转对接
   location.href = `${import.meta.env.VITE_SSO_LOGIN_URL
-    }?redirectUrl=${encodestr}&respoense_type=code&state=${Date.now()}`;
+    }?redirect_uri=${encodestr}&response_type=code&state=${Date.now()}`;
 }
 
 // 同步登录中台信息
-export const accessUnitlogin = async () => {
+export const accessUnitlogin = async (params) => {
   console.log("开始同步中台信息", import.meta.env.MODE);
   if (import.meta.env.MODE !== "production") {
     await accessUnitloginBydev();
   } else {
-    await accessUnitloginByprod();
+    await accessUnitloginByprod(params);
   }
 };
 
@@ -26,12 +26,14 @@ const accessUnitloginBydev = async () => {
 };
 
 // 生产环境
-const accessUnitloginByprod = async () => {
+const accessUnitloginByprod = async (params) => {
   const url = new URL(location.href);
-  const code = url.searchParams.get("code");
+  const code = params?.code || url.searchParams.get("code");
   if (code) {
     await getToken(code).then((res) => {
       localStorage.setItem("console_token", res.data.access_token);
     });
+  } else {
+    goUnifiedlogin()
   }
 };
