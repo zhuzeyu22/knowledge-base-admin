@@ -203,8 +203,8 @@ const documentMessage = async () => {
   try {
     const res = await getDocumentMetaData(datasetId, document.id)
     document.size = isNaN(res.data_source_info.upload_file.size) ? '未知' : (Number(res.data_source_info.upload_file.size) / 1024).toFixed(2) + 'KB'
-    document.create_dat = formatTimestamp(res.create_dat)
-    document.update_dat = formatTimestamp(res.update_dat)
+    document.created_at = formatTimestamp(res.created_at)
+    document.updated_at = formatTimestamp(res.updated_at)
     document.data_source_type = DataSourceTypeText[res.data_source_type as DataSourceType]
     document.dataset_process_rule = ProcessModeText[res.dataset_process_rule.mode as ProcessMode]
     document.max_tokens = res.dataset_process_rule.rules.segmentation.max_tokens
