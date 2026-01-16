@@ -4,13 +4,14 @@ import { useRoute, useRouter } from 'vue-router'
 import { computed, ref, watch } from 'vue'
 import { UploadFilled, Back, Document, Delete } from '@element-plus/icons-vue'
 import { ElMessage, type UploadProps, type UploadUserFile } from 'element-plus'
-import { uploadDocument, UploadResponse, createDocument, getFilesPreview } from '@/service/datasets';
+import { uploadDocument, UploadResponse, createDocument, getFilesPreview, getDatasetProcessRule } from '@/service/datasets';
 
 const route = useRoute()
 const router = useRouter()
 const radio = ref('datasets')
 let uploadSequence = 0; // 上传序号计数器
 let uploadingCount = 0; // 正在上传中的文件数量
+
 // 监听 radio 变化，重置上传序号和清空文件列表
 watch(() => radio.value, () => {
     uploadSequence = 0;
@@ -29,6 +30,25 @@ const fileList = ref<(UploadResponse & UploadUserFile)[]>([]);
 
 // 从路由参数中获取知识库ID
 const datasetId = ref((route.query.id as string) || (route.params.id as string) || '')
+const process_rule = ref({
+        mode: 'automatic',
+        rules: {}
+    })
+watch(
+    datasetId,
+    async (newDatasetId) => {
+        if(newDatasetId){
+            process_rule.value = await getDatasetProcessRule(newDatasetId);
+        }else{
+            process_rule.value = {
+                mode: 'automatic',
+                rules: {}
+            }
+        }   
+    },{
+        immediate: true
+    }
+)
 
 const handleNext = async () => {
     try {
@@ -47,10 +67,7 @@ const handleNext = async () => {
                 }
             },
             indexing_technique: 'high_quality',
-            process_rule: {
-                mode: 'automatic',
-                rules: {}
-            }
+            process_rule: process_rule.value
         }
 
         // 调用导入文档接口

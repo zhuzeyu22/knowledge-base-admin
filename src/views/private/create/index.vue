@@ -43,7 +43,7 @@
                     </el-row>
                     <el-row :gutter="20">
                       <el-col :span="8"><el-input v-model="custom.segmentation.separator"
-                          :disabled="radio == 'qa_pairs'"></el-input></el-col>
+                          :disabled="radio == 'qa_pairs'" placeholder="禁止为空"></el-input></el-col>
                       <el-col :span="8"><el-input-number v-model="custom.segmentation.max_tokens"
                           :disabled="radio == 'qa_pairs'" :min="50" :max="4000"></el-input-number></el-col>
                       <el-col :span="8"><el-input-number v-model="custom.segmentation.chunk_overlap"
@@ -88,7 +88,7 @@
                               </el-row>
                               <el-row :gutter="20">
                                 <el-col :span="10"><el-input v-model="hierarchical.segmentation.separator
-                                  "></el-input></el-col>
+                                  " placeholder="禁止为空"></el-input></el-col>
                                 <el-col :span="10"><el-input-number v-model="hierarchical.segmentation.max_tokens
                                   " :min="50" :max="4000"></el-input-number></el-col>
                               </el-row>
@@ -112,7 +112,7 @@
                       </el-row>
                       <el-row :gutter="20" style="width: 100%">
                         <el-col :span="10"><el-input v-model="hierarchical.subchunk_segmentation.separator
-                          "></el-input></el-col>
+                          " placeholder="禁止为空"></el-input></el-col>
                         <el-col :span="10"><el-input-number v-model="hierarchical.subchunk_segmentation.max_tokens
                           " :min="50" :max="4000"></el-input-number></el-col>
                       </el-row>
@@ -708,9 +708,7 @@ const handleRerankModelChange = (value: string) => {
 // official
 // unofficial
 const official = ref("official");
-
 const dataset = ref({});
-
 
 const handlePrev = () => {
   step.value -= 1;

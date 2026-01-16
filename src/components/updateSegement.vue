@@ -69,6 +69,7 @@
         type="primary"
         :disabled="content.length == 0"
         @click="handleUpdateSegement"
+        v-loading="loading"
         >确定
       </el-button>
       <el-button @click="visible = false">取消</el-button>
@@ -110,6 +111,7 @@ const content = ref("");
 const inputTag = ref("");
 const inputVisible = ref(false);
 const InputRef = ref<InputInstance>();
+const loading = ref(false)
 
 watch(
   () => segement,
@@ -126,6 +128,7 @@ watch(
 
 const handleUpdateSegement = () => {
   if (isNew.value) {
+    loading.value = true
     createSegment(datasetId, documentId, content.value, [
       ...newSegement.value.keywords,
     ])
@@ -138,8 +141,11 @@ const handleUpdateSegement = () => {
       })
       .catch((err) => {
         ElMessage.error("创建失败");
+      }).finally(()=>{
+        loading.value = false
       });
   } else {
+    loading.value = true
     patchSegment(datasetId, documentId, newSegement.value.id, content.value, newSegement.value.answer, [
       ...newSegement.value.keywords || [],
     ])
@@ -150,6 +156,8 @@ const handleUpdateSegement = () => {
       })
       .catch((err) => {
         ElMessage.error("更新失败，文档为禁用状态");
+      }).finally(()=>{
+        loading.value = false
       });
   }
 };
