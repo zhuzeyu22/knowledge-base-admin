@@ -22,7 +22,7 @@ export const accessUnitlogin = async (params) => {
 // 开发环境
 // 需要 console_token
 const accessUnitloginBydev = async () => {
-  router.push('/signin')
+  router.push('/public')
 };
 
 // 生产环境
