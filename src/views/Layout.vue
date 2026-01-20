@@ -195,7 +195,7 @@ const handleTeamClick = () => {
     flex-direction: column;
     height: calc(100% - 100px);
     .tree {
-        flex: 1;
+        // flex: 1;
         padding: 0px 10px;
     }
 }

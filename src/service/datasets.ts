@@ -115,40 +115,40 @@ export const initDataset = (body: {
   process_rule: {
     mode: string;
     rules:
-      | {
-          segmentation: {
-            separator: string;
-            max_tokens: number;
-            chunk_overlap: number;
-          };
-          pre_processing_rules: {
-            id: string;
-            enabled: boolean;
-          }[];
-        }
-      | {
-          parent_mode: string;
-          pre_processing_rules: {
-            id: string;
-            enabled: boolean;
-          }[];
-          segmentation: {
-            separator: string;
-            max_tokens: number;
-          };
-          subchunk_segmentation: {
-            separator: string;
-            max_tokens: number;
-          };
-        };
+    | {
+      segmentation: {
+        separator: string;
+        max_tokens: number;
+        chunk_overlap: number;
+      };
+      pre_processing_rules: {
+        id: string;
+        enabled: boolean;
+      }[];
+    }
+    | {
+      parent_mode: string;
+      pre_processing_rules: {
+        id: string;
+        enabled: boolean;
+      }[];
+      segmentation: {
+        separator: string;
+        max_tokens: number;
+      };
+      subchunk_segmentation: {
+        separator: string;
+        max_tokens: number;
+      };
+    };
   };
   retrieval_model: any;
   official: string;
 }) => {
-  
+
   // 团队知识库 trick surprise 
   const tenantId = router.currentRoute.value.params.teamId
-  if(tenantId){
+  if (tenantId) {
     console.log('initDataset tenantId', tenantId)
     body.tenantId = tenantId
   }
@@ -162,8 +162,7 @@ export const getPrivateDatasetList = (
   keyword: string = ""
 ) => {
   return request.get(
-    `/datasets?page=${page}&limit=${limit}&include_all=false&keyword=${
-      keyword || ""
+    `/datasets?page=${page}&limit=${limit}&include_all=false&keyword=${keyword || ""
     }`
   );
 };
@@ -238,3 +237,12 @@ export const deleteDataset = (datasetId: string) => {
   return request.delete(`/datasets/${datasetId}`);
 };
 // https://www.finna.com.cn/console/api/datasets/c808edbf-c7bf-4f0b-a10c-9beeafa83108
+
+// 获取知识库配置
+// /apps/datasets/0943d6f6-f906-4041-9359-6c6dabf75261/settings
+export const getDatasetProcessRule = (datasetId: string) => {
+  return request.get(`/datasets/process-rule`);
+}
+
+
+

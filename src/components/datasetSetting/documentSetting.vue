@@ -200,7 +200,6 @@ const handlePreviewButton = () => {
 
     fetchFileIndexingEstimate(params)
       .then((response) => {
-        console.log("分段预览结果:", response);
         // 处理返回的分段内容,且不为空的
         if (response && response.preview) {
           segmentPreview.value = response.preview;
@@ -241,7 +240,6 @@ watch(previewFile, (newFileId) => {
 
     fetchFileIndexingEstimate(params)
       .then((response) => {
-        console.log("分段预览结果:", response);
         // 处理返回的分段内容
         if (response && response.preview) {
           segmentPreview.value = response.preview;

@@ -113,6 +113,7 @@
 
   <UpdateSegement v-model="showUpdateSegementModel" :segement="newSegement" :documentId="document.id"
     :datasetId="datasetId" :docForm="document.doc_form" @update_data="handleUpdateData" />
+
 </template>
 
 <script setup lang="ts">
@@ -121,7 +122,7 @@ import { MoreFilled } from "@element-plus/icons-vue";
 import { getSegmentList, deleteSegment } from "@/service/segement";
 import { ElMessage, ElMessageBox } from "element-plus";
 import UpdateSegement from "@/components/updateSegement.vue";
-import { getDocumentMetaData } from "@/service/document";
+import { deleteDocument, getDocumentMetaData } from "@/service/document";
 import { formatTimestamp } from "@/utils/time";
 import { DataSourceType, DataSourceTypeText, ProcessMode, ProcessModeText } from "@/models/dataset";
 
@@ -154,7 +155,21 @@ const handleRenameEnsure = () => {
   showRenameModel.value = false;
 };
 
-const handleDeleteClick = () => { };
+const handleDeleteClick = async () => { 
+    ElMessageBox.confirm("删除这个文档？", "", {
+        confirmButtonText: "我确定",
+        cancelButtonText: "取消",
+        type: "warning",
+    }).then(() => {
+      deleteDocument(datasetId, document.id).then(()=>{
+        ElMessage.success("删除成功");
+        location.reload()
+      }).catch(error =>{
+        ElMessage.error("删除失败");
+      })
+    }) 
+};
+
 
 // 段落编辑
 const handleSelectionChange = (rows: any) => {
@@ -203,8 +218,8 @@ const documentMessage = async () => {
   try {
     const res = await getDocumentMetaData(datasetId, document.id)
     document.size = isNaN(res.data_source_info.upload_file.size) ? '未知' : (Number(res.data_source_info.upload_file.size) / 1024).toFixed(2) + 'KB'
-    document.create_dat = formatTimestamp(res.create_dat)
-    document.update_dat = formatTimestamp(res.update_dat)
+    document.created_at = formatTimestamp(res.created_at)
+    document.updated_at = formatTimestamp(res.updated_at)
     document.data_source_type = DataSourceTypeText[res.data_source_type as DataSourceType]
     document.dataset_process_rule = ProcessModeText[res.dataset_process_rule.mode as ProcessMode]
     document.max_tokens = res.dataset_process_rule.rules.segmentation.max_tokens

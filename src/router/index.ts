@@ -98,6 +98,10 @@ const routes = [
         meta: { requiresSwitch: true }, // 标记需要调用 switch 接口
       },
       {
+        path: "team/:teamId/details",
+        component: () => import("@/views/private/details.vue"),
+      },
+      {
         path: "stat",
         name: "stat",
         component: () => import("@/views/stat/index.vue"),

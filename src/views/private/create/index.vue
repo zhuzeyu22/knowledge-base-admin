@@ -43,11 +43,11 @@
                     </el-row>
                     <el-row :gutter="20">
                       <el-col :span="8"><el-input v-model="custom.segmentation.separator"
-                          :disabled="radio == 'qa_pairs'"></el-input></el-col>
+                          :disabled="radio == 'qa_pairs'" placeholder="禁止为空"></el-input></el-col>
                       <el-col :span="8"><el-input-number v-model="custom.segmentation.max_tokens"
-                          :disabled="radio == 'qa_pairs'" :min="50"></el-input-number></el-col>
+                          :disabled="radio == 'qa_pairs'" :min="50" :max="4000"></el-input-number></el-col>
                       <el-col :span="8"><el-input-number v-model="custom.segmentation.chunk_overlap"
-                          :disabled="radio == 'qa_pairs'" :min="50"></el-input-number></el-col>
+                          :disabled="radio == 'qa_pairs'" :min="50" :max="4000"></el-input-number></el-col>
                     </el-row>
                     <el-row>
                       <el-col :span="24"> 文本预处理规则 </el-col>
@@ -88,9 +88,9 @@
                               </el-row>
                               <el-row :gutter="20">
                                 <el-col :span="10"><el-input v-model="hierarchical.segmentation.separator
-                                  "></el-input></el-col>
+                                  " placeholder="禁止为空"></el-input></el-col>
                                 <el-col :span="10"><el-input-number v-model="hierarchical.segmentation.max_tokens
-                                  " :min="50"></el-input-number></el-col>
+                                  " :min="50" :max="4000"></el-input-number></el-col>
                               </el-row>
                             </el-card>
                           </el-collapse-item>
@@ -112,9 +112,9 @@
                       </el-row>
                       <el-row :gutter="20" style="width: 100%">
                         <el-col :span="10"><el-input v-model="hierarchical.subchunk_segmentation.separator
-                          "></el-input></el-col>
+                          " placeholder="禁止为空"></el-input></el-col>
                         <el-col :span="10"><el-input-number v-model="hierarchical.subchunk_segmentation.max_tokens
-                          " :min="50"></el-input-number></el-col>
+                          " :min="50" :max="4000"></el-input-number></el-col>
                       </el-row>
                     </el-row>
                     <el-row style="width: 100%; margin-bottom: 10px">
@@ -465,7 +465,7 @@
                   ">
                   <span style="font-weight: 600">Chunk {{ index + 1 }}</span>
                   <el-tag size="small" style="border: 'none'">
-                    {{ (segment?.content?.length | 0) + (segment?.question?.length | 0) + segment?.answer?.length | 0
+                    {{ (segment?.content?.length | 0) + (segment?.question?.length | 0) + (segment?.answer?.length | 0)
                     }} 字符
                   </el-tag>
                 </div>
@@ -708,9 +708,7 @@ const handleRerankModelChange = (value: string) => {
 // official
 // unofficial
 const official = ref("official");
-
 const dataset = ref({});
-
 
 const handlePrev = () => {
   step.value -= 1;
@@ -843,7 +841,6 @@ const handlePreviewButton = () => {
 
     fetchFileIndexingEstimate(params)
       .then((response) => {
-        console.log("分段预览结果:", response);
         // 处理返回的分段内容,且不为空的
         if (response && response.preview) {
           if (radio.value === "datasets") {

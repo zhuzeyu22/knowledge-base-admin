@@ -36,7 +36,7 @@
           </template>
         </el-dropdown>
         <memberPermission v-model:visible="isMemberPermissionShow" :dataset-id="props.dataset.id"  :created-by="props.dataset.created_by"/>
-        <publicPermission v-model:visible="isPublicPermissionShow" :dataset-name = "props.dataset.name" :dataset-id="props.dataset.id"/>
+        <publicPermission v-model:visible="isPublicPermissionShow" :dataset-name = "props.dataset.name" :dataset-id="props.dataset.id" @success="handlePublicPermissionUpdate"/>
       </div>
     </div>
   </el-card>
@@ -51,10 +51,12 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import { deleteDataset } from "@/service/datasets";
 import memberPermission from "@/views/team/components/memberPermission.vue";
 import publicPermission from "@/views/team/components/publicPermission.vue";
+import { getDatasetFolder } from "@/service/team";
 const emit = defineEmits(["delete"]);
 
 const props = defineProps<{
   dataset: TeamDataset;
+  tenantId: string
 }>();
 
 const router = useRouter();
@@ -65,7 +67,7 @@ const isPublicPermissionShow = ref(false)
 // 跳转到详情页
 const goToDetails = () => {
   router.push({
-    name: "details",
+    path: `/team/${props.tenantId}/details`,
     query: { 
       id: props.dataset.id,
     },
@@ -107,6 +109,12 @@ const handleMemberPermission = () => {
 }
 const handlePublicPermission = () => {
   isPublicPermissionShow.value = true;
+}
+
+const handlePublicPermissionUpdate = async () => {
+  // 更新标签
+  const res = await getDatasetFolder(props.dataset.id);
+  props.dataset.is_public = res.data.length > 0 ? true : false; 
 }
 
 </script>
