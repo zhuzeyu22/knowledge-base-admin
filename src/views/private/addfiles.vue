@@ -159,7 +159,7 @@ const fetchFilePreview = async (fileId: string) => {
                                 </div>
                             </el-row>
                             <div style="padding: 10px; font-size: 14px;">
-                                {{ `支持 ${radio === 'datasets' ? "DOC、DOCX、TXT、PDF、HTML、MARKDOWN" : ''}XLSX、XLS、、CSV
+                                {{ `支持 ${radio === 'datasets' ? "DOC、DOCX、TXT、PDF、HTML、MARKDOWN、" : ''}XLSX、XLS、CSV
                                 文件格式，最大上传文件数量为10个，单个文件大小不超过 40MB` }}
                             </div>
                         </el-row>

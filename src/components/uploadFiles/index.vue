@@ -1,37 +1,52 @@
 <template>
-    <section class="section">
+    <section class="upload-file">
         <el-upload v-model:file-list="fileList" style="width: 100%" drag :auto-upload="false" :accept="accept" action=""
             :on-change="handleUploadChange" :limit="MAX_FILE_COUNT" :on-exceed="handleExceed" multiple
             :show-file-list="false">
-            <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+            <img src="@/assets/dataset-setting/upload-files.png" width="50" alt="">
             <div class="el-upload__text">
                 <el-col>
                     <el-button type="primary" size="small">选择文件上传</el-button>
                 </el-col>
-                <el-col style="margin-top: 10px"> 或将文件拖拽到此处</el-col>
+                <el-col style="margin-top: 10px; font-size: 12px;"> 或将文件拖拽到此处</el-col>
             </div>
         </el-upload>
         <!-- 已上传文件列表 -->
         <div v-if="fileList.length > 0" class="file-list-container">
             <div class="file-list-card">
-                <div class="file-list-scroll">
-                    <div v-for="file in fileList" :key="file.id" class="uploaded-file-item">
-                        <div class="file-info" @click="handleFileClick(file.id)">
-                            <el-icon class="file-icon" :size="32" color="#409EFF">
-                                <Document />
-                            </el-icon>
-                            <div class="file-details">
-                                <div class="file-name">{{ file.name }}</div>
-                                <div class="file-meta">
-                                    {{ getFileExtension(file.name) }} ·
-                                    {{ formatFileSize(file.size) }}
-                                </div>
+                <div v-for="file in fileList" :key="file.id" class="uploaded-file-item">
+                    <div class="file-info" @click="handleFileClick(file.id)">
+                        <img v-if="file.ext === 'pdf'" src="@/assets/dataset-setting/file-icon/pdf.png" width="24"
+                            alt="" />
+                        <img v-else-if="file.ext === 'doc'" src="@/assets/dataset-setting/file-icon/doc.png" width="24"
+                            alt="" />
+                        <img v-else-if="file.ext === 'docx'" src="@/assets/dataset-setting/file-icon/docx.png"
+                            width="24" alt="" />
+                        <img v-else-if="file.ext === 'html'" src="@/assets/dataset-setting/file-icon/html.png"
+                            width="24" alt="" />
+                        <img v-else-if="file.ext === 'markdown'" src="@/assets/dataset-setting/file-icon/markdown.png"
+                            width="24" alt="" />
+                        <img v-else-if="file.ext === 'md'" src="@/assets/dataset-setting/file-icon/markdown.png"
+                            width="24" alt="" />
+                        <img v-else-if="file.ext === 'csv'" src="@/assets/dataset-setting/file-icon/csv.png" width="24"
+                            alt="" />
+                        <img v-else-if="file.ext === 'txt'" src="@/assets/dataset-setting/file-icon/txt.png" width="24"
+                            alt="" />
+                        <img v-else-if="file.ext === 'xls'" src="@/assets/dataset-setting/file-icon/xls.png" width="24"
+                            alt="" />
+                        <img v-else-if="file.ext === 'xlsx'" src="@/assets/dataset-setting/file-icon/xlsx.png"
+                            width="24" alt="" />
+                        <div class="file-details ellipsis">
+                            <div class="file-name ellipsis">{{ file.name }}</div>
+                            <div class="file-meta">
+                                {{ getFileExtension(file.name) }} ·
+                                {{ formatFileSize(file.size) }}
                             </div>
                         </div>
-                        <el-icon class="delete-icon" @click="handleDeleteFile(file.id)" :size="20" color="#909399">
-                            <Delete />
-                        </el-icon>
                     </div>
+                    <el-icon class="delete-icon" @click="handleDeleteFile(file.id)" :size="20" color="#909399">
+                        <Delete />
+                    </el-icon>
                 </div>
             </div>
         </div>
@@ -65,6 +80,7 @@ const handleUploadChange: UploadProps["onChange"] = (
 ) => {
     // 验证文件格式
     const type = uploadFile.name.replace(/.*\./, "");
+    uploadFile.ext = type;
     let regex = accept.split(",").map((x: string) => x.replace(/.*\./, ""));
 
     if (!regex.find((x) => x === type)) {
@@ -173,11 +189,13 @@ const handleDeleteFile = (fileId: string) => {
 </script>
 
 <style scoped lang="less">
-.section {
+.upload-file {
     display: flex;
     flex-direction: column;
     width: 100%;
-    height: 100%;
+    flex: 1;
+    overflow: hidden;
+    margin-bottom: 16px;
 }
 
 
@@ -185,15 +203,6 @@ const handleDeleteFile = (fileId: string) => {
 .file-list-container {
     margin-top: 20px;
     width: 100%;
-}
-
-.file-list-card {
-    max-height: 400px;
-    overflow: hidden;
-}
-
-.file-list-scroll {
-    max-height: 400px;
     overflow-y: auto;
     overflow-x: hidden;
     padding-right: 8px;
@@ -216,17 +225,25 @@ const handleDeleteFile = (fileId: string) => {
             background: #a8a8a8;
         }
     }
+
+}
+
+.file-list-card {
+    max-height: 400px;
+    overflow: hidden;
 }
 
 .uploaded-file-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 16px;
-    margin-bottom: 8px;
+    padding: 8px 12px;
+    margin-bottom: 4px;
     background-color: #f5f7fa;
     border-radius: 8px;
     transition: all 0.3s ease;
+    width: 100%;
+    overflow-x: hidden;
 
     &:hover {
         background-color: #e6e8eb;
@@ -237,8 +254,9 @@ const handleDeleteFile = (fileId: string) => {
         align-items: center;
         flex: 1;
         cursor: pointer;
+        overflow-x: hidden;
 
-        .file-icon {
+        img {
             margin-right: 12px;
             flex-shrink: 0;
         }
@@ -248,7 +266,7 @@ const handleDeleteFile = (fileId: string) => {
             min-width: 0;
 
             .file-name {
-                font-size: 14px;
+                font-size: 12px;
                 color: #303133;
                 font-weight: 500;
                 margin-bottom: 4px;
@@ -258,7 +276,7 @@ const handleDeleteFile = (fileId: string) => {
             }
 
             .file-meta {
-                font-size: 12px;
+                font-size: 10px;
                 color: #909399;
             }
         }

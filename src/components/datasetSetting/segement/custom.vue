@@ -1,58 +1,72 @@
 <template>
-  <el-row :gutter="20">
-    <el-col :span="8">分段标识符</el-col>
-    <el-col :span="8">分段最大长度</el-col>
-    <el-col :span="8">分段重叠长度</el-col>
-  </el-row>
-  <el-row :gutter="20">
-    <el-col :span="8"
-      ><el-input v-model="custom.segmentation.separator"></el-input
-    ></el-col>
-    <el-col :span="8"
-      ><el-input-number
-        v-model="custom.segmentation.max_tokens"
-        :min="50"
-      ></el-input-number
-    ></el-col>
-    <el-col :span="8"
-      ><el-input-number
-        v-model="custom.segmentation.chunk_overlap"
-        :min="50"
-      ></el-input-number
-    ></el-col>
-  </el-row>
-  <el-row>
-    <el-col :span="24"> 文本预处理规则 </el-col>
-    <el-col :span="24">
-      <el-checkbox
-        v-model="custom.pre_processing_rules[0].enabled"
-        label="替换掉连续的空格、换行符和制表符"
-      />
-    </el-col>
-    <el-col :span="24">
-      <el-checkbox
-        v-model="custom.pre_processing_rules[1].enabled"
-        label="删除所有 URL 和电子邮件地址"
-      />
-    </el-col>
-  </el-row>
-  <el-row>
-    <el-col :span="4">
-      <el-button style="color: skyblue" @click="handlePreviewButton"
-        >预览</el-button
-      >
-    </el-col>
-    <el-col :span="8">
-      <el-button style="border: none; color: black">重置</el-button>
-    </el-col>
-  </el-row>
+  <BaseCard name="通用设置" color="#F8FAFFFF" :visiable="visiable" description="通用文本分块模式，检索和召回的块是相同的" :disabled="disabled"
+    @selected="handleSelected">
+    <template #icon>
+      <img src="@/assets/dataset-setting/custom-setting.png" width="20" alt="" />
+    </template>
+    <template v-if="visiable" #content>
+      <div class="context">
+        <Segmentation class="segmentation" v-model:segmentation="custom.segmentation" :disabled="disabled">
+        </Segmentation>
+        <PreProcessingRules v-model:pre_processing_rules="custom.pre_processing_rules" :disabled="disabled">
+        </PreProcessingRules>
+        <el-row>
+          <el-button size="small" style="color: skyblue" @click="handlePreviewClick">预览</el-button>
+          <el-button size="small" style="border: none; color: black" @click="handleResetClick"
+            :disabled="disabled">重置</el-button>
+        </el-row>
+      </div>
+    </template>
+  </BaseCard>
 </template>
 
 <script setup lang="ts">
-const emit = defineEmits(["preview"]);
-const custom = defineModel("custom");
+import BaseCard from './baseCard.vue';
+import PreProcessingRules from './preProcessingRules.vue';
+import Segmentation from './segmentation.vue';
 
-const handlePreviewButton = () => {
+const emit = defineEmits(["selected", "preview", "reset"]);
+
+const { disabled, visiable } = defineProps({
+  disabled: {
+    type: Boolean,
+    required: false,
+    default: () => false,
+  },
+  visiable: {
+    type: Boolean,
+    required: true,
+    default: () => true,
+  },
+});
+
+const custom = defineModel("custom");
+const handleSelected = () => {
+  emit("selected");
+}
+
+const handlePreviewClick = () => {
   emit("preview");
-};
+}
+
+const handleResetClick = () => {
+  emit("reset");
+}
 </script>
+
+<style scoped lang="less">
+.section {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  flex: 0;
+}
+
+.context {
+  padding: 12px 16px;
+}
+
+.segmentation {
+  margin-bottom: 10px;
+}
+</style>

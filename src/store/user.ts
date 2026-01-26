@@ -12,6 +12,7 @@ export const useUserStore = defineStore("user", {
     profile: {} as Profile,
     // 控制页面菜单显示
     isAdmin: true,
+    userName:'',
   }),
   getters: {
     getUserInfo: (state) => {
@@ -20,12 +21,16 @@ export const useUserStore = defineStore("user", {
     getIsAdmin: (state) => {
       return state.isAdmin
     },
+    getUserName:(state) => {
+      return state.userName
+    }
   },
   actions: {
     async updateUserInfo() {
       const profile = await getAccountProfile();
       console.log(profile);
       this.profile = profile;
+      this.userName = profile.name; 
       // todo 接口更新 isAdmin
     },
     async updatePermission() {

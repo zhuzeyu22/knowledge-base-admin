@@ -1,511 +1,98 @@
 <template>
   <el-container class="content-container">
-    <el-header class="header-style">
-      <el-button type="primary" link size="default" @click="router.back()" style="padding: 0; margin-right: 16px">
-        <el-icon>
-          <Back />
-        </el-icon>
-      </el-button>
-      <div>创建知识库</div>
-    </el-header>
-    <el-main v-if="step !== 3" class="context-style" style="overflow: auto">
-      <el-card class="wapper-style" body-style="height: 100%; display: flex; flex-direction: row;">
-        <el-col :span="11" style="display: flex; flex-direction: column">
-          <div v-if="step === 1" style="flex-grow: 1">
-            <el-row>
-              <el-row style="display: flex;align-items: center; margin-bottom: 10px">
-                <el-radio-group v-model="radio" text-color="#626aef" fill="rgb(239, 240, 253)">
-                  <el-radio-button label="文档上传" value="datasets" />
-                  <el-radio-button label="问答对上传" value="qa_pairs" />
-                </el-radio-group>
-                <div style="margin-left: 8px; font-size: 14px; color: #409eff;">
-                  <a href="/template/QA.xlsx" download="QA模板.xlsx">下载模板</a>
-                </div>
-              </el-row>
-              <div style="padding: 10px; font-size: 14px">
-                {{ `支持 ${radio === 'datasets' ? "DOC、DOCX、TXT、PDF、HTML、MARKDOWN" : ''}XLSX、XLS、CSV
-                文件格式，最大上传文件数量为10个，单个文件大小不超过 40MB` }}
-              </div>
-            </el-row>
-            <UploadFiles v-model:file-list="fileList" :accept="accept" @click="handleFileClick"></UploadFiles>
-          </div>
-          <div v-else-if="step === 2" style="flex-grow: 1; overflow-y: auto">
-            <el-col style="margin-bottom: 10px">
-              <div class="title">分段设置</div>
-              <el-card shadow="never">
-                <el-collapse v-model="process_rule" accordion :before-collapse="handleCollapseProcessRule"
-                  :disabled="radio == 'qa_pairs'">
-                  <el-collapse-item title="通用" name="custom">
-                    <el-row :gutter="20">
-                      <el-col :span="8">分段标识符</el-col>
-                      <el-col :span="8">分段最大长度</el-col>
-                      <el-col :span="8">分段重叠长度</el-col>
-                    </el-row>
-                    <el-row :gutter="20">
-                      <el-col :span="8"><el-input v-model="custom.segmentation.separator"
-                          :disabled="radio == 'qa_pairs'" placeholder="禁止为空"></el-input></el-col>
-                      <el-col :span="8"><el-input-number v-model="custom.segmentation.max_tokens"
-                          :disabled="radio == 'qa_pairs'" :min="50" :max="4000"></el-input-number></el-col>
-                      <el-col :span="8"><el-input-number v-model="custom.segmentation.chunk_overlap"
-                          :disabled="radio == 'qa_pairs'" :min="50" :max="4000"></el-input-number></el-col>
-                    </el-row>
-                    <el-row>
-                      <el-col :span="24"> 文本预处理规则 </el-col>
-                      <el-col :span="24">
-                        <el-checkbox v-model="custom.pre_processing_rules[0].enabled" label="替换掉连续的空格、换行符和制表符"
-                          :disabled="radio == 'qa_pairs'" />
-                      </el-col>
-                      <el-col :span="24">
-                        <el-checkbox v-model="custom.pre_processing_rules[1].enabled" label="删除所有 URL 和电子邮件地址"
-                          :disabled="radio == 'qa_pairs'" />
-                      </el-col>
-                    </el-row>
-                    <el-row>
-                      <el-col :span="4">
-                        <el-button style="color: skyblue" @click="handlePreviewButton">预览</el-button>
-                      </el-col>
-                      <el-col :span="8">
-                        <el-button style="border: none; color: black" @click="handleResetClick" :disabled="radio == 'qa_pairs'">重置</el-button>
-                      </el-col>
-                    </el-row>
-                  </el-collapse-item>
-                  <el-collapse-item title="父子分段" name="hierarchical">
-                    <el-row style="width: 100%; margin-bottom: 10px">
-                      父块用作上下文
-                    </el-row>
-                    <el-row style="width: 100%; margin-bottom: 10px">
-                      <el-card shadow="never">
-                        <el-collapse v-model="hierarchical.parent_mode" style="width: 100%" accordion
-                          :before-collapse="handleCollapseParentMode">
-                          <el-collapse-item title="段落" name="paragraph">
-                            <el-card shadow="never">
-                              <div style="font-size: 12px; margin-bottom: 8px">
-                                此模式根据分隔符和最大块长度将文本拆分为段落，使用拆分文本作为检索的父块
-                              </div>
-                              <el-row :gutter="20">
-                                <el-col :span="10">分段标识符</el-col>
-                                <el-col :span="10">分段最大长度</el-col>
-                              </el-row>
-                              <el-row :gutter="20">
-                                <el-col :span="10"><el-input v-model="hierarchical.segmentation.separator
-                                  " placeholder="禁止为空"></el-input></el-col>
-                                <el-col :span="10"><el-input-number v-model="hierarchical.segmentation.max_tokens
-                                  " :min="50" :max="4000"></el-input-number></el-col>
-                              </el-row>
-                            </el-card>
-                          </el-collapse-item>
-                          <el-collapse-item title="全文" name="full-doc">
-                            <div style="font-size: 12px">
-                              整个文档用作父块并直接检索。请注意，出于性能原因，超过10000个标记的文本将被自动截断。
-                            </div>
-                          </el-collapse-item>
-                        </el-collapse>
-                      </el-card>
-                    </el-row>
-                    <el-row style="width: 100%; margin-bottom: 10px">
-                      子块用于检索
-                    </el-row>
-                    <el-row style="width: 100%; margin-bottom: 10px">
-                      <el-row :gutter="20" style="width: 100%">
-                        <el-col :span="10">分段标识符</el-col>
-                        <el-col :span="10">分段最大长度</el-col>
-                      </el-row>
-                      <el-row :gutter="20" style="width: 100%">
-                        <el-col :span="10"><el-input v-model="hierarchical.subchunk_segmentation.separator
-                          " placeholder="禁止为空"></el-input></el-col>
-                        <el-col :span="10"><el-input-number v-model="hierarchical.subchunk_segmentation.max_tokens
-                          " :min="50" :max="4000"></el-input-number></el-col>
-                      </el-row>
-                    </el-row>
-                    <el-row style="width: 100%; margin-bottom: 10px">
-                      <el-col :span="24"> 文本预处理规则 </el-col>
-                      <el-col :span="24">
-                        <el-checkbox v-model="hierarchical.pre_processing_rules[0].enabled" label="替换掉连续的空格、换行符和制表符" />
-                      </el-col>
-                      <el-col :span="24">
-                        <el-checkbox v-model="hierarchical.pre_processing_rules[1].enabled" label="删除所有 URL 和电子邮件地址" />
-                      </el-col>
-                    </el-row>
-                    <el-row>
-                      <el-col :span="4">
-                        <el-button style="color: skyblue" @click="handlePreviewButton">预览</el-button>
-                      </el-col>
-                      <el-col :span="8">
-                        <el-button style="border: none; color: black" @click="handleResetClick" :disabled="radio == 'qa_pairs'">重置</el-button>
-                      </el-col>
-                    </el-row>
-                  </el-collapse-item>
-                </el-collapse>
-              </el-card>
-            </el-col>
-            <el-col style="margin-bottom: 10px">
-              <div class="title">Embedding 模型</div>
-              <el-select v-model="embedding_model" @change="handleEmbeddingModelChange" disabled>
-                <el-option v-for="item in embedding_model_options" :key="item.value" :label="item.label"
-                  :value="item.value"></el-option>
-              </el-select>
-            </el-col>
-            <el-col style="margin-bottom: 10px">
-              <div class="title">检索设置</div>
-              <el-card shadow="never">
-                <el-collapse v-model="retrieval_model.search_method" accordion
-                  :before-collapse="handleCollapseSearchMethod">
-                  <el-collapse-item title="向量检索" name="semantic_search">
-                    <el-row style="width: 100%; margin-bottom: 10px">
-                      通过生成查询嵌入并查询与其向量表示最相似的文本分段
-                    </el-row>
-                    <el-card shadow="never">
-                      <el-row style="
-                          width: 100%;
-                          margin-bottom: 10px;
-                          display: flex;
-                          align-items: center;
-                        ">
-                        <el-switch v-model="retrieval_model.reranking_enable" style="margin-right: 10px" />
-                        <div>Rerank 模型</div>
-                      </el-row>
-                      <el-row v-if="retrieval_model.reranking_enable" style="width: 100%; margin-bottom: 10px">
-                        <el-select v-model="rerank_model" @change="handleRerankModelChange" disabled>
-                          <el-option v-for="item in rerank_model_options" :key="item.value" :label="item.label"
-                            :value="item.value"></el-option>
-                        </el-select>
-                      </el-row>
-                      <el-row>
-                        <el-row style="width: 100%" :gutter="20">
-                          <el-col :span="12">Top K</el-col>
-                          <el-col :span="12">
-                            <el-switch v-model="retrieval_model.score_threshold_enabled" />
-                            Score 阈值
-                          </el-col>
-                        </el-row>
-                        <el-row style="width: 100%" :gutter="20">
-                          <el-col :span="12">
-                            <el-input-number v-model="retrieval_model.top_k" :min="1" :max="10" :step="1" />
-                            <el-slider class="slider-style" v-model="retrieval_model.top_k" size="small" :min="1"
-                              :max="10" :step="1" />
-                          </el-col>
-                          <el-col :span="12">
-                            <el-input-number v-model="retrieval_model.score_threshold" :disabled="!retrieval_model.score_threshold_enabled
-                              " :min="0" :max="1" :step="0.01" />
-                            <el-slider class="slider-style" v-model="retrieval_model.score_threshold" size="small"
-                              :disabled="!retrieval_model.score_threshold_enabled
-                                " :min="0" :max="1" :step="0.01" />
-                          </el-col>
-                        </el-row>
-                      </el-row>
-                    </el-card>
-                  </el-collapse-item>
-                  <el-collapse-item title="全文检索" name="full_text_search">
-                    <el-row style="width: 100%; margin-bottom: 10px">
-                      索引文档中的所有词汇，从而允许用户查询任意词汇，并返回包含这些词汇的文本片段
-                    </el-row>
-                    <el-card shadow="never">
-                      <el-row style="
-                          width: 100%;
-                          margin-bottom: 10px;
-                          display: flex;
-                          align-items: center;
-                        ">
-                        <el-switch v-model="retrieval_model.reranking_enable" style="margin-right: 10px" />
-                        <div>Rerank 模型</div>
-                      </el-row>
-                      <el-row v-if="retrieval_model.reranking_enable" style="width: 100%; margin-bottom: 10px">
-                        <el-select v-model="rerank_model" @change="handleRerankModelChange" disabled>
-                          <el-option v-for="item in rerank_model_options" :key="item.value" :label="item.label"
-                            :value="item.value"></el-option>
-                        </el-select>
-                      </el-row>
-                      <el-row>
-                        <el-row style="width: 100%" :gutter="20">
-                          <el-col :span="12">Top K</el-col>
-                          <el-col :span="12">
-                            <el-switch v-model="retrieval_model.score_threshold_enabled" />
-                            Score 阈值
-                          </el-col>
-                        </el-row>
-                        <el-row style="width: 100%" :gutter="20">
-                          <el-col :span="12">
-                            <el-input-number v-model="retrieval_model.top_k" :min="1" :max="10" :step="1" />
-                            <el-slider class="slider-style" v-model="retrieval_model.top_k" size="small" :min="1"
-                              :max="10" :step="1" />
-                          </el-col>
-                          <el-col :span="12">
-                            <el-input-number v-model="retrieval_model.score_threshold" :disabled="!retrieval_model.score_threshold_enabled
-                              " :min="0" :max="1" :step="0.01" />
-                            <el-slider class="slider-style" v-model="retrieval_model.score_threshold" size="small"
-                              :disabled="!retrieval_model.score_threshold_enabled
-                                " :min="0" :max="1" :step="0.01" />
-                          </el-col>
-                        </el-row>
-                      </el-row>
-                    </el-card>
-                  </el-collapse-item>
-                  <el-collapse-item title="混合检索" name="hybrid_search">
-                    <el-row style="width: 100%; margin-bottom: 10px">
-                      同时执行全文检索和向量检索，并应用重排序步骤，从两类查询结果中选择匹配用户问题的最佳结果，用户可以选择设置权重或配置重新排序模型。
-                    </el-row>
-                    <el-row>
-                      <el-tabs v-model="retrieval_model.reranking_mode" type="border-card">
-                        <el-tab-pane name="weighted_score" label="权重设置">
-                          <div>
-                            通过调整分配的权重，重新排序策略确定是优先进行语义匹配还是关键字匹配。
-                          </div>
-                          <el-row style="margin-bottom: 10px">
-                            <el-slider v-model="retrieval_model.weights.keyword_setting
-                              .keyword_weight
-                              " :onchange="(retrieval_model.weights.vector_setting.vector_weight =
-                                Number(
-                                  (
-                                    1 -
-                                    retrieval_model.weights.keyword_setting
-                                      .keyword_weight
-                                  ).toFixed(1)
-                                ))
-                                " :min="0" :max="1" :step="0.1" />
-                            <el-col :span="12">语义{{
-                              retrieval_model.weights.keyword_setting
-                                .keyword_weight
-                            }}</el-col>
-                            <el-col :span="12">{{
-                              retrieval_model.weights.vector_setting
-                                .vector_weight
-                            }}关键词</el-col>
-                          </el-row>
-                          <el-row v-if="retrieval_model.reranking_enable" style="width: 100%; margin-bottom: 10px">
-                            <el-input v-model="retrieval_model.reranking_model
-                              .reranking_model_name
-                              " disabled></el-input>
-                          </el-row>
-                          <el-row>
-                            <el-row style="width: 100%" :gutter="20">
-                              <el-col :span="12">Top K</el-col>
-                              <el-col :span="12">
-                                <el-switch v-model="retrieval_model.score_threshold_enabled
-                                  " />
-                                Score 阈值
-                              </el-col>
-                            </el-row>
-                            <el-row style="width: 100%" :gutter="20">
-                              <el-col :span="12">
-                                <el-input-number v-model="retrieval_model.top_k" :min="1" :max="10" :step="1" />
-                                <el-slider class="slider-style" v-model="retrieval_model.top_k" size="small" :min="1"
-                                  :max="10" :step="1" />
-                              </el-col>
-                              <el-col :span="12">
-                                <el-input-number v-model="retrieval_model.score_threshold" :disabled="!retrieval_model.score_threshold_enabled
-                                  " :min="0" :max="1" :step="0.01" />
-                                <el-slider class="slider-style" v-model="retrieval_model.score_threshold" size="small"
-                                  :disabled="!retrieval_model.score_threshold_enabled
-                                    " :min="0" :max="1" :step="0.01" />
-                              </el-col>
-                            </el-row>
-                          </el-row>
-                        </el-tab-pane>
-                        <el-tab-pane name="reranking_model" label="Rerank 模型">
-                          <div>
-                            重排序模型将根据候选文档列表与用户问题语义匹配度进行重新排序，从而改进语义排序的结果
-                          </div>
-
-                          <el-row style="
-                              width: 100%;
-                              margin-bottom: 10px;
-                              display: flex;
-                              align-items: center;
-                            ">
-                            <el-switch v-model="retrieval_model.reranking_enable" style="margin-right: 10px" />
-                            <div>Rerank 模型</div>
-                          </el-row>
-                          <el-row v-if="retrieval_model.reranking_enable" style="width: 100%; margin-bottom: 10px">
-                            <el-select v-model="rerank_model" @change="handleRerankModelChange" disabled>
-                              <el-option v-for="item in rerank_model_options" :key="item.value" :label="item.label"
-                                :value="item.value"></el-option>
-                            </el-select>
-                          </el-row>
-                          <el-row>
-                            <el-row style="width: 100%" :gutter="20">
-                              <el-col :span="12">Top K</el-col>
-                              <el-col :span="12">
-                                <el-switch v-model="retrieval_model.score_threshold_enabled
-                                  " />
-                                Score 阈值
-                              </el-col>
-                            </el-row>
-                            <el-row style="width: 100%" :gutter="20">
-                              <el-col :span="12">
-                                <el-input-number v-model="retrieval_model.top_k" :min="1" :max="10" :step="1" />
-                                <el-slider class="slider-style" v-model="retrieval_model.top_k" size="small" :min="1"
-                                  :max="10" :step="1" />
-                              </el-col>
-                              <el-col :span="12">
-                                <el-input-number v-model="retrieval_model.score_threshold" :disabled="!retrieval_model.score_threshold_enabled
-                                  " :min="0" :max="1" :step="0.01" />
-                                <el-slider class="slider-style" v-model="retrieval_model.score_threshold" size="small"
-                                  :disabled="!retrieval_model.score_threshold_enabled
-                                    " :min="0" :max="1" :step="0.01" />
-                              </el-col>
-                            </el-row>
-                          </el-row>
-                        </el-tab-pane>
-                      </el-tabs>
-                    </el-row>
-                  </el-collapse-item>
-                </el-collapse>
-              </el-card>
-            </el-col>
-            <el-col style="margin-bottom: 10px">
-              <div class="title">标签设置</div>
-              <el-radio-group v-model="official" fill="#6cf">
-                <el-radio-button label="官方" value="official" />
-                <el-radio-button label="非官方" value="unofficial" />
-              </el-radio-group>
-            </el-col>
-          </div>
-          <div style="
-              align-self: flex-end;
-              display: flex;
-              flex-direction: row-reverse;
-              justify-content: space-between;
-              margin-top: 10px;
-            ">
-            <el-button style="align-self: flex-end" v-if="step === 1" type="primary" :disabled="fileList.length === 0"
-              @click="handleNext">下一步</el-button>
-            <el-button v-if="step === 2" type="primary" @click="handleInit">保存并处理</el-button>
-            <el-button v-if="step !== 1" type="primary" @click="handlePrev" style="margin-right: 10px">上一步</el-button>
-          </div>
-        </el-col>
-        <!-- diliver -->
-        <el-col :span="2"> </el-col>
-        <!-- Step 1 右侧：根据是否点击文件列表显示内容 -->
-        <el-col :span="11" v-if="step === 1" style="display: flex; flex-direction: column; height: 100%">
-          <!-- 未点击文件列表时显示空白 -->
-          <div v-if="!showPreview" style="width: 100%; height: 100%"></div>
-          <!-- 点击文件列表后显示预览 -->
-          <div v-else style="display: flex; flex-direction: column; height: 100%">
-            <el-row style="margin-bottom: 10px">
-              <div class="title">文件预览</div>
-            </el-row>
-            <!-- 文件内容预览 -->
-            <el-card shadow="never" style="
+    <section class="header-style">
+      <div @click="router.back()" class="can-click">
+        <el-button type="primary" link size="default">
+          <el-icon>
+            <Back />
+          </el-icon>
+        </el-button>
+      </div>
+      <div class="back">返回</div>
+      <div class="dataset-title">创建知识库</div>
+    </section>
+    <el-row v-if="step == 1" class="context-style" :gutter="32">
+      <el-col :span="12" style="display: flex; flex-direction: column; overflow: hidden; height: 100%;">
+        <FileType v-model:radio="radio"></FileType>
+        <UploadFiles v-model:file-list="fileList" :accept="accept" @click="handleFileClick"></UploadFiles>
+        <el-row style="display: flex; justify-content: flex-end;">
+          <el-button type="primary" :disabled="fileList.length === 0" @click="handleNext">下一步</el-button>
+        </el-row>
+      </el-col>
+      <!-- Step 1 右侧：根据是否点击文件列表显示内容 -->
+      <el-col :span="12" style="display: flex; flex-direction: column; height: 100%">
+        <!-- 未点击文件列表时显示空白 -->
+        <div v-if="!showPreview" style="width: 100%; height: 100%"></div>
+        <!-- 点击文件列表后显示预览 -->
+        <div v-else style="display: flex; flex-direction: column; height: 100%">
+          <el-row style="margin-bottom: 10px">
+            <div class="title">文件预览</div>
+          </el-row>
+          <!-- 文件内容预览 -->
+          <el-card shadow="never" style="
                 flex: 1;
                 overflow: hidden;
                 display: flex;
                 flex-direction: column;
               " body-style="flex: 1; overflow: auto; display: flex; flex-direction: column;">
-              <div v-if="!previewFile" style="
+            <div v-if="!previewFile" style="
                   display: flex;
                   justify-content: center;
                   align-items: center;
                   height: 100%;
                   color: #909399;
                 ">
-                请选择要预览的文件
-              </div>
-              <div v-else style="
+              请选择要预览的文件
+            </div>
+            <div v-else style="
                   white-space: pre-wrap;
                   word-break: break-word;
                   line-height: 1.6;
                   font-size: 14px;
                 ">
-                {{ previewContent }}
-              </div>
-            </el-card>
-          </div>
-        </el-col>
-        <!-- Step 2 右侧：文件预览 -->
-        <el-col :span="11" v-if="step === 2" style="display: flex; flex-direction: column; height: 100%">
-          <el-row style="
-              margin-bottom: 10px;
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-            ">
-            <div class="title">文件预览</div>
-          </el-row>
-          <el-select v-model="previewFile" placeholder="请选择文件预览" style="width: 100%; margin-bottom: 10px">
-            <el-option v-for="value in fileList" :key="value.id" :label="value.name" :value="value.id" />
-          </el-select>
-          <!-- 文件内容预览 -->
-          <el-card v-if="!isSegmentPreview" shadow="never" style="
-              flex: 1;
-              overflow: hidden;
-              display: flex;
-              flex-direction: column;
-            " body-style="flex: 1; overflow: auto; display: flex; flex-direction: column;">
-            <div v-if="!previewFile" style="
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                height: 100%;
-                color: #909399;
-              ">
-              请点击左侧预览按钮来进行预览
-            </div>
-            <div v-else style="
-                white-space: pre-wrap;
-                word-break: break-word;
-                line-height: 1.6;
-                font-size: 14px;
-              ">
               {{ previewContent }}
             </div>
           </el-card>
-          <!-- 分段内容预览 -->
-          <el-card v-else shadow="never" style="
-              flex: 1;
-              overflow: hidden;
-              display: flex;
-              flex-direction: column;
-            " body-style="flex: 1; overflow: auto; display: flex; flex-direction: column;">
-            <div style="display: flex; flex-direction: column; gap: 16px">
-              <el-card v-for="(segment, index) in segmentPreview" :key="index" shadow="hover">
-                <div style="
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                  ">
-                  <span style="font-weight: 600">Chunk {{ index + 1 }}</span>
-                  <el-tag size="small" style="border: 'none'">
-                    {{ (segment?.content?.length | 0) + (segment?.question?.length | 0) + (segment?.answer?.length | 0)
-                    }} 字符
-                  </el-tag>
-                </div>
-
-                <div style="
-                    white-space: pre-wrap;
-                    word-break: break-word;
-                    line-height: 1.6;
-                    font-size: 14px;
-                    color: #606266;
-                  ">
-                  {{ segment.content }}
-                </div>
-                <div v-if="segment.question" style="
-                    white-space: pre-wrap;
-                    word-break: break-word;
-                    line-height: 1.6;
-                    font-size: 14px;
-                    color: #606266;
-                  ">
-                  问题 {{ segment.question }}
-                </div>
-                <div v-if="segment.answer" style="
-                    white-space: pre-wrap;
-                    word-break: break-word;
-                    line-height: 1.6;
-                    font-size: 14px;
-                    color: #606266;
-                  ">
-                  答案 {{ segment.answer }}
-                </div>
-              </el-card>
-            </div>
-          </el-card>
-        </el-col>
-      </el-card>
-    </el-main>
-    <el-main v-else-if="step == 3">
-      <CreateFinish :dataset="dataset" :files="fileList" />
-    </el-main>
+        </div>
+      </el-col>
+    </el-row>
+    <el-row v-else-if="step == 2" class="context-style" :gutter="32">
+      <el-col :span="12" style="display: flex; flex-direction: column; overflow: hidden; height: 100%;">
+        <div
+          style="margin-bottom: 10px;overflow-x: hidden; overflow-y: auto; gap: 8px; display: flex; flex-direction: column;">
+          <div class="title">分段设置</div>
+          <Custom :visiable="process_rule == 'custom'" v-model:custom="custom"
+            @selected="() => handleSelectedProcessRule('custom')" @preview="handlePreviewClick"
+            @reset="handleResetClick" :disabled="radio === 'qa_pairs'" />
+          <Hierarchical :visiable="process_rule == 'hierarchical'" v-model:hierarchical="hierarchical"
+            @selected="() => handleSelectedProcessRule('hierarchical')" :disabled="radio === 'qa_pairs'" />
+          <div class="title">Embedding 模型</div>
+          <el-select v-model="embedding_model" disabled size="small">
+            <el-option v-for="item in embedding_model_options" :key="item.value" :label="item.label"
+              :value="item.value"></el-option>
+          </el-select>
+          <div class="title">检索设置</div>
+          <SemanticSearch :visiable="retrieval_model.search_method == 'semantic_search'"
+            v-model:retrieval_model="retrieval_model" @selected="() => handleSelectedSearchMethod('semantic_search')" />
+          <FullTextSearch :visiable="retrieval_model.search_method == 'full_text_search'"
+            v-model:retrieval_model="retrieval_model"
+            @selected="() => handleSelectedSearchMethod('full_text_search')" />
+          <HybridSearch :visiable="retrieval_model.search_method == 'hybrid_search'"
+            v-model:retrieval_model="retrieval_model" @selected="() => handleSelectedSearchMethod('hybrid_search')" />
+        </div>
+        <el-row style="display: flex; justify-content: flex-end;">
+          <el-button type="primary" @click="handlePrev">上一步</el-button>
+          <el-button type="primary" @click="handleInit">保存并处理</el-button>
+        </el-row>
+      </el-col>
+      <el-col :span="12" style="display: flex; flex-direction: column; overflow: hidden; height: 100%;">
+        <Preview v-loading="previewLoading" v-model:preview-file="previewFile" v-model:segment-preview="segmentPreview"
+          v-model:file-list="fileList"></Preview>
+      </el-col>
+    </el-row>
+    <CreateFinish v-else-if="step == 3" class="context-style" :dataset="dataset" :process_rule="process_rule"
+      :max_tokens="max_tokens" :pre_processing_rules="pre_processing_rules">
+    </CreateFinish>
   </el-container>
 </template>
 
@@ -525,8 +112,15 @@ import {
 } from "@/service/datasets";
 import CreateFinish from "@/components/createFinish.vue";
 import UploadFiles from "@/components/uploadFiles/index.vue";
+import FileType from "@/components/uploadFiles/file-type.vue";
 import { RetrievalModel } from "@/models/dataset";
 import { postUserDatasetsRolBatchAdd } from "@/service/tenant";
+import Custom from "@/components/datasetSetting/segement/custom.vue";
+import Hierarchical from "@/components/datasetSetting/segement/hierarchical.vue";
+import SemanticSearch from "@/components/datasetSetting/segement/semanticSearch.vue";
+import FullTextSearch from "@/components/datasetSetting/segement/fullTextSearch.vue";
+import HybridSearch from "@/components/datasetSetting/segement/hybridSearch.vue";
+import Preview from "@/components/datasetSetting/preview.vue";
 
 const radio = ref("datasets");
 
@@ -537,7 +131,7 @@ const previewContent = ref<string>("");
 const showPreview = ref(false); // 控制是否显示文件预览模块
 const segmentPreview = ref<any[]>([]); // 存储分段预览数据
 const isSegmentPreview = ref(false); // 标识当前是否为分段预览模式
-
+const previewLoading = ref(false);
 const step = ref(1);
 
 // 监听 radio 变化，重置上传序号和清空文件列表
@@ -557,6 +151,26 @@ const accept = computed(() => {
 });
 
 const process_rule = ref("custom");
+
+const max_tokens = computed(() => {
+  if (process_rule.value === "custom") {
+    return custom.value.segmentation.max_tokens;
+  } else if (process_rule.value === "hierarchical") {
+    return hierarchical.value.segmentation.max_tokens;
+  } else {
+    return 500;
+  }
+});
+
+const pre_processing_rules = computed(() => {
+  if (process_rule.value === "custom") {
+    return custom.value.pre_processing_rules;
+  } else if (process_rule.value === "hierarchical") {
+    return hierarchical.value.pre_processing_rules;
+  } else {
+    return [{ enabled: false }, { enabled: false }];
+  }
+});
 
 const custom = ref({
   pre_processing_rules: [
@@ -652,58 +266,6 @@ const getEmbeddingModel = async () => {
     ElMessage.error("获取Embedding模型选项失败");
   }
 };
-const handleEmbeddingModelChange = (value: string) => {
-  const selectedModel = embedding_model_options.value.find(
-    (item) => item.value === value
-  );
-  if (selectedModel) {
-    embedding_model_provider.value = selectedModel.provider;
-  }
-};
-
-// rerank 模型选择
-
-const rerank_model = ref("");
-const rerank_model_provider = ref("");
-const rerank_model_options = ref<any>([]);
-const getRerankModel = async () => {
-  try {
-    const res = await getRerankList();
-    rerank_model_options.value = [];
-    res.data.forEach((providerItem) => {
-      providerItem.models.forEach((model) => {
-        rerank_model_options.value.push({
-          value: model.model,
-          label: model.label.zh_Hans,
-          provider: providerItem.provider,
-        });
-      });
-    });
-    if (rerank_model_options.value.length > 0) {
-      rerank_model.value = rerank_model_options.value[0].value;
-      rerank_model_provider.value = rerank_model_options.value[0].provider;
-      // 同步初始值到 retrieval_model
-      retrieval_model.value.reranking_model.reranking_model_name =
-        rerank_model_options.value[0].value;
-      retrieval_model.value.reranking_model.reranking_provider_name =
-        rerank_model_options.value[0].provider;
-    }
-  } catch (error) {
-    ElMessage.error("获取rerank模型选项失败");
-  }
-};
-const handleRerankModelChange = (value: string) => {
-  const selectedModel = rerank_model_options.value.find(
-    (item) => item.value === value
-  );
-  if (selectedModel) {
-    rerank_model_provider.value = selectedModel.provider;
-    // 同步更新到 retrieval_model
-    retrieval_model.value.reranking_model.reranking_model_name = value;
-    retrieval_model.value.reranking_model.reranking_provider_name =
-      selectedModel.provider;
-  }
-};
 
 // official
 // unofficial
@@ -734,24 +296,22 @@ const handleNext = () => {
   }
 };
 
-const handleCollapseProcessRule = (value: string) => {
+const handleSelectedProcessRule = (value: string) => {
   if (radio.value === "qa_pairs") {
-    return false;
+    return;
   }
-  return value !== process_rule.value;
-};
 
-const handleCollapseParentMode = (value: string) => {
-  return value !== hierarchical.value.parent_mode;
-};
+  return process_rule.value = value;
+}
+const handleSelectedSearchMethod = (value: string) => {
+  if (radio.value === "qa_pairs") {
+    return;
+  }
 
-const handleCollapseSearchMethod = (value: string) => {
-  return value !== retrieval_model.value.search_method;
-};
+  return retrieval_model.value.search_method = value;
+}
 
 const handleInit = () => {
-  // console.log('res', res.value)
-  // console.log('res', res.value.map(x => x.id))
   const params = {
     data_source: {
       type: "upload_file",
@@ -779,11 +339,11 @@ const handleInit = () => {
   initDataset(params).then((res) => {
     dataset.value = res;
     step.value = 3;
-    
+
     // 团队知识库 trick surprise 
     const tenantId = router.currentRoute.value.params.teamId
     const datasetId = res?.dataset?.id
-    if(tenantId && datasetId){
+    if (tenantId && datasetId) {
       console.log('initDataset tenantId', tenantId)
       postUserDatasetsRolBatchAdd(tenantId as string, datasetId)
     }
@@ -808,7 +368,7 @@ const fetchFilePreview = async (fileId: string) => {
 };
 
 //点击预览按钮
-const handlePreviewButton = () => {
+const handlePreviewClick = () => {
   // 增加参数校验
   if (
     custom.value?.segmentation?.max_tokens &&
@@ -838,7 +398,7 @@ const handlePreviewButton = () => {
         rules: currentRules,
       },
     };
-
+    previewLoading.value = true
     fetchFileIndexingEstimate(params)
       .then((response) => {
         // 处理返回的分段内容,且不为空的
@@ -857,13 +417,15 @@ const handlePreviewButton = () => {
       .catch((error) => {
         console.error("获取分段预览失败:", error);
         ElMessage.error("获取分段预览失败");
+      }).finally(() => {
+        previewLoading.value = false
       });
   } else {
     ElMessage.warning("请先上传文件");
   }
 };
 
-const handleResetClick = () =>{
+const handleResetClick = () => {
   custom.value = {
     pre_processing_rules: [
       {
@@ -881,7 +443,7 @@ const handleResetClick = () =>{
       chunk_overlap: 50,
     },
   }
-  
+
   hierarchical.value = {
     parent_mode: "paragraph",
     pre_processing_rules: [
@@ -985,44 +547,51 @@ watch(previewFile, (newFileId) => {
 
 onMounted(() => {
   getEmbeddingModel();
-  getRerankModel();
+  // getRerankModel();
 });
 </script>
 
 <style scoped lang="scss">
 .header-style {
   display: flex;
-  background-color: #f5f5f5;
+  background-color: #ffffff;
   align-items: center;
+  justify-content: start;
   height: auto;
+  margin-bottom: 16px;
   // border-bottom: 1px solid var(--el-border-color);
+
+  .back {
+    font-size: 12px;
+  }
+
+  .dataset-title {
+    font-size: 14px;
+    font-weight: bold;
+    margin-left: 20px;
+  }
 }
 
 .content-container {
-  height: 100%;
-  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 16px;
+  height: calc(100%);
+  padding: 24px;
 }
 
 .context-style {
-  height: 100%;
   width: 100%;
-}
-
-.wapper-style {
-  height: 100%;
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  overflow: hidden;
 }
 
 .title {
-  margin-bottom: 10px;
-  font-size: 16px;
+  font-size: 12px;
   font-weight: 600;
-}
-
-.collapse-item-title {
-  font-size: 14px;
-  height: 20px;
-  display: flex;
-  flex-direction: row;
 }
 
 .slider-style {

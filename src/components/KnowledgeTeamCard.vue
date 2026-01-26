@@ -8,7 +8,7 @@
       </div>
       <div class="knowledge-base-card-creator">
         <el-icon class="icon"><User /></el-icon>
-        <!-- 这里展示团队知识库的创建者 字段未给   -->
+        <!-- 展示团队知识库的创建者  -->
         <span>{{ dataset.created_by_name }}</span>
       </div>
       <div class="knowledge-base-card-tags">
@@ -19,8 +19,8 @@
         {{ dataset.description }}
       </div>
 
-      <div class="knowledge-base-card-label">
-        {{ dataset.official == "official" ? "官方" : "非官方" }}
+      <div class="knowledge-base-card-label" v-if="dataset.official == 'official'">
+        <img src="@\assets\official.png" alt="">
       </div>
       <div class="knowledge-base-card-operate" @click.stop v-if="dataset.dataset_permission || dataset.public_permission">
         <el-dropdown trigger="click" placement="bottom-end">
@@ -76,13 +76,16 @@ const goToDetails = () => {
 
 const handleDeleteClick = () => {
   ElMessageBox.confirm(
-    "删除知识库是不可逆的。用户将无法再访问您的知识库,所有的提示配置和日志将被永久删除。",
-    "要删除知识库吗？",
+    "删除知识库是不可逆的。用户将无法再访问您的知识库，所有的提示配置和日志将被永久删除。",
+    "要删除知识库吗",
     {
-      confirmButtonText: "我确定",
+      confirmButtonText: "确定删除",
       cancelButtonText: "取消",
-      type: "warning",
+      type:'warning',
+      customClass: "delete-message-box",
       confirmButtonClass: "my-confirm-btn",
+      cancelButtonClass: "my-cancel-btn",
+      center: true,
     }
   )
     .then(() => {
@@ -190,13 +193,8 @@ const handlePublicPermissionUpdate = async () => {
 
 .knowledge-base-card-label {
   position: absolute;
-  top: 0px;
-  left: 0px;
-  font-size: 12px;
-  background-color: #3b82f6;
-  color: white;
-  padding: 1px 12px;
-  border-radius: 3px;
+  top: -22px;
+  left: -20px;
 }
 
 .knowledge-base-card-operate {
@@ -210,16 +208,5 @@ const handlePublicPermissionUpdate = async () => {
   flex-direction: row;
   gap: 10px;
   margin-top: 20px;
-}
-</style>
-
-<style>
-/*MessageBox样式,不用scoped */
-.my-confirm-btn:focus,
-.my-confirm-btn:active,
-.my-confirm-btn:hover {
-  outline: none !important;
-  box-shadow: none !important;
-  border: none !important;
 }
 </style>

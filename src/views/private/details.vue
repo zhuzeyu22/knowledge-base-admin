@@ -571,9 +571,9 @@ const handleSegementClick = (row: DocumentList) => {
       res.dataset_process_rule.rules.segmentation.separator = 
       res.dataset_process_rule.rules.segmentation.separator.replaceAll('\n','\\n')
     }
-    if(res.document_process_rule.rules.segmentation.delimiter){
-      res.document_process_rule.rules.segmentation.delimiter = 
-      res.document_process_rule.rules.segmentation.delimiter.replaceAll('\n','\\n')
+    if(res.document_process_rule.rules.segmentation.separator){
+      res.document_process_rule.rules.segmentation.separator = 
+      res.document_process_rule.rules.segmentation.separator.replaceAll('\n','\\n')
     }
     documentSettingDetail.value = res;
     showSegementSetting.value = true;

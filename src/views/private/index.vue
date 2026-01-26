@@ -2,7 +2,7 @@
     <el-container class="content-container">
         <el-header class="header-style">
             <div>个人知识库</div>
-            <el-input placeholder="请输入内容" v-model="search" class="search-style" clearable @input="handleSearchChange" />
+            <el-input placeholder="请输入内容" v-model="search" class="search-style" clearable @input="handleSearchChange" :prefix-icon="Search"/>
         </el-header>
         <el-main v-infinite-scroll="load" :infinite-scroll-disabled="loading" :infinite-scroll-distance="10"
             class="context-style" style="overflow: auto" v-loading="loading" element-loading-text="数据加载中...">
@@ -21,7 +21,7 @@ import KnowledgeBaseCard from '@/components/KnowledgeBaseCard.vue'
 import { Dataset } from '@/models/dataset';
 import CreateCard from './components/createCard.vue';
 import { getPrivateDatasetList } from '@/service/datasets';
-
+import { Search } from '@element-plus/icons-vue';
 const datasetList = ref<Dataset[]>([])
 const search = ref('')
 // const filterDataList = ref<Dataset[]>([])
@@ -93,11 +93,19 @@ const handleCreate = ()=>{
     justify-content: space-between;
     align-items: center;
     padding: 0 20px;
-    background-color: #f5f5f5;
+    background: transparent;
+    font-size: 20px;
 }
 
 .search-style {
-    width: 300px;
+  margin: 0 auto;
+  width: 300px;
+  height: 40px;
+  border-radius: 25px;
+  box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.12);
+  :deep(.el-input__wrapper) {
+    border-radius: 25px;
+  }
 }
 
 .context-style {
@@ -107,7 +115,7 @@ const handleCreate = ()=>{
 .grid-container {
     display: grid;
     /* 关键：自适应列数 */
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 16px;
     /* 列与列、行与行之间的间距 */
 }

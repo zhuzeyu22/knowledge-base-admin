@@ -8,7 +8,7 @@
                     <div class="label">{{ data.tenant_name }}</div>
                     <el-dropdown v-if="data.is_admin" class="more hover-item" placement="bottom-end">
                         <el-icon style="cursor: pointer">
-                            <MoreFilled />
+                            <MoreFilled style="width: 13px;"/>
                         </el-icon>
                         <template #dropdown>
                             <el-dropdown-menu>
@@ -141,7 +141,12 @@ watch(
 .section::-webkit-scrollbar {
     display: none;
 }
-
+.el-tree-node__content {
+    height: 45px;
+    line-height: 45px;
+    border-radius: 10px; 
+    margin-bottom: 2px;
+}
 .custom-tree-node {
     width: 100%;
     overflow: hidden;
@@ -174,6 +179,7 @@ watch(
 }
 
 .bg-highlight {
-    background-color: #f5f7fa;
+    background-color: #ecf5ff;
+    color: #409eff;
 }
 </style>

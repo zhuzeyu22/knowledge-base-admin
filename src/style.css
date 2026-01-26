@@ -18,6 +18,7 @@ a {
   color: #646cff;
   text-decoration: inherit;
 }
+
 a:hover {
   color: #535bf2;
 }
@@ -45,6 +46,7 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
 }
+
 button:hover {
   border-color: #646cff;
 }
@@ -63,19 +65,40 @@ button:focus-visible {
 
 /* 默认隐藏按钮 */
 .hover-item {
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.2s ease, visibility 0.2s ease;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
 }
 
 /* 悬停时显示 */
 .hover-container:hover .hover-item {
-    opacity: 1;
-    visibility: visible;
+  opacity: 1;
+  visibility: visible;
 }
 
 .card {
   padding: 2em;
+}
+
+/* 文本省略 */
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.full {
+  width: 100%;
+  height: 100%;
+}
+
+/* 可点击 */
+.can-click {
+  cursor: pointer;
+}
+
+.can-not-click {
+  cursor: not-allowed;
 }
 
 #app {
@@ -88,9 +111,11 @@ button:focus-visible {
     color: #213547;
     background-color: #ffffff;
   }
+
   a:hover {
     color: #747bff;
   }
+
   button {
     background-color: #f9f9f9;
   }
@@ -101,6 +126,6 @@ button:focus-visible {
   transition: color 0.3s ease;
 
   &:hover {
-      color: #f56c6c !important;
+    color: #f56c6c !important;
   }
 }

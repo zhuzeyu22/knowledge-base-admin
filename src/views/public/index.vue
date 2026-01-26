@@ -6,11 +6,15 @@
     </el-header>
     <!-- <el-main v-infinite-scroll="load" :infinite-scroll-disabled="loading" :infinite-scroll-distance="10"
       class="context-style" style="overflow: auto"> -->
-    <el-main class="context-style" style="overflow: auto">
+    <el-main class="context-style" style="overflow: auto" v-loading="loading" element-loading-text="加载中...">
       <el-space wrap :size="16" class="grid-container">
         <KnowledgePublicCard v-for="item in datasetList" :key="item.id" :dataset="item" :folderId ="folderId" :folderNames ="folderNames" @status-updated="handleStatusUpdated"/>
         <DirectoryCard v-for="item in publicFolderList" :key="item.id" :dirList="item" />
       </el-space>
+      <div class="no-content" v-if="!loading && datasetList.length === 0 && publicFolderList.length === 0 ">
+        <img src="@\assets\no-content.png" alt="">
+        <span class="text">暂无内容</span>
+      </div>
     </el-main>
   </el-container>
 </template>
@@ -29,6 +33,7 @@ const publicStore = usePublicStore()
 const currentNode = computed(() => publicStore.getCurrentNode)
 // const getCurrentNodeNumber = computed(() => publicStore.getCurrentNodeNumber)
 // 知识库列表
+const loading = ref(false)
 const datasetList = ref<PublicDataset[]>([])
 const dirList = computed(() => currentNode.value?.children || [])
 const folderId = computed(() => [currentNode.value?.id])
@@ -39,6 +44,7 @@ const publicFolderList = computed<PublicFolderNode[]>(() => publicStore.currentN
 watch(
   () => currentNode.value, 
   async (newValue) => {
+  loading.value = true;
   datasetList.value=[]
   const id = newValue.id
   const res = await getFolder(id).catch((err) => {
@@ -46,6 +52,7 @@ watch(
     });
     if(res.data && res.data.length > 0 ){
       dirList.value = res.data
+      loading.value = false
     } else {
       load(id)
     }
@@ -55,6 +62,9 @@ const load = _.debounce((folderId: string) => {
   getDatasetsByFolderId(folderId).then((res) => {
     datasetList.value = res.data
   })
+  .finally(() => {
+      loading.value = false
+    })
 }, 500)
 
 const handleStatusUpdated = () => {
@@ -75,11 +85,19 @@ const handleStatusUpdated = () => {
   justify-content: space-between;
   align-items: center;
   padding: 0 20px;
-  background-color: #f5f5f5;
+  background: transparent;
+  font-size: 20px;
 }
 
 .search-style {
+  margin: 0 auto;
   width: 300px;
+  height: 40px;
+  border-radius: 25px;
+  box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.12);
+  :deep(.el-input__wrapper) {
+    border-radius: 25px;
+  }
 }
 
 .context-style {
@@ -90,8 +108,19 @@ const handleStatusUpdated = () => {
 .grid-container {
   display: grid;
   /* 关键：自适应列数 */
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 16px;
   /* 列与列、行与行之间的间距 */
+}
+.no-content {
+  display: flex;
+  justify-content: center; 
+  align-items: center;
+  margin-top: 15%;
+  flex-direction: column;
+  .text {
+    font-size: 16px;
+    line-height: 22px;
+  }
 }
 </style>

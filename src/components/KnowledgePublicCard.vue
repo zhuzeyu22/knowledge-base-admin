@@ -16,8 +16,8 @@
         {{ dataset.description }}
       </div>
 
-      <div class="knowledge-base-card-label">
-        {{ dataset.official == "official" ? "官方" : "非官方" }}
+      <div class="knowledge-base-card-label" v-if="dataset.official == 'official'">
+        <img src="@\assets\official.png" alt="">
       </div>
       <div class="knowledge-base-card-operate" @click.stop v-if="hasPermission">
         <el-dropdown trigger="click" placement="bottom-end">
@@ -69,12 +69,16 @@ const goToDetails = () => {
 
 const handleCanclePublic = () => {
   ElMessageBox.confirm(
-    "取消公开后，知识库将在公共知识库中不可见。",
+    "取消公开该知识库后，该知识库将在公共知识库中不可见。",
     "确定要取消公开吗？",
     {
       confirmButtonText: "确定",
       cancelButtonText: "取消",
       type: "warning",
+      customClass: "delete-message-box",
+      confirmButtonClass: "my-confirm-btn",
+      cancelButtonClass: "my-cancel-btn",
+      center: true,
     }
   ).then( async()=>{
     try {
@@ -177,13 +181,8 @@ const handleDeleteClick = () => {
 
 .knowledge-base-card-label {
   position: absolute;
-  top: 0px;
-  left: 0px;
-  font-size: 12px;
-  background-color: #3b82f6;
-  color: white;
-  padding: 1px 12px;
-  border-radius: 3px;
+  top: -22px;
+  left: -20px;
 }
 
 .knowledge-base-card-operate {
@@ -197,16 +196,5 @@ const handleDeleteClick = () => {
   flex-direction: row;
   gap: 10px;
   margin-top: 20px;
-}
-</style>
-
-<style>
-/*MessageBox样式,不用scoped */
-.my-confirm-btn:focus,
-.my-confirm-btn:active,
-.my-confirm-btn:hover {
-  outline: none !important;
-  box-shadow: none !important;
-  border: none !important;
 }
 </style>
