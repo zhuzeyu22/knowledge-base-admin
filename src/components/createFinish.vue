@@ -136,8 +136,10 @@ const updateStatus = () => {
             if (find) {
                 if (Number(find.total_segments) != 0) {
                     find.percentage = (Number(find.completed_segments) * 100 / Number(find.total_segments)).toFixed(2)
-                } else {
+                } else if (find.indexing_status == IndexingStatus.Completed) {
                     find.percentage = Number(100).toFixed(2)
+                } else {
+                    find.percentage = Number(0).toFixed(2)
                 }
             }
 
