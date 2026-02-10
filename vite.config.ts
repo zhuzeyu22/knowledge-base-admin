@@ -5,16 +5,19 @@ import compression from 'vite-plugin-compression';
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
 import Components from 'unplugin-vue-components/vite';
 import { resolve } from 'path';
+import { viteMockServe } from 'vite-plugin-mock';
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd());
   const isProd = mode === 'production';
+  const isMock = mode === 'mock' || env.VITE_USE_MOCK === 'true';
 
   console.log('mode', mode);
   console.log('后端代理地址', `[ ${env.VITE_SERVER_PROXY_BASE_URL} ]`);
   console.log('登录代理地址', `[ ${env.VITE_SSO_LOGIN_URL} ]`);
   console.log('登录重定向至', `[ ${env.VITE_SERVER_PROXY_SSO_LOGIN_URL} ]`);
+  console.log('是否使用 Mock', isMock);
 
   return {
     plugins: [
@@ -23,6 +26,17 @@ export default defineConfig(({ mode }) => {
       Components({
         resolvers: [ElementPlusResolver()],
         dts: 'src/components.d.ts',
+      }),
+      // Mock 服务
+      viteMockServe({
+        mockPath: 'mock',
+        localEnabled: isMock,
+        prodEnabled: false,
+        injectCode: `
+          import { setupProdMockServer } from './mock/index';
+          setupProdMockServer();
+        `,
+        logger: true,
       }),
       // 生产环境 gzip 压缩
       isProd &&
@@ -57,41 +71,44 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 3000,
       open: true,
-      proxy: {
-        '/console': {
-          target: env.VITE_SERVER_PROXY_BASE_URL,
-          changeOrigin: true,
-        },
-        '/tenant': {
-          target: env.VITE_SERVER_PROXY_BASE_URL,
-          changeOrigin: true,
-        },
-        '/statistics': {
-          target: env.VITE_SERVER_PROXY_BASE_URL,
-          changeOrigin: true,
-        },
-        '/datasets': {
-          target: env.VITE_SERVER_PROXY_BASE_URL,
-          changeOrigin: true,
-        },
-        [env.VITE_SSO_LOGIN_URL]: {
-          target: env.VITE_SERVER_PROXY_SSO_LOGIN_URL,
-          changeOrigin: true,
-          rewrite: path => path.replace(env.VITE_SSO_LOGIN_URL, ''),
-          configure: (proxy, options) => {
-            proxy.on('proxyReq', (proxyReq, req, res) => {
-              res.writeHead(302, {
-                Location:
-                  env.VITE_SERVER_PROXY_SSO_LOGIN_URL +
-                  req.url +
-                  (mode === 'production' ? '&client_id=KNOW' : ''),
-              });
-              res.end();
-              req.destroy();
-            });
+      // Mock 模式下禁用代理
+      proxy: isMock
+        ? {}
+        : {
+            '/console': {
+              target: env.VITE_SERVER_PROXY_BASE_URL,
+              changeOrigin: true,
+            },
+            '/tenant': {
+              target: env.VITE_SERVER_PROXY_BASE_URL,
+              changeOrigin: true,
+            },
+            '/statistics': {
+              target: env.VITE_SERVER_PROXY_BASE_URL,
+              changeOrigin: true,
+            },
+            '/datasets': {
+              target: env.VITE_SERVER_PROXY_BASE_URL,
+              changeOrigin: true,
+            },
+            [env.VITE_SSO_LOGIN_URL]: {
+              target: env.VITE_SERVER_PROXY_SSO_LOGIN_URL,
+              changeOrigin: true,
+              rewrite: path => path.replace(env.VITE_SSO_LOGIN_URL, ''),
+              configure: (proxy, options) => {
+                proxy.on('proxyReq', (proxyReq, req, res) => {
+                  res.writeHead(302, {
+                    Location:
+                      env.VITE_SERVER_PROXY_SSO_LOGIN_URL +
+                      req.url +
+                      (mode === 'production' ? '&client_id=KNOW' : ''),
+                  });
+                  res.end();
+                  req.destroy();
+                });
+              },
+            },
           },
-        },
-      },
     },
     build: {
       target: 'esnext',
@@ -105,7 +122,7 @@ export default defineConfig(({ mode }) => {
           manualChunks: {
             'element-plus': ['element-plus'],
             'vue-vendor': ['vue', 'vue-router', 'pinia'],
-            'echarts': ['echarts'],
+            echarts: ['echarts'],
           },
           // 静态资源分类
           chunkFileNames: 'js/[name]-[hash].js',

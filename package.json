@@ -7,7 +7,11 @@
     "temp": "vite --mode temp",
     "dev": "vite --mode development",
     "prod": "vite --mode production",
+    "mock": "vite --mode mock",
+    "dev:mock": "vite --mode mock",
     "build": "vite build --mode production",
+    "build:dev": "vite build --mode development",
+    "build:mock": "vite build --mode mock",
     "preview": "vite preview",
     "lint": "eslint . --ext .js,.ts,.vue",
     "lint:fix": "eslint . --ext .js,.ts,.vue --fix",
@@ -47,6 +51,7 @@
     "vite": "^5.4.10",
     "vite-plugin-compression": "^0.5.1",
     "vite-plugin-mock": "^3.0.2",
+    "vite-plugin-vue-devtools": "^8.0.6",
     "vue-tsc": "^2.1.8"
   },
   "config": {
