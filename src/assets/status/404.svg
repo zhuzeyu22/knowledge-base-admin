@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <g fill="none" fill-rule="evenodd">
+    <rect width="200" height="200" fill="#F5F7FA" rx="20"/>
+    <text fill="#909399" font-family="Arial" font-size="80" font-weight="bold" x="50%" y="55%" text-anchor="middle" dominant-baseline="middle">
+      404
+    </text>
+  </g>
+</svg>

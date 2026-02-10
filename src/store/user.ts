@@ -8,6 +8,10 @@ export interface UserInfo {
 }
 
 export const useUserStore = defineStore("user", {
+  persist: {
+    key: 'user-store',
+    paths: ['isAdmin', 'userName'], // 只持久化这些字段
+  },
   state: () => ({
     profile: {} as Profile,
     // 控制页面菜单显示

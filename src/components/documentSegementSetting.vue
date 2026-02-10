@@ -14,7 +14,7 @@
       <el-button @click="handleCreateSegementClick" :disabled="!isAdmin">添加分段</el-button>
       <div>{{ document.display_status === 'error' ? "错误" : display_status ? "可用" : "已禁用" }}
       </div>
-      <el-suitch :model_value="document.display_status === 'error' ? false : display_status" @change="handleChange"
+      <el-switch :model_value="document.display_status === 'error' ? false : display_status" @change="handleChange"
         :disabled="document.display_status === 'error'" />
       <!-- <el-button>分段设置</el-button> -->
       <el-dropdown trigger="click" placement="bottom-end">
