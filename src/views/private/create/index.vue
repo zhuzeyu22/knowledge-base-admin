@@ -1,21 +1,11 @@
 <template>
   <el-container class="content-container">
-    <section class="header-style">
-      <div @click="router.back()" class="can-click">
-        <el-button type="primary" link size="default">
-          <el-icon>
-            <Back />
-          </el-icon>
-        </el-button>
-      </div>
-      <div class="back">返回</div>
-      <div class="dataset-title">创建知识库</div>
-    </section>
+    <BackHeader title="创建知识库" />
     <el-row v-if="step == 1" class="context-style" :gutter="32">
       <el-col :span="12" style="display: flex; flex-direction: column; overflow: hidden; height: 100%;">
         <FileType v-model:radio="radio"></FileType>
         <UploadFiles v-model:file-list="fileList" :accept="accept" @click="handleFileClick"></UploadFiles>
-        <el-row style="display: flex; justify-content: flex-end;">
+        <el-row style="display: flex; width: 490px; justify-content: flex-end;">
           <el-button type="primary" :disabled="fileList.length === 0" @click="handleNext">下一步</el-button>
         </el-row>
       </el-col>
@@ -59,29 +49,33 @@
     <el-row v-else-if="step == 2" class="context-style" :gutter="32">
       <el-col :span="12" style="display: flex; flex-direction: column; overflow: hidden; height: 100%;">
         <div
-          style="margin-bottom: 10px;overflow-x: hidden; overflow-y: auto; gap: 8px; display: flex; flex-direction: column;">
+          style="margin-bottom: 10px;overflow-x: hidden; overflow-y: auto; display: flex; flex-direction: column;">
           <div class="title">分段设置</div>
-          <Custom :visiable="process_rule == 'custom'" v-model:custom="custom"
-            @selected="() => handleSelectedProcessRule('custom')" @preview="handlePreviewClick"
-            @reset="handleResetClick" :disabled="radio === 'qa_pairs'" />
-          <Hierarchical :visiable="process_rule == 'hierarchical'" v-model:hierarchical="hierarchical"
-            @selected="() => handleSelectedProcessRule('hierarchical')" :disabled="radio === 'qa_pairs'" />
+          <Custom style="margin-bottom: 16px" v-if="radio == UploadFileIs.datasets" :visiable="process_rule == 'custom'" v-model:custom="custom"
+            @selected="() => handleSelectedProcessRule('custom', ChunkingMode.text)" @preview="handlePreviewClick"
+            @reset="handleResetClick" />
+          <Hierarchical v-if="radio == UploadFileIs.datasets" :visiable="process_rule == 'hierarchical'"
+            v-model:hierarchical="hierarchical"
+            @selected="() => handleSelectedProcessRule('hierarchical', ChunkingMode.parentChild)"
+            @preview="handlePreviewClick" @reset="handleResetClick" />
+          <QaModel v-if="radio == UploadFileIs.qa_pairs" @preview="handlePreviewClick" />
           <div class="title">Embedding 模型</div>
-          <el-select v-model="embedding_model" disabled size="small">
+          <el-select v-model="embedding_model" disabled size="default">
             <el-option v-for="item in embedding_model_options" :key="item.value" :label="item.label"
               :value="item.value"></el-option>
           </el-select>
           <div class="title">检索设置</div>
-          <SemanticSearch :visiable="retrieval_model.search_method == 'semantic_search'"
+          <SemanticSearch style="margin-bottom: 16px" :visiable="retrieval_model.search_method == 'semantic_search'"
             v-model:retrieval_model="retrieval_model" @selected="() => handleSelectedSearchMethod('semantic_search')" />
-          <FullTextSearch :visiable="retrieval_model.search_method == 'full_text_search'"
+          <FullTextSearch style="margin-bottom: 16px" :visiable="retrieval_model.search_method == 'full_text_search'"
             v-model:retrieval_model="retrieval_model"
             @selected="() => handleSelectedSearchMethod('full_text_search')" />
-          <HybridSearch :visiable="retrieval_model.search_method == 'hybrid_search'"
+          <HybridSearch style="margin-bottom: 16px" :visiable="retrieval_model.search_method == 'hybrid_search'"
             v-model:retrieval_model="retrieval_model" @selected="() => handleSelectedSearchMethod('hybrid_search')" />
         </div>
-        <el-row style="display: flex; justify-content: flex-end;">
-          <el-button type="primary" @click="handlePrev">上一步</el-button>
+        <el-row style="display: flex; justify-content: space-between;">
+          <el-button type="default" @click="handlePrev" class="prev-btn">
+            <el-icon><Back/></el-icon>上一步</el-button>
           <el-button type="primary" @click="handleInit">保存并处理</el-button>
         </el-row>
       </el-col>
@@ -91,7 +85,7 @@
       </el-col>
     </el-row>
     <CreateFinish v-else-if="step == 3" class="context-style" :dataset="dataset" :process_rule="process_rule"
-      :max_tokens="max_tokens" :pre_processing_rules="pre_processing_rules">
+      :doc_form="doc_form" :max_tokens="max_tokens" :pre_processing_rules="pre_processing_rules">
     </CreateFinish>
   </el-container>
 </template>
@@ -99,8 +93,8 @@
 <script setup lang="ts">
 import router from "@/router";
 import { ref, watch, onMounted, computed } from "vue";
-import { UploadFilled, Back, Document, Delete } from "@element-plus/icons-vue";
-import { ElMessage, type UploadProps, type UploadUserFile } from "element-plus";
+import { ElMessage, type UploadUserFile } from "element-plus";
+
 import {
   initDataset,
   UploadResponse,
@@ -113,7 +107,7 @@ import {
 import CreateFinish from "@/components/createFinish.vue";
 import UploadFiles from "@/components/uploadFiles/index.vue";
 import FileType from "@/components/uploadFiles/file-type.vue";
-import { RetrievalModel } from "@/models/dataset";
+import { ChunkingMode, RetrievalModel } from "@/models/dataset";
 import { postUserDatasetsRolBatchAdd } from "@/service/tenant";
 import Custom from "@/components/datasetSetting/segement/custom.vue";
 import Hierarchical from "@/components/datasetSetting/segement/hierarchical.vue";
@@ -121,6 +115,9 @@ import SemanticSearch from "@/components/datasetSetting/segement/semanticSearch.
 import FullTextSearch from "@/components/datasetSetting/segement/fullTextSearch.vue";
 import HybridSearch from "@/components/datasetSetting/segement/hybridSearch.vue";
 import Preview from "@/components/datasetSetting/preview.vue";
+import BackHeader from "@/components/backHeader/index.vue";
+import QaModel from "@/components/datasetSetting/segement/qaModel.vue"
+import { UploadFileIs } from "@/models/dataset";
 
 const radio = ref("datasets");
 
@@ -133,21 +130,27 @@ const segmentPreview = ref<any[]>([]); // 存储分段预览数据
 const isSegmentPreview = ref(false); // 标识当前是否为分段预览模式
 const previewLoading = ref(false);
 const step = ref(1);
+const doc_form = ref<ChunkingMode>(ChunkingMode.text);
 
 // 监听 radio 变化，重置上传序号和清空文件列表
 watch(
   () => radio.value,
-  () => {
+  (newRadio) => {
     // 切换上传类型时清空已上传的文件
     fileList.value = [];
     previewFile.value = null;
     previewContent.value = "";
     showPreview.value = false;
+    if (newRadio === 'datasets') {
+      doc_form.value = ChunkingMode.text;
+    } else {
+      doc_form.value = ChunkingMode.qa;
+    }
   }
 );
 // accept
 const accept = computed(() => {
-  return radio.value === 'datasets' ? '.pdf,.doc,.docx,.txt,.html,.markdown,.md,.xls,.xlsx,.csv' : '.csv,.xls,.xlsx'
+  return radio.value === 'datasets' ? '.pdf,.doc,.docx,.txt,.html,.markdown,.md,.xls,.xlsx,.csv,.pptx' : '.csv,.xls,.xlsx'
 });
 
 const process_rule = ref("custom");
@@ -198,7 +201,7 @@ const hierarchical = ref({
       enabled: false,
     },
     {
-      id: "remove_urls_and_emails",
+      id: "remove_urls_emails",
       enabled: false,
     },
   ],
@@ -208,7 +211,7 @@ const hierarchical = ref({
   },
   subchunk_segmentation: {
     separator: "\\n\\n",
-    max_tokens: 500,
+    max_tokens: 200,
   },
 });
 
@@ -280,8 +283,15 @@ const handlePrev = () => {
   }
 };
 const handleNext = () => {
-  step.value += 1;
+  // check
+  const check = fileList.value.find(x => x.status !== 'success')
+  console.log(check)
+  if (check) {
+    return ElMessage.warning("有文件上传不成功");
+  }
 
+  step.value += 1;
+  segmentPreview.value = []
   if (radio.value === "qa_pairs") {
     process_rule.value = ''
   } else {
@@ -296,12 +306,10 @@ const handleNext = () => {
   }
 };
 
-const handleSelectedProcessRule = (value: string) => {
-  if (radio.value === "qa_pairs") {
-    return;
-  }
-
-  return process_rule.value = value;
+const handleSelectedProcessRule = (value: string, mode: ChunkingMode) => {
+  process_rule.value = value;
+  doc_form.value = mode
+  return
 }
 const handleSelectedSearchMethod = (value: string) => {
   if (radio.value === "qa_pairs") {
@@ -312,6 +320,39 @@ const handleSelectedSearchMethod = (value: string) => {
 }
 
 const handleInit = () => {
+  // 校验数据
+  if (process_rule.value === "custom") {
+    if (custom.value.segmentation.separator == '') {
+      return ElMessage.warning("分段标识符不能为空");
+    }
+    if (!custom.value.segmentation.max_tokens) {
+      return ElMessage.warning("分段最大长度不能为空");
+    }
+    if (!custom.value.segmentation.chunk_overlap) {
+      return ElMessage.warning("分段重叠长度不能为空");
+    }
+    if (custom.value.segmentation.max_tokens < custom.value.segmentation.chunk_overlap) {
+      return ElMessage.warning("分段最大长度应大于分段重叠长度");
+    }
+  }
+
+  if (process_rule.value === "hierarchical") {
+    if (hierarchical.value.parent_mode == 'paragraph') {
+      if (hierarchical.value.segmentation.separator == '') {
+        return ElMessage.warning("父块分段标识符不能为空");
+      }
+      if (!hierarchical.value.segmentation.max_tokens) {
+        return ElMessage.warning("父块分段最大长度不能为空");
+      }
+    }
+    if (hierarchical.value.subchunk_segmentation.separator == '') {
+      return ElMessage.warning("子块分段标识符不能为空");
+    }
+    if (!hierarchical.value.subchunk_segmentation.max_tokens) {
+      return ElMessage.warning("子块分段最大长度不能为空");
+    }
+  }
+
   const params = {
     data_source: {
       type: "upload_file",
@@ -322,7 +363,7 @@ const handleInit = () => {
         },
       },
     },
-    doc_form: radio.value === "datasets" ? "text_model" : "qa_model",
+    doc_form: doc_form.value,
     doc_language: "Chinese Simplified",
     embedding_model: embedding_model.value,
     embedding_model_provider: embedding_model_provider.value,
@@ -340,15 +381,16 @@ const handleInit = () => {
     dataset.value = res;
     step.value = 3;
 
-    // 团队知识库 trick surprise 
+    // 团队知识库 trick surprise
     const tenantId = router.currentRoute.value.params.teamId
     const datasetId = res?.dataset?.id
     if (tenantId && datasetId) {
       console.log('initDataset tenantId', tenantId)
       postUserDatasetsRolBatchAdd(tenantId as string, datasetId)
     }
-  }
-  );
+  }).catch((error) => {
+    ElMessage.error(error?.message || "初始化知识库失败");
+  });
 };
 
 // 获取文件预览内容
@@ -380,11 +422,8 @@ const handlePreviewClick = () => {
   }
 
   if (fileList.value.length > 0) {
-    // 根据当前选择的 process_rule 模式获取对应的配置
-    const currentRules = custom.value;
-
     const params: IndexingEstimateParams = {
-      doc_form: radio.value === "datasets" ? "text_model" : "qa_model",
+      doc_form: doc_form.value,
       doc_language: "Chinese Simplified",
       indexing_technique: indexing_technique.value,
       info_list: {
@@ -395,7 +434,7 @@ const handlePreviewClick = () => {
       },
       process_rule: {
         mode: process_rule.value === '' ? "custom" : process_rule.value,
-        rules: currentRules,
+        rules: process_rule.value === 'custom' ? custom.value : hierarchical.value,
       },
     };
     previewLoading.value = true
@@ -416,7 +455,7 @@ const handlePreviewClick = () => {
       })
       .catch((error) => {
         console.error("获取分段预览失败:", error);
-        ElMessage.error("获取分段预览失败");
+        ElMessage.error(`获取分段预览失败: ${error}`);
       }).finally(() => {
         previewLoading.value = false
       });
@@ -452,7 +491,7 @@ const handleResetClick = () => {
         enabled: false,
       },
       {
-        id: "remove_urls_and_emails",
+        id: "remove_urls_emails",
         enabled: false,
       },
     ],
@@ -462,7 +501,7 @@ const handleResetClick = () => {
     },
     subchunk_segmentation: {
       separator: "\\n\\n",
-      max_tokens: 500,
+      max_tokens: 200,
     },
   }
 
@@ -502,7 +541,7 @@ watch(previewFile, (newFileId) => {
       }
 
       const params: IndexingEstimateParams = {
-        doc_form: radio.value === 'datasets' ? "text_model" : "qa_model",
+        doc_form: doc_form.value,
         doc_language: "Chinese Simplified",
         indexing_technique: indexing_technique.value,
         info_list: {
@@ -552,26 +591,13 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-.header-style {
-  display: flex;
-  background-color: #ffffff;
-  align-items: center;
-  justify-content: start;
-  height: auto;
-  margin-bottom: 16px;
-  // border-bottom: 1px solid var(--el-border-color);
+.prev-btn {
+  background-color: #EDEFF4;
 
-  .back {
-    font-size: 12px;
-  }
-
-  .dataset-title {
-    font-size: 14px;
-    font-weight: bold;
-    margin-left: 20px;
+  &:hover {
+    background-color: #e0e3e9;
   }
 }
-
 .content-container {
   display: flex;
   flex-direction: column;
@@ -590,8 +616,14 @@ onMounted(() => {
 }
 
 .title {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
+  line-height: 1.2;
+  padding-bottom: 16px;
+  padding-top: 32px;
+}
+.title:first-child{
+  padding-top: 0;
 }
 
 .slider-style {
@@ -719,7 +751,7 @@ onMounted(() => {
   transition: all 0.3s ease;
 
   &:hover {
-    border-color: #409eff;
+    border-color: #5169f0;
   }
 
   :deep(.el-card__header) {

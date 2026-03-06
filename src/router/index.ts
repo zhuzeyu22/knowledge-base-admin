@@ -5,7 +5,6 @@ import { accessUnitlogin } from "@/utils/auth";
 import { getTenantList, postSwitchWorkspace } from "@/service/team";
 import { getAccountProfile } from "@/service/workspace";
 import { useTeamStore } from "@/store/team";
-import { useUserStore } from "@/store/user";
 
 const routes = [
   {
@@ -63,6 +62,10 @@ const routes = [
         path: "public",
         name: "public",
         component: () => import("@/views/public/index.vue"),
+      },
+      {
+        path: "public/details",
+        component: () => import("@/views/private/details.vue"),
       },
       {
         path: "team",

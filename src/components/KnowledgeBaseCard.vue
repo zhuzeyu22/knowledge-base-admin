@@ -1,19 +1,21 @@
 <template>
-  <el-card @click="goToDetails">
+  <el-card class="knowledge-card" @click="goToDetails">
     <div class="knowledge-base-card">
-      <div class="knowledge-base-card-background"></div>
-      <div class="knowledge-base-card-name">{{ dataset.name }}</div>
-      <div class="knowledge-base-card-tags">
-        <el-tag type="info" style="margin-right: 2px;">{{ dataset.documentNumber }} 文档</el-tag>
-        <el-tag type="info">{{ (dataset.word_count / 1000).toFixed(1) }} 千字符</el-tag>
+      <div class="card-base-info">
+        <div class="knowledge-base-card-background"></div>
+        <div class="knowledge-base-card-name">{{ dataset.name }}</div>
+        <div class="knowledge-base-card-tags">
+          <el-tag type="info" style="margin-right: 2px;">{{ dataset.documentNumber }} 文档</el-tag>
+          <el-tag type="info">{{ (dataset.word_count / 1000).toFixed(1) }} 千字符</el-tag>
+        </div>
       </div>
       <div class="knowledge-base-card-description">
         {{ dataset.description }}
       </div>
 
-      <div class="knowledge-base-card-label" v-if="dataset.official == 'official'">
+      <!-- <div class="knowledge-base-card-label" v-if="dataset.official == 'official'">
         <img src="@\assets\official.png" alt="">
-      </div>
+      </div> -->
       <div class="knowledge-base-card-operate" @click.stop>
         <el-dropdown trigger="click" placement="bottom-end">
           <el-icon style="cursor: pointer">
@@ -22,7 +24,7 @@
           <template #dropdown>
             <el-dropdown-menu>
               <!-- <el-dropdown-item @click="updateUserDialogVisible = true" divided>共享</el-dropdown-item> -->
-              <el-dropdown-item @click="handleDeleteClick">删除</el-dropdown-item>
+              <el-dropdown-item @click="handleDeleteClick" class="delete-dropdown-item">删除</el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -53,7 +55,7 @@ const router = useRouter();
 const goToDetails = () => {
   router.push({
     name: "details",
-    query: { 
+    query: {
       id: props.dataset.id,
     },
   });
@@ -95,15 +97,29 @@ const handleDeleteClick = () => {
 </script>
 
 <style scoped>
+.knowledge-card{
+  border-radius: 10px;
+}
+:deep(.el-card__body) {
+  position: relative;
+}
 .knowledge-base-card {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   position: relative;
   width: 100%;
   flex-shrink: 0;
-  height: 200px;
+  height: 240px;
   flex-grow: 1;
   align-items: center;
+}
+.card-base-info{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
 }
 
 .knowledge-base-card-background {
@@ -124,9 +140,17 @@ const handleDeleteClick = () => {
 }
 
 .knowledge-base-card-name {
-  font-size: 15px;
+  line-height: 22px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  font-size: 16px;
   font-weight: bold;
-  margin-bottom: 4px;
+  margin-bottom: 12px;
+  text-align: center;
 }
 
 .knowledge-base-card-tags {
@@ -134,18 +158,26 @@ const handleDeleteClick = () => {
 }
 
 .knowledge-base-card-description {
-  font-size: 12px;
+  height: 60px;
+  margin-top: 5px;
+  font-size: 13px;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 3;
+  line-height: 20px;
 }
 
 .knowledge-base-card-label {
   position: absolute;
-  top: -22px;
+  top: -20px;
   left: -20px;
+  padding: 6px 10px;
+  background: var(--el-color-primary);
+  color: #fff;
+  font-size: 12px;
+  border-radius: 10px 0 10px 0;
 }
 
 .knowledge-base-card-operate {
@@ -154,6 +186,18 @@ const handleDeleteClick = () => {
   right: 0px;
 }
 
+:deep(.el-dropdown-menu__item){
+  margin: 0 3px;
+  border-radius: 3px;
+  color: #FF1919;
+}
+
+:deep(.el-dropdown-menu__item:hover,
+      .el-dropdown-menu__item:is-active,
+      .el-dropdown-menu__item:focus) {
+  --el-dropdown-menuItem-hover-fill: #F4F6F7 !important;
+  --el-dropdown-menuItem-hover-color: #FF1919 !important;
+}
 .dialog-content {
   display: flex;
   flex-direction: row;

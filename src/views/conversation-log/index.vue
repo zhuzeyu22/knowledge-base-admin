@@ -42,14 +42,14 @@
                 </div>
                 <!-- 分页 -->
                 <div class="pagination-block">
-                    <el-pagination 
-                        :v-model:current-page="currentPage" 
+                    <el-pagination
+                        :v-model:current-page="currentPage"
                         :v-model:page-size="pageSize"
                         :page-sizes="[10, 20, 50, 100]"
                         :background="true"
-                        layout="sizes, prev, pager, next" 
+                        layout=" prev, pager, next"
                         :total="total"
-                        @size-change="handleSizeChange" 
+                        @size-change="handleSizeChange"
                         @current-change="handleCurrentChange"
                         prev-text="< 上一页"
                         next-text="下一页 >" />
@@ -71,8 +71,8 @@
                         </div>
                         <div class="drawer-body">
                             <div class="conversation-content">
-                                <div 
-                                    v-for="(message, index) in conversationMessages" 
+                                <div
+                                    v-for="(message, index) in conversationMessages"
                                     :key="index"
                                     :class="['message-item', message.type === 'user' ? 'message-right' : 'message-left']"
                                 >
@@ -191,7 +191,7 @@ const loadConversationLogs = async (params: ConversationQueryParams = {}) => {
         ElMessage.success(`数据加载完成`)
     } catch (error: any) {
         ElMessage.error(error.message || '后端加载数据失败，使用模拟数据')
-        
+
         //api调用失败，使用模拟数据并模拟分页
         const start = (currentPage.value - 1) * pageSize.value
         const end = start + pageSize.value
@@ -247,7 +247,7 @@ const onQuery = async () => {
 const onReset = () => {
     formInline.user = ''
     formInline.date = []
-    
+
     //重置分页
     currentPage.value = 1
     pageSize.value = 10
@@ -260,7 +260,7 @@ const onReset = () => {
 const onDetail = async (row: any) => {
     currentSession.value = row
     drawerVisible.value = true
-    
+
     try {
         const response = await apiService.getConversationDetail(row.conversationId || row.log)
         conversationMessages.value = response.data
@@ -274,7 +274,7 @@ const onDetail = async (row: any) => {
 //分页大小改变
 const handleSizeChange = (val: number) => {
     pageSize.value = val
-    currentPage.value = 1 
+    currentPage.value = 1
     // 使用保存的查询参数
     loadConversationLogs(currentQueryParams.value)
 }
@@ -307,7 +307,7 @@ const handleCurrentChange = (val: number) => {
     .page-header {
         height: 73px;
         line-height: 73px;
-        
+
         .page-title {
             margin: 0;
             font-size: 20px;
@@ -326,7 +326,7 @@ const handleCurrentChange = (val: number) => {
         .log-table {
             max-height: calc(100% - 170px);
             overflow-y: auto;
-            
+
             .table {
                 width: 100%;
             }
@@ -375,7 +375,7 @@ const handleCurrentChange = (val: number) => {
                     h3 {
                         font-size: 20px;
                     }
-                    
+
                     .session-info {
                         margin-top: 10px;
                         font-size: 14px;
@@ -388,7 +388,7 @@ const handleCurrentChange = (val: number) => {
                     cursor: pointer;
                     color: #909399;
                     &:hover {
-                        color: #409eff;
+                        color: #5169f0;
                     }
                 }
             }
@@ -433,11 +433,11 @@ const handleCurrentChange = (val: number) => {
                                 max-width: 70%;
                             }
                         }
-                        
+
                         .message-bubble {
                             padding: 12px 16px;
                             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                            
+
                             .message-text {
                                 font-size: 14px;
                                 line-height: 1.5;

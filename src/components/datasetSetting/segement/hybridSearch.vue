@@ -7,9 +7,9 @@
     </template>
     <template #content>
       <div class="context">
-        <el-row :gutter="10">
+        <el-row :gutter="20">
           <el-col :span="12">
-            <BaseCard style="height: 100%;" name="权重设置" color="#F9FBFFFF"
+            <BaseCard style="height: 100%; border-color: #f2f2f2" name="权重设置" :color="isWeightedScore"
               :visiable="retrieval_model.reranking_mode == 'weighted_score'" :show-radio="true"
               description="通过调整分配的权重，重新排序策略确定是优先进行语义匹配还是关键字匹配。"
               @selected="() => handleSelectedreRankingMode('weighted_score')">
@@ -19,7 +19,7 @@
             </BaseCard>
           </el-col>
           <el-col :span="12">
-            <BaseCard style="height: 100%;" name="Rerank 模型" color="#F9FBFFFF"
+            <BaseCard style="height: 100%; border-color: #f2f2f2" name="Rerank 模型" :color="isRerankingModel"
               :visiable="retrieval_model.reranking_mode == 'reranking_model'" :show-radio="true"
               description="重排序模型将根据候选文档列表与用户问题语义匹配度进行重新排序，从而改进语义排序的结果" :disabled="disabled"
               @selected="() => handleSelectedreRankingMode('reranking_model')">
@@ -48,6 +48,7 @@
 import BaseCard from './baseCard.vue';
 import Rerank from './rerank.vue';
 import RerankConfig from './rerankConfig.vue';
+import {computed} from "vue";
 
 const emit = defineEmits(["selected"]);
 
@@ -63,7 +64,14 @@ const { disabled, visiable } = defineProps({
     default: () => true,
   },
 });
+// 计算属性
+const isWeightedScore = computed(() => {
+  return retrieval_model.value?.reranking_mode === 'weighted_score' ? '#f9fbff' : '#fff';
+});
 
+const isRerankingModel = computed(() => {
+  return retrieval_model.value?.reranking_mode === 'reranking_model'? '#f9fbff' : '#fff';
+});
 const retrieval_model = defineModel("retrieval_model");
 const handleWeightChange = (value) => {
   retrieval_model.value.weights.vector_setting.vector_weight = Number((1 - value).toFixed(1))
@@ -79,6 +87,10 @@ const handleSelectedreRankingMode = (reranking_mode: string) => {
 </script>
 
 <style scoped lang="less">
+:deep(.el-slider) {
+  --el-slider-height: 4px;
+  --el-slider-button-size: 13px;
+}
 .context {
   padding: 12px 16px;
 }

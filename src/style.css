@@ -11,7 +11,19 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
 }
+/*修改组件库默认值*/
+:root{
+    --el-menu-item-height: 46px;
+    --el-menu-text-color:#455166;
+    --el-menu-active-color: #5169f0;
+    --el-menu-base-level-padding: 0;
+    --el-tabs-header-height:36px;
+    --el-card-border-radius:8px;
+    --el-font-family: "PingFang SC","Helvetica Neue",Helvetica,"Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
+}
+
 
 a {
   font-weight: 500;
@@ -99,6 +111,15 @@ button:focus-visible {
 
 .can-not-click {
   cursor: not-allowed;
+}
+
+/* 知识库自适应列表布局 */
+.grid-container {
+  display: grid;
+  /* 关键：自适应列数 */
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  /* 列与列、行与行之间的间距 */
 }
 
 #app {

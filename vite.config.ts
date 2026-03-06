@@ -1,7 +1,6 @@
 import { defineConfig, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
 import path from "path";
-import { viteMockServe } from 'vite-plugin-mock'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -13,19 +12,7 @@ export default defineConfig(({ mode }) => {
   console.log("登录重定向至", `[ ${env.VITE_SERVER_PROXY_SSO_LOGIN_URL} ]`); // ✅ 可读取
 
   return {
-    plugins: [
-      vue(),
-      viteMockServe({
-        mockPath: 'mock', // 指定 mock 文件目录（相对于项目根目录）
-        localEnabled: true, // 开发环境开启 mock
-        prodEnabled: false, // 生产环境关闭
-        injectCode: `
-          import { setupProdMockServer } from './mock-prod-server';
-          setupProdMockServer();
-        `,
-        logger: true, // 打印 mock 日志
-      }),
-    ],
+    plugins: [vue()],
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "src"),

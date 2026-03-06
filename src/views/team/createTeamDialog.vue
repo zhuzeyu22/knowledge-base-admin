@@ -15,6 +15,7 @@ import { useTeamStore } from '@/store/team';
 import { useUserStore } from '@/store/user';
 import { ElMessage } from 'element-plus';
 import { computed, ref } from 'vue';
+import router from "@/router";
 
 const newName = ref('')
 const visible = defineModel("visible")
@@ -37,21 +38,32 @@ const handleCreateConfirm = () => {
         description: "",
         avatar: '',
         owner,
-    }).then(() => {
+    }).then((res) => {
         ElMessage({
             type: "success",
             message: "创建成功",
         });
         teamStore.refreshTeamList()
+        console.log(res)
+        router.push({
+            path: `/team/${res.data.id}/datasets`,
+            query: {
+                tenant_name: newName.value
+            },
+        })
     }).catch((e) => {
         console.log(e)
-        if(e.response){
-            
+        if (e?.response?.data?.message) {
+            ElMessage({
+                type: "warning",
+                message: e.response.data.message,
+            });
+        } else {
+            ElMessage({
+                type: "warning",
+                message: e.message,
+            });
         }
-        ElMessage({
-            type: "warning",
-            message: e.message,
-        });
     }).finally(() => {
         visible.value = false;
     })

@@ -11,7 +11,7 @@ export const useUserStore = defineStore("user", {
   state: () => ({
     profile: {} as Profile,
     // 控制页面菜单显示
-    isAdmin: true,
+    isAdmin: false,
     userName:'',
   }),
   getters: {
@@ -36,7 +36,7 @@ export const useUserStore = defineStore("user", {
     async updatePermission() {
       const res = await getFolderPermission()
       console.log('isAdmin', res)
-      this.isAdmin = res.is_admin
+      this.isAdmin = Boolean(res?.is_admin)
     }
   },
 });

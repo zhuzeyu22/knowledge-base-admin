@@ -2,7 +2,7 @@
   <el-container class="content-container">
     <el-header class="header-style">
       <div>团队知识库</div>
-      <el-input placeholder="请输入内容" class="search-style" clearable  :prefix-icon="Search"/>
+      <el-input placeholder="搜索" class="search-style" clearable  :prefix-icon="Search"/>
     </el-header>
     <el-main :infinite-scroll-distance="10"
       class="context-style" style="overflow: auto" element-loading-text="数据加载中...">
@@ -30,7 +30,7 @@ import { Search } from '@element-plus/icons-vue';
 }
 
 .search-style {
-  margin: 0 auto;
+  margin-right: calc(50% - 150px);
   width: 300px;
   height: 40px;
   border-radius: 25px;
@@ -45,11 +45,4 @@ import { Search } from '@element-plus/icons-vue';
   height: 100%;
 }
 
-.grid-container {
-  display: grid;
-  /* 关键：自适应列数 */
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 16px;
-  /* 列与列、行与行之间的间距 */
-}
 </style>

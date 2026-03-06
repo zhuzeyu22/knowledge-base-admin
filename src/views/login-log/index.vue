@@ -40,14 +40,14 @@
                     </el-table>
                 </div>
                 <div class="pagination-block">
-                    <el-pagination 
-                        v-model:current-page="currentPage" 
+                    <el-pagination
+                        v-model:current-page="currentPage"
                         v-model:page-size="pageSize"
                         :page-sizes="[10, 20, 50, 100]"
                         :background="true"
-                        layout="sizes, prev, pager, next" 
+                        layout="prev, pager, next"
                         :total="total"
-                        @size-change="handleSizeChange" 
+                        @size-change="handleSizeChange"
                         @current-change="handleCurrentChange"
                         prev-text="< 上一页"
                         next-text="下一页 >" />
@@ -141,18 +141,18 @@ const onQuery = async () => {
         ElMessage.warning('请输入查询条件')
         return
     }
-    
+
     const queryParams:LoginQueryParams = {}
 
     //用户
     if(formInline.user.trim()){
         queryParams.userName = formInline.user.trim()
     }
-    
+
     //date
     if(formInline.date && formInline.date.length === 2){
         const [startDate, endDate] = formInline.date
-        
+
         // 格式化日期为 YYYY-MM-DD HH:mm:ss 格式
         const formatDateTime = (date: Date, isEnd = false) => {
             const year = date.getFullYear()
@@ -161,7 +161,7 @@ const onQuery = async () => {
             const time = isEnd ? '23:59:59' : '00:00:00'
             return `${year}-${month}-${day} ${time}`
         }
-        
+
         queryParams.loginStartTime = formatDateTime(startDate, false)
         queryParams.loginEndTime = formatDateTime(endDate, true)
     }

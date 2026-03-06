@@ -38,12 +38,12 @@
                     </el-table>
                 </div>
                 <div class="pagination-block">
-                    <el-pagination 
-                        v-model:current-page="page" 
+                    <el-pagination
+                        v-model:current-page="page"
                         v-model:page-size="pageSize"
                         :page-sizes="[10, 20, 50, 100]"
                         :background="true"
-                        layout="sizes, prev, pager, next" 
+                        layout="prev, pager, next"
                         :total="total"
                         @current-change="handlePageChange"
                         @size-change="handlePageSizeChange"
@@ -80,7 +80,7 @@ const total = ref(0);
 const loadLoginLogs = async () => {
     queryLoading.value = true
     let params = {
-        page:page.value, 
+        page:page.value,
         limit:pageSize.value,
     }
     if(formInline.action_type){
@@ -94,7 +94,7 @@ const loadLoginLogs = async () => {
             // action_type:
         }));
         console.log(loginList.value)
-        
+
         total.value = res.total;
         console.log(total.value);
     }).finally(() => {
@@ -102,7 +102,7 @@ const loadLoginLogs = async () => {
     })
 }
 const formatTime = (time:string) => {
-    const date = new Date(time) 
+    const date = new Date(time)
     return date.toLocaleString('zh-CN', {
         year:'numeric',
         month:'2-digit',

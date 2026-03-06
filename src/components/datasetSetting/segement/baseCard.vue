@@ -72,7 +72,7 @@ const handleSelected = () => {
   flex-direction: column;
   width: 100%;
   border-radius: 8px;
-  border: 1px solid #E2E2E2;
+  border: 1px solid var(--el-color-primary);
   flex: 0;
 
   .header {
@@ -81,6 +81,7 @@ const handleSelected = () => {
     justify-content: space-between;
     align-items: center;
     padding: 12px;
+    border-radius: 8px;
     flex: 1;
   }
 
@@ -136,7 +137,6 @@ const handleSelected = () => {
     }
 
     .description {
-      font-size: 10px;
       font-weight: 400;
       font-size: 12px;
       color: #455166;

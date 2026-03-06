@@ -34,6 +34,6 @@ const accessUnitloginByprod = async (params) => {
       localStorage.setItem("console_token", res.data.access_token);
     });
   } else {
-    goUnifiedlogin()
+    goUnifiedlogin();
   }
 };

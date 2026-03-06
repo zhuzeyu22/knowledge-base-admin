@@ -100,7 +100,7 @@ const handleAddPublic = () => {
     width: 30px;
     opacity: 0;
     visibility: hidden;
-    border-left: #409EFF solid 2px;
+    border-left: #5169f0 solid 2px;
     padding-left: 10px;
     transition: opacity 0.2s ease, visibility 0.2s ease;
 }
@@ -112,6 +112,6 @@ const handleAddPublic = () => {
 }
 
 .hover-button:hover {
-    color: #409EFF;
+    color: #5169f0;
 }
 </style>

@@ -57,6 +57,7 @@ const load = () => {
         limit.value,
     ).then((res) => {
         teamList.value.push(...res.data.results.filter((item) => item.is_public === true))
+        localStorage.setItem('teamList',JSON.stringify(teamList.value))
         nowIndex.value = page.value * limit.value
         total.value = res.data.count
         page.value++
@@ -144,7 +145,7 @@ watch(
 .el-tree-node__content {
     height: 45px;
     line-height: 45px;
-    border-radius: 10px; 
+    border-radius: 10px;
     margin-bottom: 2px;
 }
 .custom-tree-node {
@@ -180,6 +181,6 @@ watch(
 
 .bg-highlight {
     background-color: #ecf5ff;
-    color: #409eff;
+    color: #5169f0;
 }
 </style>

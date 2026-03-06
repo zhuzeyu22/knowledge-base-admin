@@ -1,18 +1,19 @@
 <template>
-  <el-row :gutter="8">
+  <el-row :gutter="20">
     <el-col :span="8">
       <div class="label ellipsis">分段标识符</div>
-      <el-input class="auto-width-input" v-model="segmentation.separator" :disabled="disabled" size="small"></el-input>
+      <el-input class="auto-width-input" v-model="segmentation.separator" maxlength="30" :disabled="disabled"
+        size="default"></el-input>
     </el-col>
     <el-col :span="8">
       <div class="label ellipsis">分段最大长度</div>
-      <el-input-number class="full-width-input" v-model="segmentation.max_tokens" :min="50" :disabled="disabled" size="small"
-        controls-position="right"></el-input-number>
+      <el-input-number class="full-width-input" v-model="segmentation.max_tokens" :min="50" :max="4000"
+        :disabled="disabled" size="default" controls-position="right"></el-input-number>
     </el-col>
     <el-col v-if="segmentation?.chunk_overlap !== undefined" :span="8">
       <div class="label ellipsis">分段重叠长度</div>
-      <el-input-number class="full-width-input" v-model="segmentation.chunk_overlap" :min="50" :disabled="disabled" size="small"
-        controls-position="right"></el-input-number>
+      <el-input-number class="full-width-input" v-model="segmentation.chunk_overlap" :min="50" :max="4000"
+        :disabled="disabled" size="default" controls-position="right"></el-input-number>
     </el-col>
   </el-row>
 </template>
@@ -47,6 +48,7 @@ const segmentation = defineModel("segmentation");
 
 .full-width-input {
   width: 100%;
+
   :deep(.el-input__wrapper) {
     width: 100%;
   }

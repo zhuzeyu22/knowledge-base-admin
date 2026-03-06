@@ -8,18 +8,19 @@ export interface DocumentList {
     name: string;
     segmentMode: string;
     word_count: number;
-    hit_count:number;
+    hit_count: number;
     created_at: string;
     enabled: boolean;
-    display_status ?: string
+    display_status?: string
 }
 export interface DocumentListParams {
     keyword?: string
     page?: number
     limit?: number
+    sign?: 'public' | ''
 }
 export interface DocumentListResponse {
-    data:DocumentList[]
+    data: DocumentList[]
 }
 
 export const apiService = {
@@ -27,7 +28,7 @@ export const apiService = {
     async getDatasetById(datasetId: string): Promise<Dataset> {
         return request.get(`datasets/${datasetId}`)
     },
-    
+
     // 获取文档列表
     async getDocumentList(datasetId: string, params: DocumentListParams = {}): Promise<DocumentListResponse> {
         return request.get(`datasets/${datasetId}/documents`, {

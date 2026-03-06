@@ -44,14 +44,14 @@
                     </el-table>
                 </div>
                 <div class="pagination-block">
-                    <el-pagination 
-                        v-model:current-page="currentPage" 
+                    <el-pagination
+                        v-model:current-page="currentPage"
                         v-model:page-size="pageSize"
                         :page-sizes="[10, 20, 50, 100]"
                         :background="true"
-                        layout="sizes, prev, pager, next" 
+                        layout="prev, pager, next"
                         :total="total"
-                        @size-change="handleSizeChange" 
+                        @size-change="handleSizeChange"
                         @current-change="handleCurrentChange"
                         prev-text="< 上一页"
                         next-text="下一页 >" />
@@ -192,7 +192,7 @@ const onReset = () => {
 }
 const handleSizeChange = (val:number) => {
     pageSize.value = val
-    currentPage.value = 1 
+    currentPage.value = 1
     loadAuthLogs(currentQueryParams.value)
 }
 const handleCurrentChange =(val:number) => {

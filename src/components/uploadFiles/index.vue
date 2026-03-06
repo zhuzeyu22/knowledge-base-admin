@@ -1,52 +1,35 @@
 <template>
     <section class="upload-file">
-        <el-upload v-model:file-list="fileList" style="width: 100%" drag :auto-upload="false" :accept="accept" action=""
-            :on-change="handleUploadChange" :limit="MAX_FILE_COUNT" :on-exceed="handleExceed" multiple
-            :show-file-list="false">
+        <el-upload ref="uploadRef" v-model:file-list="fileList" style="width: 100%" drag :auto-upload="false"
+            :accept="accept" action="" :on-change="handleUploadChange" :limit="MAX_FILE_COUNT" :on-exceed="handleExceed"
+            multiple :show-file-list="false">
             <img src="@/assets/dataset-setting/upload-files.png" width="50" alt="">
             <div class="el-upload__text">
-                <el-col>
-                    <el-button type="primary" size="small">选择文件上传</el-button>
-                </el-col>
-                <el-col style="margin-top: 10px; font-size: 12px;"> 或将文件拖拽到此处</el-col>
+
+              <el-button type="text" size="default">点击上传</el-button>
+              <span>&nbsp;/&nbsp;拖拽到此区域</span>
             </div>
         </el-upload>
         <!-- 已上传文件列表 -->
         <div v-if="fileList.length > 0" class="file-list-container">
             <div class="file-list-card">
                 <div v-for="file in fileList" :key="file.id" class="uploaded-file-item">
-                    <div class="file-info" @click="handleFileClick(file.id)">
-                        <img v-if="file.ext === 'pdf'" src="@/assets/dataset-setting/file-icon/pdf.png" width="24"
-                            alt="" />
-                        <img v-else-if="file.ext === 'doc'" src="@/assets/dataset-setting/file-icon/doc.png" width="24"
-                            alt="" />
-                        <img v-else-if="file.ext === 'docx'" src="@/assets/dataset-setting/file-icon/docx.png"
-                            width="24" alt="" />
-                        <img v-else-if="file.ext === 'html'" src="@/assets/dataset-setting/file-icon/html.png"
-                            width="24" alt="" />
-                        <img v-else-if="file.ext === 'markdown'" src="@/assets/dataset-setting/file-icon/markdown.png"
-                            width="24" alt="" />
-                        <img v-else-if="file.ext === 'md'" src="@/assets/dataset-setting/file-icon/markdown.png"
-                            width="24" alt="" />
-                        <img v-else-if="file.ext === 'csv'" src="@/assets/dataset-setting/file-icon/csv.png" width="24"
-                            alt="" />
-                        <img v-else-if="file.ext === 'txt'" src="@/assets/dataset-setting/file-icon/txt.png" width="24"
-                            alt="" />
-                        <img v-else-if="file.ext === 'xls'" src="@/assets/dataset-setting/file-icon/xls.png" width="24"
-                            alt="" />
-                        <img v-else-if="file.ext === 'xlsx'" src="@/assets/dataset-setting/file-icon/xlsx.png"
-                            width="24" alt="" />
-                        <div class="file-details ellipsis">
-                            <div class="file-name ellipsis">{{ file.name }}</div>
-                            <div class="file-meta">
-                                {{ getFileExtension(file.name) }} ·
-                                {{ formatFileSize(file.size) }}
+                    <div class="uploaded-file-body">
+                        <div class="file-info" @click="handleFileClick(file.id)">
+                            <img :src="getFileIcon(file.ext)" width="24" alt="" />
+                            <div class="file-details ellipsis">
+                                <div class="file-name ellipsis">{{ file.name }}</div>
+<!--                              {{ getFileExtension(file.name) }} ·  -->
+                              <div class="file-meta">
+                                    {{ formatFileSize(file.size) }}
+                                </div>
                             </div>
                         </div>
+                        <el-icon class="delete-icon" @click="handleDeleteFile(file.id)" :size="20" color="#909399">
+                            <Close />
+                        </el-icon>
                     </div>
-                    <el-icon class="delete-icon" @click="handleDeleteFile(file.id)" :size="20" color="#909399">
-                        <Delete />
-                    </el-icon>
+                    <el-progress v-if="file.status === 'uploading'" :percentage="file.percentage" :show-text="false"></el-progress>
                 </div>
             </div>
         </div>
@@ -56,8 +39,29 @@
 <script setup lang="ts">
 // 上传文件组件
 import { uploadDocument } from "@/service/datasets";
-import { ElMessage, type UploadProps, } from "element-plus";
+import { ElMessage, UploadInstance, type UploadProps, } from "element-plus";
+import { nextTick, ref } from "vue";
+import { Close } from "@element-plus/icons-vue";
+// 文件图标映射表
+const fileIconMap: Record<string, string> = {
+  pdf: 'pdf.png',
+  doc: 'doc.png',
+  docx: 'docx.png',
+  html: 'html.png',
+  markdown: 'markdown.png',
+  md: 'markdown.png',
+  csv: 'csv.png',
+  txt: 'txt.png',
+  xls: 'xls.png',
+  xlsx: 'xlsx.png',
+  pptx: 'pptx.png',
+};
 
+// 获取文件图标路径
+const getFileIcon = (ext: string): string => {
+  const iconFile = fileIconMap[ext?.toLowerCase()] || 'default.png';
+  return new URL(`../../assets/dataset-setting/file-icon/${iconFile}`, import.meta.url).href;
+};
 const MAX_FILE_SIZE = 40 * 1024 * 1024 // 40MB
 
 // .pdf,.doc,.docx,.txt,.html,.markdown,.md,.xls,.xlsx,.csv
@@ -73,8 +77,9 @@ const emit = defineEmits(["click", "delete"]);
 // UploadResponse[] | UploadUserFile[]
 const fileList = defineModel("fileList");
 const MAX_FILE_COUNT = 10; // 最大文件数量限制
+const uploadRef = ref<UploadInstance>()
 
-const handleUploadChange: UploadProps["onChange"] = (
+const handleUploadChange: UploadProps["onChange"] = async (
     uploadFile,
     uploadFiles
 ) => {
@@ -89,6 +94,12 @@ const handleUploadChange: UploadProps["onChange"] = (
         return;
     }
 
+    let index;
+    while ((index = uploadFiles.findIndex(file => file.name === uploadFile.name)) !== -1) {
+        uploadFiles.splice(index, 1);
+    }
+    uploadFiles.push(uploadFile);
+
     console.log('uploadFile', uploadFile)
 
     // 校验文件大小
@@ -101,60 +112,40 @@ const handleUploadChange: UploadProps["onChange"] = (
     // 开始上传文件
     const formData = new FormData();
     formData.append("file", uploadFile.raw as File);
-    uploadDocument(formData)
-        .then((response) => {
-            // 添加序号到响应对象
-            const index = fileList.value.findIndex(file => file.name === response.name)
-            fileList.value[index].id = response.id
-        })
-        .catch((error) => {
-            ElMessage.error(`文件上传失败${error}`);
-            console.error("File upload failed:", error);
-        });
+    uploadFile.status = "uploading"
+    await uploadDocument(formData, {
+        onUploadProgress: (progressEvent) => {
+            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+            uploadFile.percentage = percent
+        }
+    }).then((response) => {
+        // 添加序号到响应对象
+        const index = fileList.value.findIndex(file => file.name === response.name)
+        fileList.value[index].id = response.id
+        uploadFile.status = "success"
+        // fileList.value[index].id = response.id
+    }).catch((error) => {
+        ElMessage.error(`文件上传失败${error}`);
+        console.error("File upload failed:", error);
+        uploadFile.status = "fail"
+    });
 
 };
 
-
 // 处理超出文件数量限制
-const handleExceed: UploadProps["onExceed"] = (uploadFile, uploadFiles) => {
-    console.log(uploadFile)
-    const length = MAX_FILE_COUNT - uploadFiles.length;
-    uploadFile.slice(0, length).forEach(file => {
-        // 验证文件格式
-        const type = file.name.replace(/.*\./, "");
-        let regex = accept.split(",").map((x: string) => x.replace(/.*\./, ""));
+const handleExceed: UploadProps["onExceed"] = async (uploadFile, uploadFiles) => {
 
-        if (!regex.find((x) => x === type)) {
-            ElMessage.error("文件格式错误，请上传正确的文件格式");
-            return false;
-        }
+    while (fileList.value.length <= MAX_FILE_COUNT && uploadFile.length > 0) {
+        let current = uploadFile.shift()
+        uploadRef.value?.handleStart(current as UploadRawFile)
+        await nextTick(() => { })
+    }
 
-        // 校验文件大小
-        if (uploadFile.size > MAX_FILE_SIZE) {
-            ElMessage.error(`文件大小不能超过 ${MAX_FILE_SIZE / 1024 / 1024}MB！`)
-            return false
-        }
-
-
-        // 开始上传文件
-        const formData = new FormData();
-        formData.append("file", file as File);
-        uploadDocument(formData)
-            .then((response) => {
-                // 添加序号到响应对象
-                fileList.value.push(response);
-                // const fileWithSequence = { ...response, sequence: currentSequence };
-            })
-            .catch((error) => {
-                ElMessage.error(`文件上传失败${error}`);
-                console.error("File upload failed:", error);
-            });
-
-    })
-
-    ElMessage.warning(
-        `已达到最大文件数量限制${MAX_FILE_COUNT}个，请删除文件后再上传`
-    );
+    if (uploadFile.length > 0) {
+        ElMessage.warning(
+            `已达到最大文件数量限制${MAX_FILE_COUNT}个，请删除文件后再上传`
+        );
+    }
 };
 
 // 点击文件名显示预览
@@ -175,7 +166,7 @@ const formatFileSize = (bytes: number): string => {
     const k = 1024;
     const sizes = ["B", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return (bytes / Math.pow(k, i)).toFixed(2) + sizes[i];
+    return (bytes / Math.pow(k, i)).toFixed(2)  + sizes[i];
 };
 
 // 删除文件
@@ -196,6 +187,7 @@ const handleDeleteFile = (fileId: string) => {
     flex: 1;
     overflow: hidden;
     margin-bottom: 16px;
+    width: 490px;
 }
 
 
@@ -230,13 +222,11 @@ const handleDeleteFile = (fileId: string) => {
 
 .file-list-card {
     max-height: 400px;
-    overflow: hidden;
 }
 
 .uploaded-file-item {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
     padding: 8px 12px;
     margin-bottom: 4px;
     background-color: #f5f7fa;
@@ -244,6 +234,13 @@ const handleDeleteFile = (fileId: string) => {
     transition: all 0.3s ease;
     width: 100%;
     overflow-x: hidden;
+
+    .uploaded-file-body {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+    }
 
     &:hover {
         background-color: #e6e8eb;
@@ -266,7 +263,7 @@ const handleDeleteFile = (fileId: string) => {
             min-width: 0;
 
             .file-name {
-                font-size: 12px;
+                font-size: 14px;
                 color: #303133;
                 font-weight: 500;
                 margin-bottom: 4px;
@@ -276,7 +273,7 @@ const handleDeleteFile = (fileId: string) => {
             }
 
             .file-meta {
-                font-size: 10px;
+                font-size: 12px;
                 color: #909399;
             }
         }

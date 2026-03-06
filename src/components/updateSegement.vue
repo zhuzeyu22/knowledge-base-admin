@@ -7,70 +7,33 @@
       <el-col :span="6"> {{ content.length }} 字符 </el-col>
     </el-row>
     <el-row style="margin-bottom: 16px" v-if="docForm === 'text_model'">
-      <el-input
-        v-model="content"
-        style="width: 100%"
-        :rows="20"
-        type="textarea"
-        placeholder="请输入文本"
-      >
+      <el-input v-model="content" style="width: 100%" :rows="20" type="textarea" placeholder="请输入文本">
       </el-input>
     </el-row>
     <el-row style="margin-bottom: 16px" v-if="docForm === 'qa_model'">
       <h2 style="padding: 10px;">问题：</h2>
-      <el-input
-        v-model="content"
-        style="width: 100%"
-        :rows="20"
-        type="textarea"
-        placeholder="请输入文本"
-      >
+      <el-input v-model="content" style="width: 100%" :rows="20" type="textarea" placeholder="请输入文本">
       </el-input>
       <h2 style="padding: 10px;">答案：</h2>
-      <el-input
-        v-model="newSegement.answer"
-        style="width: 100%"
-        :rows="20"
-        type="textarea"
-        placeholder="请输入文本"
-      >
+      <el-input v-model="newSegement.answer" style="width: 100%" :rows="20" type="textarea" placeholder="请输入文本">
       </el-input>
     </el-row>
-    <el-row
-      style="
+    <el-row style="
         margin-bottom: 16px;
         display: flex;
         flex-wrap: wrap;
         flex-direction: row;
         gap: 8px;
-      "
-    >
-      <el-tag
-        v-for="value in newSegement.keywords"
-        closable
-        @close="handleCloseTag(value)"
-        >{{ value }}</el-tag
-      >
-      <el-input
-        v-if="inputVisible"
-        ref="InputRef"
-        v-model="inputTag"
-        style="width: 4rem"
-        size="small"
-        @keyup.enter="handleInputConfirm"
-        @blur="handleInputConfirm"
-      />
+      ">
+      <el-tag v-for="value in newSegement.keywords" closable @close="handleCloseTag(value)">{{ value }}</el-tag>
+      <el-input v-if="inputVisible" ref="InputRef" v-model="inputTag" style="width: 4rem" size="small"
+        @keyup.enter="handleInputConfirm" @blur="handleInputConfirm" />
       <el-button v-else class="button-new-tag" size="small" @click="showInput">
         + New Tag
       </el-button>
     </el-row>
     <div class="dialog-footer">
-      <el-button
-        type="primary"
-        :disabled="content.length == 0"
-        @click="handleUpdateSegement"
-        v-loading="loading"
-        >确定
+      <el-button type="primary" :disabled="content.length == 0" @click="handleUpdateSegement" v-loading="loading">确定
       </el-button>
       <el-button @click="visible = false">取消</el-button>
     </div>
@@ -89,6 +52,7 @@ import {
 import { patchSegment, createSegment } from "@/service/segement";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { Segment } from "@/models/segement";
+import _, { set } from 'lodash'
 
 const visible = defineModel({ default: false });
 const emit = defineEmits(["update_data"]);
@@ -112,6 +76,7 @@ const inputTag = ref("");
 const inputVisible = ref(false);
 const InputRef = ref<InputInstance>();
 const loading = ref(false)
+const clickNum = ref(0)
 
 watch(
   () => segement,
@@ -126,10 +91,15 @@ watch(
   }
 );
 
-const handleUpdateSegement = () => {
+const handleUpdateSegement = _.throttle(async () => {
+  clickNum.value++
+  console.log('点击数量',clickNum.value)
+  if(clickNum.value != 1) {
+    return
+  }
+  loading.value = true
   if (isNew.value) {
-    loading.value = true
-    createSegment(datasetId, documentId, content.value, [
+    await createSegment(datasetId, documentId, content.value, [
       ...newSegement.value.keywords,
     ])
       .then(() => {
@@ -138,29 +108,31 @@ const handleUpdateSegement = () => {
         visible.value = false;
         newSegement.value = { ...newData };
         content.value = "";
+        setTimeout(() => {
+          clickNum.value = 0
+        }, 500);
       })
       .catch((err) => {
         ElMessage.error("创建失败");
-      }).finally(()=>{
-        loading.value = false
-      });
+      })
   } else {
-    loading.value = true
-    patchSegment(datasetId, documentId, newSegement.value.id, content.value, newSegement.value.answer, [
+    await patchSegment(datasetId, documentId, newSegement.value.id, content.value, newSegement.value.answer, [
       ...newSegement.value.keywords || [],
     ])
       .then(() => {
         ElMessage.success("更新成功");
         emit("update_data");
         visible.value = false;
+        setTimeout(() => {
+          clickNum.value = 0
+        }, 500);
       })
       .catch((err) => {
         ElMessage.error("更新失败，文档为禁用状态");
-      }).finally(()=>{
-        loading.value = false
-      });
+      })
   }
-};
+  loading.value = false
+}, 500);
 
 const handleCloseTag = (value: string) => {
   newSegement.value.keywords = newSegement.value.keywords.filter(
@@ -168,11 +140,11 @@ const handleCloseTag = (value: string) => {
   );
 };
 const handleInputConfirm = () => {
-  if (newSegement.value.keywords == null ) {
-    newSegement.value.keywords =[]
+  if (newSegement.value.keywords == null) {
+    newSegement.value.keywords = []
   }
 
-  if(inputTag.value && !newSegement.value.keywords.includes(inputTag.value)){
+  if (inputTag.value && !newSegement.value.keywords.includes(inputTag.value)) {
     newSegement.value.keywords.push(inputTag.value);
   } else {
     ElMessage.error("不支持重复添加相同标签");

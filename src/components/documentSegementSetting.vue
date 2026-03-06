@@ -1,21 +1,25 @@
 <template>
   <el-header class="header-style">
     <div class="header-left">
-      <el-button type="primary" link size="default" @click="handleClose" style="padding: 0; margin-right: 16px">
-        <el-icon>
-          <Back />
+      <div @click="handleClose" class="back-wrapper can-click">
+        <el-icon class="back-icon">
+          <ArrowLeftBold />
         </el-icon>
-      </el-button>
+      </div>
       <div>
         <div>{{ document.name }}</div>
       </div>
     </div>
     <div class="header-right">
-      <el-button @click="handleCreateSegementClick" :disabled="!isAdmin">添加分段</el-button>
-      <div>{{ document.display_status === 'error' ? "错误" : display_status ? "可用" : "已禁用" }}
+      <el-button class="add-segment-btn" size="small" @click="handleCreateSegementClick" :disabled="!isAdmin">
+        <el-icon style="margin-right: 6px;"><Plus /></el-icon>
+        添加分段
+      </el-button>
+      <!-- 同步有问题，暂时注释掉 -->
+      <!-- <div>{{ document.display_status === 'error' ? "错误" : display_status ? "可用" : "已禁用" }}
       </div>
-      <el-suitch :model_value="document.display_status === 'error' ? false : display_status" @change="handleChange"
-        :disabled="document.display_status === 'error'" />
+      <el-switch :model_value="document.display_status === 'error' ? false : display_status" @change="handleChange"
+        :disabled="document.display_status === 'error'" /> -->
       <!-- <el-button>分段设置</el-button> -->
       <el-dropdown trigger="click" placement="bottom-end">
         <el-icon style="cursor: pointer">
@@ -32,37 +36,57 @@
   </el-header>
   <div>
     <el-row>
-      <el-col :span="11">
-        <el-table :data="segementList" @selection-change="handleSelectionChange" :class="{ 'disable-header-selection': !isAdmin }" >
-          <el-table-column type="selection" width="30" :selectable="() => isAdmin"/>
+      <el-col class="left-col" :span="12">
+        <el-table :data="segementList" @selection-change="handleSelectionChange"
+          :class="{ 'disable-header-selection': !isAdmin }">
+          <el-table-column class="check-row" type="selection" width="30" :selectable="() => isAdmin" />
           <el-table-column :label="`${total} 分段`">
             <template #default="scope">
-              <el-row>
-                <el-col :span="6">分段 {{ scope.row.position }} </el-col>
-                <el-col :span="6"> {{ scope.row.word_count }} 字符</el-col>
-                <el-col :span="6">召回次数 {{ scope.row.hit_count }} </el-col>
-                <el-col :span="4">{{ scope.row.status == "completed" ? "已启用" : "已禁用" }}
-                </el-col>
-                <el-col :span="2">
-                  <el-dropdown trigger="click" placement="bottom-end">
-                    <el-icon style="cursor: pointer">
-                      <MoreFilled />
-                    </el-icon>
-                    <template #dropdown>
-                      <el-dropdown-menu>
-                        <el-dropdown-item @click="handleUpdateSegementClick(scope.row)" :disabled="!isAdmin">编辑</el-dropdown-item>
-                        <el-dropdown-item divided @click="handleDeleteSegement(scope.row)" :disabled="!isAdmin">删除</el-dropdown-item>
-                      </el-dropdown-menu>
-                    </template>
-                  </el-dropdown>
-                </el-col>
-              </el-row>
+              <div class="segment-header">
+              <div class="segment-info">
+                <img
+                    src="@/assets/dataset-setting/segement-icon.png"
+                    class="delete-icon"
+                    width="14"
+                    height="14"
+                    @click="handleDeleteSegement(scope.row)"
+                    :class="{ 'disabled': !isAdmin }"
+                />
+                <span>分段 {{ scope.row.position }}</span>
+                <span>{{ scope.row.word_count }} 字符&nbsp;·&nbsp; {{ scope.row.hit_count }}&nbsp;召回次数</span>
+
+              </div>
+              <div class="segment-actions">
+                <span>{{ scope.row.status == "completed" ? "已启用" : "已禁用" }}</span>
+                <span
+                    class="status-dot"
+                    :class="scope.row.status == 'completed' ? 'enabled' : 'disabled'"
+                ></span>
+                <el-dropdown trigger="click" placement="bottom-end">
+                  <el-icon style="cursor: pointer">
+                    <MoreFilled />
+                  </el-icon>
+                  <template #dropdown>
+                    <el-dropdown-menu>
+                      <el-dropdown-item @click="handleUpdateSegementClick(scope.row)"
+                                        :disabled="!isAdmin">编辑</el-dropdown-item>
+                    </el-dropdown-menu>
+                  </template>
+                </el-dropdown>
+              </div>
+            </div>
               <el-row v-if="document.doc_form == 'text_model'">
                 {{ scope.row.content }}
               </el-row>
-              <el-row v-if="document.doc_form == 'qa_model'">
-                问题: {{ scope.row.content }}</br>
-                答案: {{ scope.row.answer }}
+              <div class="chunk-li" v-if="document.doc_form == 'qa_model'">
+               <div style="color: #000; padding-bottom: 6px"><span class="q-icon qa-icon">问</span> {{ scope.row.content }}</div>
+                <div style="color: #000">
+                  <span class="a-icon qa-icon">答</span>
+                  {{ scope.row.answer }}
+                </div>
+              </div>
+              <el-row v-if="document.doc_form == 'hierarchical_model'">
+                {{ scope.row.content }}
               </el-row>
               <el-row>
                 <el-tag v-for="value in scope.row.keywords">{{ value }}</el-tag>
@@ -73,8 +97,7 @@
         <el-pagination layout="prev, pager, next" :total="total" v-model:current-page="page" v-model:page-size="limit"
           @change="handlePageChange" />
       </el-col>
-      <el-col :span="2"> </el-col>
-      <el-col :span="11">
+      <el-col class="right-col" :span="12">
         <div class="document message">
           <h3 class="message-title">文档信息</h3>
           <el-form>
@@ -86,7 +109,7 @@
           </el-form>
           <h3 class="message-title">技术参数</h3>
           <el-form>
-            <el-form-item label="分段规则">{{ document.dataset_process_rule }}</el-form-item>
+            <el-form-item label="分段规则">{{ ChunkingModeText[document.doc_form as ChunkingMode] }}</el-form-item>
             <el-form-item label="段落长度">{{ document.max_tokens }}</el-form-item>
             <el-form-item label="平均段落长度">{{ document.average_segment_length }} characters</el-form-item>
             <el-form-item label="段落数量">{{ document.segment_count }} paragraphs</el-form-item>
@@ -118,13 +141,14 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
-import { MoreFilled } from "@element-plus/icons-vue";
+import { ArrowLeftBold, MoreFilled, Plus} from "@element-plus/icons-vue";
 import { getSegmentList, deleteSegment } from "@/service/segement";
 import { ElMessage, ElMessageBox } from "element-plus";
 import UpdateSegement from "@/components/updateSegement.vue";
 import { deleteDocument, getDocumentMetaData } from "@/service/document";
 import { formatTimestamp } from "@/utils/time";
 import { DataSourceType, DataSourceTypeText, ProcessMode, ProcessModeText } from "@/models/dataset";
+import { ChunkingModeText } from '@/models/dataset'
 
 const { document, datasetId, isAdmin } = defineProps(["document", "datasetId", "isAdmin"]);
 const emit = defineEmits(["close", "update_status", "rename"]);
@@ -155,19 +179,19 @@ const handleRenameEnsure = () => {
   showRenameModel.value = false;
 };
 
-const handleDeleteClick = async () => { 
-    ElMessageBox.confirm("删除这个文档？", "", {
-        confirmButtonText: "我确定",
-        cancelButtonText: "取消",
-        type: "warning",
-    }).then(() => {
-      deleteDocument(datasetId, document.id).then(()=>{
-        ElMessage.success("删除成功");
-        location.reload()
-      }).catch(error =>{
-        ElMessage.error("删除失败");
-      })
-    }) 
+const handleDeleteClick = async () => {
+  ElMessageBox.confirm("删除这个文档？", "", {
+    confirmButtonText: "我确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  }).then(() => {
+    deleteDocument(datasetId, document.id).then(() => {
+      ElMessage.success("删除成功");
+      location.reload()
+    }).catch(error => {
+      ElMessage.error("删除失败");
+    })
+  })
 };
 
 
@@ -179,6 +203,7 @@ const updateData = () => {
   getSegmentList(datasetId, document.id, page.value, limit.value).then(
     (res) => {
       segementList.value = res.data;
+      console.log('表格数据',segementList.value)
       limit.value = res.limit | 0;
       page.value = res.page | 0;
       total.value = res.total | 0;
@@ -244,6 +269,7 @@ const handleUpdateData = () => {
 };
 
 onMounted(() => {
+  console.log('看看document',document)
   updateData();
   documentMessage()
 
@@ -268,6 +294,8 @@ const handleUpdateSegementClick = (row) => {
   align-items: center;
   justify-content: space-between;
   height: 32px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e4e7ed;
 }
 
 .header-left {
@@ -290,7 +318,9 @@ const handleUpdateSegementClick = (row) => {
 
 .message-title {
   padding: 20px 0;
-  font-weight: 700;
+  color: #333;
+  font-size: 16px;
+  font-weight: bold;
 }
 
 :deep(.disable-header-selection thead .el-table-column--selection) {
@@ -300,24 +330,130 @@ const handleUpdateSegementClick = (row) => {
 :deep(.disable-header-selection thead .el-table-column--selection .el-checkbox) {
   pointer-events: none;
 }
-:deep(.documen-message .el-form .el-form-item__label) {
-  text-align: left;
-  width: 100px;
-}
 
 :deep(.el-form-item--label-right .el-form-item__label) {
   justify-content: flex-start;
 }
-.message-title {
-  padding: 20px 0;
-  font-weight: 700;
+:deep(.document .el-form) {
+  .el-form-item {
+    margin-bottom: 16px;
+  }
+
+  .el-form-item__label {
+    text-align: left;
+    width: 100px ;
+    color: #455166 !important;
+    font-size: 14px;
+    line-height: 1.2;
+    height:18px;
+  }
+
+  .el-form-item__content {
+    color: #000;
+    font-size: 14px;
+    line-height: 1.2;
+    display: block;
+    height: 18px;
+  }
 }
-::v-deep .document-message .el-form .el-form-item__label {
-  text-align: left !important;
-  width: 180px !important;
-  color: #a7a7a7 !important;
+.left-col{
+  padding-right: 20px;
 }
-::v-deep .el-form-item--label-right .el-form-item__label {
-    justify-content: flex-start;
+.right-col {
+  border-left: 1px solid #e4e7ed;
+  padding-left: 20px;
+}
+.add-segment-btn {
+  border-radius: 4px;
+  color: var(--el-color-primary);
+  //border-color: var(--el-color-primary);
+
+  &:hover {
+    color: var(--el-color-primary);
+    border-color: var(--el-color-primary);
+    background-color: rgba(81, 105, 240, 0.1);
+  }
+
+  &:disabled {
+    color: var(--el-color-primary);
+    border-color: var(--el-color-primary);
+    opacity: 0.5;
+  }
+}
+.back-icon {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.back-text {
+  font-size: 14px;
+  margin-left: 4px;
+}
+
+.back-wrapper {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin-right: 16px;
+}
+.qa-icon{
+  display: inline-block;
+  padding: 2px;
+  font-size: 12px;
+  line-height: 1.2;
+  margin-right: 3px;
+}
+.q-icon{
+  color: #f06851;
+  background: #FFEDE9;
+}
+.a-icon{
+  background: #E9F2FF;
+  color: #5169F0;
+}
+.segment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 16px;
+}
+
+.segment-info {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #676F83;
+}
+
+.segment-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.delete-icon {
+  cursor: pointer;
+  margin-right: 12px;
+
+  &.disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+
+  &.enabled {
+    background-color: #59D476;
+  }
+
+  &.disabled {
+    background-color: #F46C6C;
+  }
+}
+:deep(.el-table .el-table__body-wrapper .el-table__body tr td:first-child) {
+  vertical-align: top;
 }
 </style>

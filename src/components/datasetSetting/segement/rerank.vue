@@ -1,11 +1,11 @@
 <template>
   <el-row v-if="retrieval_model.reranking_enable != undefined"
     style=" width: 100%; margin-bottom: 10px; display: flex; align-items: center;">
-    <el-switch v-model="retrieval_model.reranking_enable" style="margin-right: 10px" :disabled="disabled" size="small"/>
+    <el-switch size="small" v-model="retrieval_model.reranking_enable" style="margin-right: 10px" :disabled="disabled"/>
     <div class="label ellipsis">Rerank 模型</div>
   </el-row>
   <el-row v-if="retrieval_model.reranking_enable" style="width: 100%; margin-bottom: 10px">
-    <el-input v-model="retrieval_model.reranking_model.reranking_model_name" disabled size="small"></el-input>
+    <el-input v-model="retrieval_model.reranking_model.reranking_model_name" disabled  size="default"></el-input>
   </el-row>
 </template>
 

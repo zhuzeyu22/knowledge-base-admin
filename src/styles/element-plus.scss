@@ -1,0 +1,42 @@
+// src/styles/element-plus.scss
+
+// 定义你的主题色
+$primary-color: #5169f0;
+
+// 覆盖 Element Plus 的 SCSS 变量
+@forward 'element-plus/theme-chalk/src/common/var.scss' with (
+  $colors: (
+    'primary': (
+      'base': $primary-color,
+    ),
+    'success': (
+      'base': #67c23a,
+    ),
+    'warning': (
+      'base': #e6a23c,
+    ),
+    'danger': (
+      'base': #f56c6c,
+    ),
+    'info': (
+      'base': #909399,
+    ),
+  ),
+  $menu: (
+    'active-color': $primary-color,
+    'text-color': #455166,
+    'hover-text-color': $primary-color,
+  ),
+  $button: (
+    'font-weight': 500,
+  ),
+  $input: (
+    'focus-border': $primary-color,
+  ),
+  $pagination: (
+    'button-bg-color': #ffffff,
+  )
+);
+
+// 引入 Element Plus 的样式
+@use 'element-plus/theme-chalk/src/index.scss' as *;

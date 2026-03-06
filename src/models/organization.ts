@@ -11,4 +11,5 @@ export type OrganizationNode = {
   parent_id: string | null;
   has_children: boolean;
   children: OrganizationNode[];
+  exist_emp_ids: string[];
 };

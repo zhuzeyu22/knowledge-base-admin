@@ -82,8 +82,8 @@ export type UploadResponse = {
 };
 
 // 上传文档
-export const uploadDocument = (data: FormData) => {
-  return request.postForm(`/files/upload?source=datasets`, data);
+export const uploadDocument = (data: FormData, config?: any) => {
+  return request.postForm(`/files/upload?source=datasets`, data, config);
 };
 
 // 上传插件
@@ -171,10 +171,13 @@ export const getPrivateDatasetList = (
 export const getPublicDatasetList = (
   page: number = 1,
   limit: number = 30,
-  include_all: boolean = false
+  include_all: boolean = false,
+  keyword: string = "",
+  created_by_name: string = "",
+  time: string = "",
 ) => {
   return request.get("/datasets", {
-    params: { page, limit, include_all },
+    params: { page, limit, include_all, keyword, created_by_name, time },
   });
 };
 
@@ -186,6 +189,7 @@ export const getFilesPreview = (id: string) => {
 export type DatasetHitTesting = {
   query: string;
   retrieval_model: RetrievalModel;
+  sign?: 'public' | '';
 };
 
 // 召回测试

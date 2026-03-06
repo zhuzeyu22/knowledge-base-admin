@@ -10,8 +10,8 @@ export type Dataset = {
   // 字符数量
   characterNumber: number;
   retrieval_model_dict: RetrievalModel;
-  is_edit:boolean;
-  is_admin:boolean;
+  is_edit: boolean;
+  is_admin: boolean;
 };
 
 //团队知识库数据结构
@@ -45,8 +45,8 @@ export type PublicDataset = {
   // 字符数量
   characterNumber: number;
   retrieval_model_dict: RetrievalModel;
-  team:string;
-  is_admin:boolean;
+  team: string;
+  is_admin: boolean;
 };
 
 export type RetrievalModel = {
@@ -98,6 +98,23 @@ export type DataSource = {
 //   [DisplayStatus.AVALIABLE]:'可用',
 //   [DisplayStatus.DISABLE]:'已禁用',
 // }
+
+export enum UploadFileIs {
+  qa_pairs = 'qa_pairs',
+  datasets = 'datasets',
+}
+
+export enum DocFormEnum {
+  custom = 'custom',
+  qa_model = 'qa_model',
+  hierarchical_model = 'hierarchical_model',
+}
+
+export const DocFormText: Record<DocFormEnum, string> = {
+  [DocFormEnum.custom]: "通用",
+  [DocFormEnum.qa_model]: "QA分段",
+  [DocFormEnum.hierarchical_model]: "父子分段",
+}
 
 export enum RETRIEVE_TYPE {
   oneWay = "single",
@@ -154,9 +171,9 @@ export enum OpLogType {
   removeMember = 'team_member_remove',
 }
 
-export const OpLogTypeText: Record<OpLogType, string> ={
-  [OpLogType.addMember]:"添加成员",
-  [OpLogType.removeMember]:"成员",
+export const OpLogTypeText: Record<OpLogType, string> = {
+  [OpLogType.addMember]: "添加成员",
+  [OpLogType.removeMember]: "成员",
 }
 
 export type Rules = {
@@ -185,6 +202,13 @@ export enum ChunkingMode {
   parentChild = "hierarchical_model", // Parent-Child
   // graph = 'graph', // todo: Graph RAG
 }
+
+export const ChunkingModeText: Record<ChunkingMode, string> = {
+  [ChunkingMode.text]: "通用",
+  [ChunkingMode.qa]: "QA分段",
+  [ChunkingMode.parentChild]: "父子分段",
+  // [ChunkingMode.graph]: "Graph RAG",
+};
 
 export type DatasetConfigs = {
   retrieval_model: RETRIEVE_TYPE;

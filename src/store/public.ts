@@ -131,7 +131,7 @@ export const usePublicStore = defineStore("public", {
         this.nodeMap[node.id].name = name
       });
     },
-    updateCurrentNode(node: PublicFolderNode) {
+    updateCurrentNode(node: PublicFolderNode & Object) {
       this.currentNode = node
     },
   },

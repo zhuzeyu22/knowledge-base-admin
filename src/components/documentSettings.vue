@@ -11,7 +11,7 @@
             <label class="form-label">知识库描述</label>
             <el-input v-model="localDescription" placeholder="输入知识库新描述" clearable :disabled="!isAdmin"/>
         </div>
-        <div class="form-item">
+        <!-- <div class="form-item">
             <label class="form-label">知识库类型</label>
             <el-radio-group v-model="official" :disabled="!isAdmin">
                 <el-radio-button value="official">官方</el-radio-button>
@@ -21,7 +21,7 @@
         <div class="form-item">
             <label class="form-label">知识库存储路径</label>
             <el-input v-model="storagePath" placeholder="知识库存储路径" disabled/>
-        </div>
+        </div> -->
         <div>
             <el-button class="form-actions" type="primary" @click="handleSave" :loading="saveLoading" :disabled="!isAdmin">保存修改</el-button>
         </div>

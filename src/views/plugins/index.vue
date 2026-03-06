@@ -4,7 +4,7 @@
         <el-icon class="el-icon--upload"><upload-filled /></el-icon>
         <div class="el-upload__text">
             <el-col>
-                <el-button type="primary" size="small">选择文件上传</el-button>
+                <el-button type="primary"  size="default">选择文件上传</el-button>
             </el-col>
             <el-col style="margin-top: 10px;"> 或将文件拖拽到此处</el-col>
         </div>

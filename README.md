@@ -49,3 +49,6 @@ location /idp/oauth2/authorize {
 }
 
 ```
+# 终端环境更新注意事项
+- 只复制覆盖更新 src 的文件内容, 需要手动对比合并里面 request 和 auth 的内容
+- 其他外部环境相关文件手动合并

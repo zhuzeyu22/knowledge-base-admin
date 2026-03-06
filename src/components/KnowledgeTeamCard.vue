@@ -1,42 +1,52 @@
 <template>
-  <el-card @click="goToDetails">
+  <el-card class="knowledge-card"  @click="goToDetails">
     <div class="knowledge-base-card">
-      <div class="knowledge-base-card-background"></div>
-      <div class="knowledge-base-card-name">
-        <div>{{ dataset.name }}</div>
-        <div v-if="dataset.is_public" class="knowledge-base-card-public-token">公开</div>
+      <div class="card-base-info">
+        <div class="knowledge-base-card-background"></div>
+        <div class="knowledge-base-card-name">
+          {{ dataset.name }}
+        </div>
+        <div class="knowledge-base-card-creator">
+          <img src="@/assets/user-default.png" alt="" class="user-img">
+          <!-- <el-icon class="icon"><User /></el-icon> -->
+          <!-- 展示团队知识库的创建者  -->
+          <span>@{{ dataset.created_by_name }}</span>
+        </div>
+        <div class="knowledge-base-card-tags">
+          <el-tag type="info" style="margin-right: 2px;">{{ dataset.documentNumber }} 文档</el-tag>
+          <el-tag type="info">{{ (dataset.word_count / 1000).toFixed(1) }} 千字符</el-tag>
+        </div>
       </div>
-      <div class="knowledge-base-card-creator">
-        <el-icon class="icon"><User /></el-icon>
-        <!-- 展示团队知识库的创建者  -->
-        <span>{{ dataset.created_by_name }}</span>
-      </div>
-      <div class="knowledge-base-card-tags">
-        <el-tag type="info" style="margin-right: 2px;">{{ dataset.documentNumber }} 文档</el-tag>
-        <el-tag type="info">{{ (dataset.word_count / 1000).toFixed(1) }} 千字符</el-tag>
-      </div>
+
       <div class="knowledge-base-card-description">
         {{ dataset.description }}
       </div>
 
-      <div class="knowledge-base-card-label" v-if="dataset.official == 'official'">
+      <!-- <div class="knowledge-base-card-label" v-if="dataset.official == 'official'">
         <img src="@\assets\official.png" alt="">
-      </div>
-      <div class="knowledge-base-card-operate" @click.stop v-if="dataset.dataset_permission || dataset.public_permission">
+      </div> -->
+<!--      class="knowledge-base-card-public-token"-->
+      <div v-if="dataset.is_public" class="knowledge-base-card-label" >公开</div>
+      <div class="knowledge-base-card-operate" @click.stop
+        v-if="dataset.dataset_permission || dataset.public_permission">
         <el-dropdown trigger="click" placement="bottom-end">
           <el-icon style="cursor: pointer">
             <MoreFilled />
           </el-icon>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item @click="handleMemberPermission" :disabled="!dataset.dataset_permission">知识库权限</el-dropdown-item>
-              <el-dropdown-item @click="handlePublicPermission" :disabled="!dataset.public_permission">公开</el-dropdown-item>
+              <el-dropdown-item @click="handleMemberPermission"
+                :disabled="!dataset.dataset_permission">知识库权限</el-dropdown-item>
+              <el-dropdown-item @click="handlePublicPermission"
+                :disabled="!dataset.public_permission">公开</el-dropdown-item>
               <el-dropdown-item @click="handleDeleteClick" :disabled="!dataset.public_permission">删除</el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
-        <memberPermission v-model:visible="isMemberPermissionShow" :dataset-id="props.dataset.id"  :created-by="props.dataset.created_by"/>
-        <publicPermission v-model:visible="isPublicPermissionShow" :dataset-name = "props.dataset.name" :dataset-id="props.dataset.id" @success="handlePublicPermissionUpdate"/>
+        <memberPermission v-model:visible="isMemberPermissionShow" :dataset-id="props.dataset.id"
+          :created-by="props.dataset.created_by" />
+        <publicPermission v-model:visible="isPublicPermissionShow" :dataset-name="props.dataset.name"
+          :dataset-id="props.dataset.id" @success="handlePublicPermissionUpdate" />
       </div>
     </div>
   </el-card>
@@ -46,7 +56,7 @@
 import { MoreFilled } from "@element-plus/icons-vue";
 import { TeamDataset } from "@/models/dataset";
 import { ref, computed, watch } from "vue";
-import { useRouter,useRoute } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { deleteDataset } from "@/service/datasets";
 import memberPermission from "@/views/team/components/memberPermission.vue";
@@ -68,7 +78,7 @@ const isPublicPermissionShow = ref(false)
 const goToDetails = () => {
   router.push({
     path: `/team/${props.tenantId}/details`,
-    query: { 
+    query: {
       id: props.dataset.id,
     },
   });
@@ -81,7 +91,7 @@ const handleDeleteClick = () => {
     {
       confirmButtonText: "确定删除",
       cancelButtonText: "取消",
-      type:'warning',
+      type: 'warning',
       customClass: "delete-message-box",
       confirmButtonClass: "my-confirm-btn",
       cancelButtonClass: "my-cancel-btn",
@@ -117,23 +127,36 @@ const handlePublicPermission = () => {
 const handlePublicPermissionUpdate = async () => {
   // 更新标签
   const res = await getDatasetFolder(props.dataset.id);
-  props.dataset.is_public = res.data.length > 0 ? true : false; 
+  props.dataset.is_public = res.data.length > 0 ? true : false;
 }
 
 </script>
 
-<style scoped>
+<style scoped lang="less">
+.knowledge-card{
+  border-radius: 10px;
+}
+:deep(.el-card__body) {
+  position: relative;
+}
 .knowledge-base-card {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   position: relative;
   width: 100%;
   flex-shrink: 0;
-  height: 200px;
+  height: 240px;
   flex-grow: 1;
   align-items: center;
 }
-
+.card-base-info{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+}
 .knowledge-base-card-background {
   background-image: url("@/assets/know-title-icon.png");
   width: 60px;
@@ -152,15 +175,28 @@ const handlePublicPermissionUpdate = async () => {
 }
 
 .knowledge-base-card-name {
-  font-size: 15px;
+  line-height: 22px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  font-size: 16px;
   font-weight: bold;
-  margin-bottom: 4px;
-  display: flex;
+  margin-bottom: 12px;
+  text-align: center;
+
+  .knowledge-base-card-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
+
 .knowledge-base-card-public-token {
   position: relative;
-  left: 8px;
   border-radius: 4px;
+  margin: 0px 4px;
   width: 32px;
   height: 16px;
   background-color: #8080ff;
@@ -170,31 +206,47 @@ const handlePublicPermissionUpdate = async () => {
   align-items: center;
   justify-content: center;
 }
+
 .knowledge-base-card-creator {
   display: flex;
   margin: 4px 0;
   font-size: 13px;
 }
-.knowledge-base-card-creator .icon {
-    margin-right: 2px;
+
+.user-img {
+  width: 16px;
+  margin-right: 5px;
 }
+
+.knowledge-base-card-creator .icon {
+  margin-right: 2px;
+}
+
 .knowledge-base-card-tags {
   margin-bottom: 8px;
 }
 
 .knowledge-base-card-description {
-  font-size: 12px;
+  height: 60px;
+  margin-top: 5px;
+  font-size: 13px;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 3;
+  line-height: 20px;
 }
 
 .knowledge-base-card-label {
   position: absolute;
-  top: -22px;
+  top: -20px;
   left: -20px;
+  padding: 6px 10px;
+  background: var(--el-color-primary);
+  color: #fff;
+  font-size: 12px;
+  border-radius: 10px 0 10px 0;
 }
 
 .knowledge-base-card-operate {

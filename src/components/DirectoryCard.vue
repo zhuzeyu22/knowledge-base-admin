@@ -1,5 +1,5 @@
 <template>
-  <el-card @click="goToNextLevelDirectory">
+  <el-card class="knowledge-card" @click="goToNextLevelDirectory">
     <div class="knowledge-base-card">
       <div class="knowledge-base-card-background"></div>
       <div class="knowledge-base-card-name">{{ dirList.name }}</div>
@@ -10,10 +10,10 @@
           </el-icon>
           <template #dropdown>
             <el-dropdown-menu>
-              
+
               <!-- <el-dropdown-item @click="() => rename(dirList.name)">修改</el-dropdown-item> -->
               <!-- <el-dropdown-item @click="handleDeleteDirectory">删除</el-dropdown-item> -->
-              
+
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -83,6 +83,9 @@ const handleNodeRenameConfirm = () => {
 </script>
 
 <style scoped>
+.knowledge-card{
+  border-radius: 10px;
+}
 .knowledge-base-card {
   display: flex;
   flex-direction: column;

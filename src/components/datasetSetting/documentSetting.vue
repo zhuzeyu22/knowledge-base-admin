@@ -1,80 +1,52 @@
 <template>
   <!-- 示例文件，组件使用例子 -->
-  <el-container class="content-container">
-    <el-main class="context-style" style="overflow: auto">
-      <el-card
-        class="wapper-style"
-        body-style="height: 100%; display: flex; flex-direction: row;"
-      >
-        <el-col :span="11" style="display: flex; flex-direction: column">
-          <div style="flex-grow: 1; overflow-y: auto">
-            <el-col style="margin-bottom: 10px">
-              <SegementSetting
-                v-if="documentSetting.document_process_rule.mode == 'custom'"
-                v-model:custom="documentSetting.document_process_rule.rules"
-                v-model:process_rule="
-                  documentSetting.document_process_rule.mode
-                "
-                @preview="handlePreviewButton"
-              />
-              <SegementSetting
-                v-else
-                v-model:hierarchical="
-                  documentSetting.document_process_rule.rules
-                "
-                v-model:process_rule="
-                  documentSetting.document_process_rule.mode
-                "
-                @preview="handlePreviewButton"
-              />
-            </el-col>
-          </div>
-          <div
-            style="
-              align-self: flex-end;
-              display: flex;
-              flex-direction: row-reverse;
-              justify-content: space-between;
-              margin-top: 10px;
-            "
-          >
-            <el-button type="primary" @click="handleSave">保存并处理</el-button>
-            <el-button
-              type="primary"
-              @click="handleCancle"
-              style="margin-right: 10px"
-              >取消</el-button
-            >
-          </div>
-        </el-col>
-        <!-- diliver -->
-        <el-col :span="2"> </el-col>
-        <!-- Step 2 右侧：文件预览 -->
-        <el-col
-          :span="11"
-          style="display: flex; flex-direction: column; height: 100%"
-        >
-          <Preview
-            v-model:preview-file="previewFile"
-            v-model:segment-preview="segmentPreview"
-            v-model:file-list="fileList"
-          ></Preview>
-        </el-col>
-      </el-card>
-    </el-main>
-  </el-container>
+  <el-row class="context-style" :gutter="32">
+    <el-col :span="12" style="display: flex; flex-direction: column; overflow: hidden; height: 100%;">
+      <div
+        style="margin-bottom: 10px;overflow-x: hidden; overflow-y: auto; gap: 8px; display: flex; flex-direction: column; flex: 1;">
+        <div class="title">分段设置</div>
+        <div v-if="documentSetting.doc_form == ChunkingMode.text">
+          <Custom :visiable="true" v-model:custom="documentSetting.document_process_rule.rules"
+            @preview="handlePreviewButton" @reset="handleResetClick" />
+        </div>
+        <div v-else-if="documentSetting.doc_form == ChunkingMode.parentChild">
+          <Hierarchical :visiable="true" v-model:hierarchical="documentSetting.document_process_rule.rules"
+            @preview="handlePreviewButton" @reset="handleResetClick" />
+        </div>
+        <div v-else-if="documentSetting.doc_form == ChunkingMode.qa">
+          <QaModel @preview="handlePreviewButton" />
+        </div>
+      </div>
+      <el-row style="display: flex; justify-content: space-between;">
+        <el-button class="prev-btn" @click="handleCancle">
+          <el-icon class="arrow-icon"><Back /></el-icon>
+          返回
+        </el-button>
+        <el-button type="primary" @click="handleSave">保存并处理</el-button>
+      </el-row>
+    </el-col>
+    <!-- Step 2 右侧：文件预览 -->
+    <el-col :span="12" style="display: flex; flex-direction: column; overflow: hidden; height: 100%;">
+      <Preview v-model:preview-file="previewFile" v-model:segment-preview="segmentPreview" v-model:file-list="fileList">
+      </Preview>
+    </el-col>
+  </el-row>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, onMounted, onActivated } from "vue";
 import { ElMessage } from "element-plus";
 import {
   fetchFileIndexingEstimate,
   type IndexingEstimateParams,
 } from "@/service/datasets";
-import SegementSetting from "./segement/index.vue";
 import Preview from "./preview.vue";
 import { postDocumentSettings } from "@/service/document";
+import Custom from "@/components/datasetSetting/segement/custom.vue";
+import Hierarchical from "@/components/datasetSetting/segement/hierarchical.vue";
+import { ChunkingMode } from "@/models/dataset";
+import QaModel from "@/components/datasetSetting/segement/qaModel.vue"
+import { Back } from "@element-plus/icons-vue";
 
 // Document
 const documentSetting = defineModel("documentSetting");
@@ -105,8 +77,8 @@ const handleSave = () => {
     documentSetting?.value?.document_process_rule?.rules?.segmentation
       ?.max_tokens &&
     documentSetting.value.document_process_rule.rules.segmentation.max_tokens <
-      documentSetting.value.document_process_rule.rules.segmentation
-        .chunk_overlap
+    documentSetting.value.document_process_rule.rules.segmentation
+      .chunk_overlap
   ) {
     console.log(
       "documentSetting.value.document_process_rule.rules.segmentation.max_tokens",
@@ -150,8 +122,8 @@ const handlePreviewButton = () => {
     documentSetting?.value?.document_process_rule?.rules?.segmentation
       ?.max_tokens &&
     documentSetting.value.document_process_rule.rules.segmentation.max_tokens <
-      documentSetting.value.document_process_rule.rules.segmentation
-        .chunk_overlap
+    documentSetting.value.document_process_rule.rules.segmentation
+      .chunk_overlap
   ) {
     console.log(
       "documentSetting.value.document_process_rule.rules.segmentation.max_tokens",
@@ -166,8 +138,8 @@ const handlePreviewButton = () => {
     // 根据当前选择的 process_rule 模式获取对应的配置
 
     const params: IndexingEstimateParams = {
-      doc_form: "text_model",
-      doc_language: "English",
+      doc_form: documentSetting.value.doc_form,
+      doc_language: documentSetting.value.doc_language,
       indexing_technique: indexing_technique.value,
       info_list: {
         data_source_type: "upload_file",
@@ -175,14 +147,21 @@ const handlePreviewButton = () => {
           file_ids: [documentSetting.value.data_source_info.upload_file.id],
         },
       },
-      process_rule: documentSetting.value.document_process_rule,
+      process_rule: {
+        rules: documentSetting.value.document_process_rule.rules,
+        mode: documentSetting.value.document_process_rule.mode,
+      },
     };
 
     fetchFileIndexingEstimate(params)
       .then((response) => {
         // 处理返回的分段内容,且不为空的
         if (response && response.preview) {
-          segmentPreview.value = response.preview;
+          if (documentSetting.value.doc_form == ChunkingMode.qa) {
+            segmentPreview.value = response.qa_preview;
+          } else {
+            segmentPreview.value = response.preview;
+          }
           isSegmentPreview.value = true;
           ElMessage.success("分段预览加载成功");
         } else {
@@ -191,7 +170,7 @@ const handlePreviewButton = () => {
       })
       .catch((error) => {
         console.error("获取分段预览失败:", error);
-        ElMessage.error("获取分段预览失败");
+        ElMessage.error(`获取分段预览失败: ${error}`);
       });
   } else {
     ElMessage.warning("请先上传文件");
@@ -213,8 +192,8 @@ watch(previewFile, (newFileId) => {
         },
       },
       process_rule: {
-        mode: documentSetting.value.document_process_rule.mode,
         rules: documentSetting.value.document_process_rule.rules,
+        mode: documentSetting.value.document_process_rule.mode,
       },
     };
 
@@ -240,17 +219,48 @@ watch(previewFile, (newFileId) => {
     isSegmentPreview.value = false;
   }
 });
+
+const deepCopy = (newObj, obj) => {
+  for (let key in obj) {
+    let item = obj[key]
+    if (item instanceof Array) {
+      newObj[key] = []
+      deepCopy(newObj[key], item)
+    } else if (item instanceof Function) {
+      newObj[key] = obj[key]
+    } else if (item instanceof Object) {
+      newObj[key] = {}
+      deepCopy(newObj[key], item)
+    } else {
+      newObj[key] = item
+    }
+  }
+}
+const forSave = ref({})
+
+onMounted(() => {
+  deepCopy(forSave.value, documentSetting.value.document_process_rule.rules)
+})
+
+const handleResetClick = () => {
+  deepCopy(documentSetting.value.document_process_rule.rules, forSave.value)
+}
 </script>
 
 <style scoped lang="scss">
-.header-style {
-  display: flex;
-  background-color: #f5f5f5;
-  align-items: center;
-  height: auto;
-  // border-bottom: 1px solid var(--el-border-color);
-}
+.prev-btn {
+  background-color: #EDEFF4;
+  border: 1px solid #dcdfe6;
 
+  &:hover {
+    background-color: #e0e3e9;
+  }
+
+  .arrow-icon {
+    margin-right: 4px;
+    font-weight: bold;
+  }
+}
 .content-container {
   height: 100%;
   width: 100%;
@@ -279,11 +289,11 @@ watch(previewFile, (newFileId) => {
 }
 
 .slider-style {
-  > .el-slider__runway {
+  >.el-slider__runway {
     margin-right: 10px;
   }
 
-  > .el-input-number {
+  >.el-input-number {
     width: 60px !important;
   }
 }
@@ -355,7 +365,7 @@ watch(previewFile, (newFileId) => {
   transition: all 0.3s ease;
 
   &:hover {
-    border-color: #409eff;
+    border-color: #5169f0;
   }
 
   :deep(.el-card__header) {

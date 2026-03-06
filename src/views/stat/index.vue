@@ -1,44 +1,33 @@
 <template>
     <div class="stat-page" v-loading="loading" element-loading-text="加载数据中...">
         <el-container class="container">
-            <!-- 标题 -->
-            <el-header class="page-header">
-                <h2 style="font-size: 20px;">数据统计</h2>
-            </el-header>
             <!-- 整体下方数据部分 -->
             <el-main class="page-main">
+              <div class="title">数据统计</div>
                 <!-- 数据count卡片容器 -->
                 <div class="data-cards">
-                    <!-- 单个卡片 -->
-                    <el-card v-for="(card, index) in cardData" :key="index" class="card">
-                        <!-- 卡片内容 -->
-                        <div class="card-content">
-                            <!-- 卡片标题、数值 -->
-                            <div class="card-header">
-                                <div class="text-container">
-                                    <h4 class="h4">{{ card.title }}</h4>
-                                    <p class="num">{{ card.value }}</p>
-                                </div>
-                                <!-- 卡片图标 -->
-                                <el-icon :class="card.iconClass" class="icon">
-                                    <component :is="card.icon"></component>
-                                </el-icon>
-                            </div>
-                            <!-- 数值涨幅 -->
-                            <div class="card-trend">
-                                <span :class="['trend-value', card.trend > 0 ? 'positive' : 'negative']">
-                                    <el-icon v-if="card.trend > 0">
-                                        <Plus />
-                                    </el-icon>
-                                    <el-icon v-if="card.trend < 0">
-                                        <Minus />
-                                    </el-icon>
-                                    {{ Math.abs(card.trend) }}%
-                                </span>
-                                <span class="trend-text">较上周</span>
-                            </div>
+                  <div v-for="(card, index) in cardData" :key="index" class="card-x" :class="{ 'not-last': index < cardData.length - 1 }">
+                    <!-- 卡片内容 -->
+                    <div class="card-content">
+                      <!-- 左侧图标 -->
+                      <div class="card-left">
+                        <img :src="card.iconSrc" class="icon" alt="icon" />
+                      </div>
+                      <!-- 右侧信息 -->
+                      <div class="card-right">
+                        <div class="card-title">{{ card.title }}</div>
+                        <div class="card-value">{{ card.value }}</div>
+                        <div class="card-trend">
+                          <span class="trend-text">较上周</span>
+                          <span class="trend-value" :class="[card.trend > 0 ? 'positive' : 'negative']"> {{ Math.abs(card.trend) }}%</span>
+                          <span >
+                              <img v-if="card.trend > 0" src="/src/assets/up.png" class="trend-icon" alt="up" />
+                              <img v-if="card.trend < 0" src="/src/assets/down.png" class="trend-icon" alt="down" />
+                          </span>
                         </div>
-                    </el-card>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <!-- 数据可视化图表 -->
                 <div class="data-charts">
@@ -84,78 +73,68 @@ import { ref, onMounted, onUnmounted, computed } from 'vue';
 import * as echarts from 'echarts';
 import type { ECharts } from 'echarts';
 import { ElDatePicker, ElMessage } from 'element-plus';
-import { Plus, Minus, View, UserFilled, StarFilled, Document } from '@element-plus/icons-vue';
 import apiService, { VisitStatsParams, WeeklyData } from '../../service/api';
 
 //卡片数据
 interface StatCard {
     title: string;
     value: string | number;
-    icon: any;
-    iconClass: string;
+    iconSrc: string;
     trend: number;
 }
 
 const convertWeeklyDataToCards = (weeklyData: WeeklyData): StatCard[] => [
-    {
-        title: '访问次数',
-        value: (weeklyData.currentDatasetQueries || 0).toLocaleString(),
-        icon: View, 
-        iconClass: 'icon-blue',
-        trend: weeklyData.datasetQueriesGrowthRate || 0,
-    },
-    {
-        title: '访问人数',
-        value: (weeklyData.currentDatasetUsers || 0).toLocaleString(),
-        icon: UserFilled,
-        iconClass: 'icon-purple',
-        trend: weeklyData.datasetUsersGrowthRate || 0
-    },
-    {
-        title: '文档总数',
-        value: (weeklyData.currentResources || 0).toLocaleString(),
-        icon: Document,
-        iconClass: 'icon-green',
-        trend: weeklyData.resourcesGrowthRate || 0,
-    },
-    {
-        title: '活跃用户',
-        value: (weeklyData.currentActiveUsers || 0).toLocaleString(),
-        icon: StarFilled,
-        trend: weeklyData.activeUsersGrowthRate || 0,
-        iconClass: 'icon-red'
-    }
+  {
+    title: '访问次数',
+    value: (weeklyData.currentDatasetQueries || 0).toLocaleString(),
+    iconSrc: '/src/assets/pv.png',
+    trend: weeklyData.datasetQueriesGrowthRate || 0,
+  },
+  {
+    title: '访问人数',
+    value: (weeklyData.currentDatasetUsers || 0).toLocaleString(),
+    iconSrc: '/src/assets/uv.png',
+    trend: weeklyData.datasetUsersGrowthRate || 0
+  },
+  {
+    title: '文档总数',
+    value: (weeklyData.currentResources || 0).toLocaleString(),
+    iconSrc: '/src/assets/doc-total.png',
+    trend: weeklyData.resourcesGrowthRate || 0,
+  },
+  {
+    title: '活跃用户',
+    value: (weeklyData.currentActiveUsers || 0).toLocaleString(),
+    iconSrc: '/src/assets/av.png',
+    trend: weeklyData.activeUsersGrowthRate || 0,
+  }
 ];
 
 const getMockCardData = (): StatCard[] => [
-    {
-        title: '访问次数',
-        value: '128,930',
-        icon: View, 
-        iconClass: 'icon-blue',
-        trend: 12.5,
-    },
-    {
-        title: '访问人数',
-        value: '45,281',
-        icon: UserFilled,
-        iconClass: 'icon-purple',
-        trend: 8.2
-    },
-    {
-        title: '文档总数',
-        value: '3,829',
-        icon: Document,
-        iconClass: 'icon-green',
-        trend: 8.3
-    },
-    {
-        title: '活跃用户',
-        value: '5,237',
-        icon: StarFilled,
-        trend: 6.8,
-        iconClass: 'icon-red'
-    }
+  {
+    title: '访问次数',
+    value: '128,930',
+    iconSrc: '/src/assets/pv.png',
+    trend: 12.5,
+  },
+  {
+    title: '访问人数',
+    value: '45,281',
+    iconSrc: '/src/assets/uv.png',
+    trend: 8.2
+  },
+  {
+    title: '文档总数',
+    value: '3,829',
+    iconSrc: '/src/assets/doc-total.png',
+    trend: 8.3
+  },
+  {
+    title: '活跃用户',
+    value: '5,237',
+    iconSrc: '/src/assets/av.png',
+    trend: 6.8,
+  }
 ];
 const cardData = ref<StatCard[]>(getMockCardData());
 
@@ -189,7 +168,7 @@ const userChartData = ref(getMockUserData());
 const getMockTrendData = (startDate: Date, endDate: Date) => {
     //计算日期范围天数
     const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)) + 1;
-    
+
     //生成日期数组
     const dates = [];
     for (let i = 0; i < days; i++) {
@@ -197,20 +176,20 @@ const getMockTrendData = (startDate: Date, endDate: Date) => {
         date.setDate(startDate.getDate() + i);
         dates.push(`${date.getMonth() + 1}-${date.getDate()}`);
     }
-    
+
     const visitCount = [];
     const visitorCount = [];
     const baseVisitor = 30;
     const baseVisit = 45;
-    
+
     for (let i = 0; i < days; i++) {
         const visitorValue = Math.round(baseVisitor + Math.sin(i * 0.5) * 10 + (i % 3) * 3);
         visitorCount.push(visitorValue);
-        
+
         const visitValue = Math.round(baseVisit + Math.sin(i * 0.5) * 15 + (i % 3) * 5);
         visitCount.push(visitValue);
     }
-    
+
     return { dates, visitCount, visitorCount };
 };
 
@@ -234,10 +213,10 @@ const getMockDocumentTypeData = () => [
 
 const documentTypeData = ref(getMockDocumentTypeData());
 
-type TopDocRow = { 
-    name: string; 
+type TopDocRow = {
+    name: string;
     creator: string;
-    calls: number; 
+    calls: number;
 };
 
 const getMockTopDocs = (): TopDocRow[] => [
@@ -327,42 +306,81 @@ const loadAllData = async (startDate?: Date, endDate?: Date) => {
 
             trendChartInstance = echarts.init(trendChart.value);
 
-            const options = {
-                tooltip: {
-                    trigger: 'axis'
+          const options = {
+            tooltip: {
+              trigger: 'axis'
+            },
+            legend: {
+              data: ['访问次数', '访问人数']
+            },
+            grid: {
+              left: '3%',
+              right: '4%',
+              bottom: '10%',
+              containLabel: true
+            },
+            xAxis: {
+              type: 'category',
+              boundaryGap: false,
+              data: trendResponse.data.map(item => item.date)
+            },
+            yAxis: [
+              {
+                type: 'value',
+                name: '次',
+                position: 'left',
+                nameTextStyle: {
+                  color: '#455166',
+                  fontSize: 12
                 },
-                legend: {
-                    data: ['访问次数', '访问人数']
+                splitLine: {
+                  lineStyle: {
+                    type: 'dashed'
+                  }
+                }
+              },
+              {
+                type: 'value',
+                name: '人',
+                position: 'right',
+                nameTextStyle: {
+                  color: '#455166',
+                  fontSize: 12
                 },
-                grid: {
-                    left: '3%',
-                    right: '4%',
-                    bottom: '10%',
-                    containLabel: true
+                splitLine: {
+                  show: false
+                }
+              }
+            ],
+            series: [
+              {
+                name: '访问次数',
+                type: 'line',
+                yAxisIndex: 0,
+                data: trendResponse.data.map(item => item.visitCount),
+                smooth: true,
+                itemStyle: {
+                  color: '#4BA8FF'
                 },
-                xAxis: {
-                    type: 'category',
-                    boundaryGap: false,
-                    data: trendResponse.data.map(item => item.date)
+                lineStyle: {
+                  color: '#4BA8FF'
+                }
+              },
+              {
+                name: '访问人数',
+                type: 'line',
+                yAxisIndex: 1,
+                data: trendResponse.data.map(item => item.visitorCount),
+                smooth: true,
+                itemStyle: {
+                  color: '#FFD184'
                 },
-                yAxis: {
-                    type: 'value'
-                },
-                series: [
-                    {
-                        name: '访问次数',
-                        type: 'line',
-                        data: trendResponse.data.map(item => item.visitCount),
-                        smooth: true
-                    },
-                    {
-                        name: '访问人数',
-                        type: 'line',
-                        data: trendResponse.data.map(item => item.visitorCount),
-                        smooth: true
-                    }
-                ]
-            };
+                lineStyle: {
+                  color: '#FFD184'
+                }
+              }
+            ]
+          };
 
             trendChartInstance.setOption(options);
         }
@@ -384,42 +402,85 @@ const loadAllData = async (startDate?: Date, endDate?: Date) => {
 
 //初始化图表
 const initUserChart = () => {
-    if (!userChart.value) return
-    //销毁已存在
-    if (userChartInstance) {
-        (userChartInstance as ECharts).dispose();
-    }
+  if (!userChart.value) return
+  //销毁已存在
+  if (userChartInstance) {
+    (userChartInstance as ECharts).dispose();
+  }
 
-    userChartInstance = echarts.init(userChart.value);
+  userChartInstance = echarts.init(userChart.value);
 
-    const options = {
-        grid: {
-            left: '3%',
-            right: '4%',
-            bottom: '10%',
-            containLabel: true
-        },
-        xAxis: {
-            type: 'category',
-            data: userChartData.value.categories,
-            axisLabel: {
-                interval: 0   // 强制显示所有标签
-            }
-        },
+  const options = {
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'shadow',
+        shadowStyle: {
+          color: 'rgba(0, 0, 0, 0.1)',
+          width: 5
+        }
+      },
+      formatter: (params: any) => {
+        const data = params[0];
+        return `
+                    <div style="text-align: left; font-weight: bold; margin-bottom: 12px;">${data.name}</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px;">
+                        <div style="display: flex; align-items: center; gap: 4px;">
+                            <span style="display: inline-block; width: 12px; height: 12px; background-color: #51B6F0;"></span>
+                            <span>用户数</span>
+                        </div>
+                        <span style="font-weight: bold;">${data.value}</span>
+                    </div>
+                `;
+      }
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '10%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      data: userChartData.value.categories,
+      axisLabel: {
+        interval: 0,   // 强制显示所有标签
+        color: '#455166',
+        fontSize: 12
+      }
+    },
 
-        yAxis: {
-            type: 'value'
-        },
-        series: [
-            {
-                data: userChartData.value.values,
-                type: 'bar',
-                barWidth: '30%'
-            }
-        ]
-    };
+    yAxis: {
+      type: 'value',
+      name: '人',
+      nameTextStyle: {
+        color: '#455166',
+        fontSize: 12,
+        padding: [0, 0, 0, -20]
+      },
+      splitLine: {
+        lineStyle: {
+          type: 'dashed'
+        }
+      }
+    },
+    series: [
+      {
+        data: userChartData.value.values,
+        type: 'bar',
+        barWidth: 15,
+        itemStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: '#51B6F0' },
+            { offset: 1, color: '#3089CE' },
+          ]),
+          borderRadius: [4, 4, 4, 4]
+        }
+      }
+    ]
+  };
 
-    userChartInstance.setOption(options);
+  userChartInstance.setOption(options);
 }
 const initTrendChart = (startDate?: Date, endDate?: Date) => {
     if (!trendChart.value) return
@@ -457,22 +518,67 @@ const initTrendChart = (startDate?: Date, endDate?: Date) => {
             boundaryGap: false,
             data: trendData.dates
         },
-        yAxis: {
-            type: 'value'
-        },
-        series: [
-            {
-                name: '访问次数',
-                type: 'line',
-                data: trendData.visitCount,
-                smooth: true
-            },
-            {
-                name: '访问人数',
-                type: 'line',
-                data: trendData.visitorCount,
-                smooth: true
+      yAxis: [
+        {
+          type: 'value',
+          name: '次',
+          position: 'left',
+          nameTextStyle: {
+            color: '#455166',
+            fontSize: 12
+          },
+          splitLine: {
+            lineStyle: {
+              type: 'dashed'
             }
+          }
+        },
+        {
+          type: 'value',
+          name: '人',
+          position: 'right',
+          nameTextStyle: {
+            color: '#455166',
+            fontSize: 12
+          },
+          splitLine: {
+            show: false
+          }
+        }
+      ],
+        series: [
+          {
+            name: '访问次数',
+            type: 'line',
+            yAxisIndex: 0,
+            data: trendData.visitCount,
+            smooth: true,
+            symbol: 'circle',
+            symbolSize: 6,
+            itemStyle: {
+              color: '#4BA8FF',
+              borderWidth: 0
+            },
+            lineStyle: {
+              color: '#4BA8FF'
+            }
+          },
+          {
+            name: '访问人数',
+            type: 'line',
+            yAxisIndex: 1,
+            data: trendData.visitorCount,
+            smooth: true,
+            symbol: 'circle',
+            symbolSize: 6,
+            itemStyle: {
+              color: '#FFD184',
+              borderWidth: 0
+            },
+            lineStyle: {
+              color: '#FFD184'
+            }
+          }
         ]
     };
 
@@ -487,47 +593,53 @@ const initDocumentChart = () => {
 
     documentChartInstance = echarts.init(documentChart.value);
 
-    const options = {
-        tooltip: {
-            trigger: 'item',
-            formatter: '{b}: {c} ({d}%)'
+  const options = {
+    tooltip: {
+      trigger: 'item',
+      formatter: '{b}: {c} ({d}%)'
+    },
+    legend: {
+      orient: 'vertical',
+      left: 'right'
+    },
+    color: ['#A1F5FF', '#519AFF', '#5BE4FF', '#8CBCFF', '#7FB4FF', '#BCD8FF', '#D3E6FF', '#4A90E2', '#6DD5FA', '#A8D8FF'],
+    graphic: [
+      {
+        type: 'text', // 图形元素类型为文本
+        left: '33%',
+        top: '40%',
+        style: {
+          text: '文档总数\n' + documentTypeData.value.reduce((sum: number, item: any) => sum + item.value, 0).toLocaleString() + '份',
+          textAlign: 'center',
+          fill: '#333', // 文字颜色
+          fontSize: 20,
+          fontWeight: 'bold',
+          lineHeight: 30,
+        }
+      }
+    ],
+    series: [
+      {
+        name: '文档类型',
+        type: 'pie',
+        label: {
+          show: true,
+          position: 'outside',
+          formatter: '{b}\n{d}%',
+          color: '#333',
+          fontSize: 12,
+          fontWeight: 'bold'
         },
-        legend: {
-            orient: 'vertical',
-            left: 'right'
+        radius: ['45%', '60%'],
+        center: ['40%', '50%'],
+        itemStyle: {
+          borderColor: '#fff',
+          borderWidth: 1
         },
-        series: [
-            {
-                name: '文档类型',
-                type: 'pie',
-                radius: ['40%', '70%'],
-                center: ['40%', '60%'],
-                itemStyle: {
-                    borderColor: '#fff',
-                    borderWidth: 1
-                },
-                label: {
-                    show: true,
-                    position: 'inside',
-                    formatter: (params: any) => `${Math.round(params.percent)}%`,
-                    color: '#000',
-                    fontSize: 12,
-                    fontWeight: '700',
-                },
-                emphasis: {
-                    label: {
-                        show: true,
-                        fontSize: 18,
-                        fontWeight: 'bold'
-                    }
-                },
-                labelLine: {
-                    show: false
-                },
-                data: documentTypeData.value
-            }
-        ]
-    };
+        data: documentTypeData.value
+      }
+    ]
+  };
 
     documentChartInstance.setOption(options);
 }
@@ -573,108 +685,106 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="less">
+.title{
+  font-size: 16px;
+  font-weight: bold;
+  padding: 12px 0 20px;
+}
+.page-main{
+  overflow: auto;
+}
 .stat-page {
-    width: 100%;
-    height: calc(100vh - 40px);
+  height: 100vh;
+  overflow: auto;
+  .data-cards {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px 0;
 
-    .page-header {
-        width: 100%;
-        height: 73px;
-        line-height: 73px;
-        border: 1px solid #e4e7ed;
-        border-radius: 20px;
-        background-color: #fff;
-        box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.12);
-    }
+    .card-x {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
 
-    .page-main {
-        padding: 0;
-    }
+      &.not-last::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 1px;
+        height: 50px;
+        background-color: #e4e7ed;
+      }
 
-    .data-cards {
+      .card-content {
         display: flex;
-        justify-content: flex-start;
-        flex-wrap: nowrap;
-        margin-top: 20px;
-        gap: 20px;
+        align-items: center;
+        padding: 0 20px;
+      }
 
-        .card {
-            box-sizing: border-box;
-            padding: 10px 0px;
-            flex: 1;
-            min-width: 230px;
-            max-width: calc(25% - 15px);
+      .card-left {
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
-            .card-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: flex-start; //标题图标顶部对齐
-
-                .text-container {
-                    .num {
-                        padding-top: 10px;
-                        font-size: 26px;
-                        font-weight: 700;
-                    }
-
-                }
-
-                .icon {
-                    height: 50px;
-                    width: 50px;
-                    border-radius: 10px;
-                }
-
-            }
-
-            .card-trend {
-                display: flex;
-                align-items: center;
-                font-size: 12px;
-                padding-top: 15px;
-
-                .trend-text {
-                    color: #6b7280;
-                }
-
-                .trend-value {
-                    display: flex;
-                    align-items: center;
-                    padding-right: 20px;
-
-                    &.positive {
-                        color: #67c23a;
-                    }
-
-                    &.negative {
-                        color: #f56c6c;
-                    }
-                }
-            }
-
+        .icon {
+          width: 36px;
+          height: 36px;
+          object-fit: contain;
         }
-    }
+      }
 
-    .icon-blue {
-        color: #409eff;
-        background-color: rgba(64, 158, 255, 0.1);
-    }
+      .card-right {
+        display: flex;
+        flex-direction: column;
+        margin-left: 16px;
 
-    .icon-purple {
-        color: #d274d5;
-        background-color: rgba(235, 144, 226, 0.1);
-    }
+        .card-title {
+          font-size: 14px;
+          color: #455166;
+        }
 
-    .icon-green {
-        color: #67c23a;
-        background-color: rgba(103, 194, 58, 0.1);
-    }
+        .card-value {
+          font-size: 24px;
+          color: #000;
+          margin: 12px 0;
+        }
 
-    .icon-red {
-        color: #f56c6c;
-        background-color: rgba(245, 108, 108, 0.1);
-    }
+        .card-trend {
+          font-size: 14px;
+          color: #455166;
 
+          .trend-value {
+            padding: 0 4px;
+
+            &.positive {
+              color: #f56c6c;
+            }
+
+            &.negative {
+              color: #67c23a;
+            }
+          }
+          .trend-icon {
+            width: 14px;
+            height: 14px;
+            object-fit: contain;
+          }
+
+          .trend-text {
+            font-size: 14px;
+            color: #455166;
+          }
+        }
+      }
+    }
+  }
     .data-charts {
         display: flex;
         flex-wrap: wrap;
@@ -685,14 +795,14 @@ onUnmounted(() => {
 
         .chart {
             box-sizing: border-box;
-            padding: 10px 0px;
+            padding: 10px 0;
             flex: 1 0 auto;
             min-width: 480px;
             width: calc(50% - 10px);
             height: 400px;
 
             .h4 {
-                font-size: 24px;
+                font-size: 14px;
                 font-weight: 700;
             }
 

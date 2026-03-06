@@ -8,29 +8,10 @@
                 <div class="file-list">
                     <section v-for="file in statusList">
                         <div class="file-info">
-                            <img v-if="file.ext === 'pdf'" src="@/assets/dataset-setting/file-icon/pdf.png" width="24"
-                                alt="" />
-                            <img v-else-if="file.ext === 'doc'" src="@/assets/dataset-setting/file-icon/doc.png"
-                                width="24" alt="" />
-                            <img v-else-if="file.ext === 'docx'" src="@/assets/dataset-setting/file-icon/docx.png"
-                                width="24" alt="" />
-                            <img v-else-if="file.ext === 'html'" src="@/assets/dataset-setting/file-icon/html.png"
-                                width="24" alt="" />
-                            <img v-else-if="file.ext === 'markdown'"
-                                src="@/assets/dataset-setting/file-icon/markdown.png" width="24" alt="" />
-                            <img v-else-if="file.ext === 'md'" src="@/assets/dataset-setting/file-icon/markdown.png"
-                                width="24" alt="" />
-                            <img v-else-if="file.ext === 'csv'" src="@/assets/dataset-setting/file-icon/csv.png"
-                                width="24" alt="" />
-                            <img v-else-if="file.ext === 'txt'" src="@/assets/dataset-setting/file-icon/txt.png"
-                                width="24" alt="" />
-                            <img v-else-if="file.ext === 'xls'" src="@/assets/dataset-setting/file-icon/xls.png"
-                                width="24" alt="" />
-                            <img v-else-if="file.ext === 'xlsx'" src="@/assets/dataset-setting/file-icon/xlsx.png"
-                                width="24" alt="" />
+                          <img :src="getFileIcon(file.ext)" width="24" alt="" />
                             <div class="file-details ellipsis">
                                 <div class="file-name ellipsis">
-                                    <div> {{ file.name }}</div>
+                                    <div > {{ file.name }}</div>
                                     <div> {{ file.percentage }} %</div>
                                 </div>
                                 <div v-if="file.indexing_status == 'error'" class="warning"> {{ file.error }}
@@ -39,17 +20,17 @@
                             </div>
                         </div>
                     </section>
-                    <el-row :gutter="10" style="margin-top: 8px;">
+                    <el-row :gutter="10" style="margin-top: 30px;">
                         <el-col :span="12">
                             <div class="title">分段模式</div>
-                            <div class="context">{{ ProcessModeText[process_rule as ProcessMode] }}</div>
+                            <div class="context">{{ ChunkingModeText[doc_form as ChunkingMode] }}</div>
                         </el-col>
                         <el-col :span="12">
                             <div class="title">分段最大长度</div>
                             <div class="context">{{ max_tokens }}</div>
                         </el-col>
                     </el-row>
-                    <el-row :gutter="10" style="margin-top: 8px;">
+                    <el-row :gutter="10" style="margin-top: 30px;">
                         <el-col :span="12">
                             <div class="title">文本预处理规则</div>
                             <div v-if="pre_processing_rules[0].enabled" class="context">替换掉连续的空格、换行符和制表符</div>
@@ -60,7 +41,7 @@
                         </el-col>
                     </el-row>
                 </div>
-                <el-button style="align-self: flex-end;" type="primary" @click="handleClick()" size="small">
+                <el-button style="align-self: flex-end;" type="primary" @click="handleClick()" size="default">
                     前往文档
                 </el-button>
             </div>
@@ -77,6 +58,7 @@ import { getIndexingStatus } from "@/service/datasets";
 import { ref, watch, onMounted, computed, onBeforeMount } from "vue";
 import router from "@/router";
 import { DataSourceType, DataSourceTypeText, ProcessMode, ProcessModeText } from "@/models/dataset";
+import { ChunkingModeText, ChunkingMode } from "@/models/dataset";
 
 enum IndexingStatus {
     Parsing = "parsing",
@@ -96,10 +78,29 @@ type FileStatus = {
     error?: string
 }
 
-const { dataset, process_rule, max_tokens, pre_processing_rules } = defineProps(["dataset", "process_rule", "max_tokens", "pre_processing_rules"]);
+const { dataset, process_rule, max_tokens, pre_processing_rules, doc_form } = defineProps(["dataset", "process_rule", "max_tokens", "pre_processing_rules", "doc_form"]);
 
 const statusList = ref<FileStatus[]>([]);
+// 文件图标映射表
+const fileIconMap: Record<string, string> = {
+  pdf: 'pdf.png',
+  doc: 'doc.png',
+  docx: 'docx.png',
+  html: 'html.png',
+  markdown: 'markdown.png',
+  md: 'markdown.png',
+  csv: 'csv.png',
+  txt: 'txt.png',
+  xls: 'xls.png',
+  xlsx: 'xlsx.png',
+  pptx: 'pptx.png',
+};
 
+// 获取文件图标路径
+const getFileIcon = (ext: string): string => {
+  const iconFile = fileIconMap[ext?.toLowerCase()] || 'default.png';
+  return new URL(`../assets/dataset-setting/file-icon/${iconFile}`, import.meta.url).href;
+};
 onBeforeMount(() => {
     statusList.value = dataset.documents.map((file: { id: any; name: any; }) => {
         return {
@@ -158,10 +159,22 @@ const updateStatus = () => {
 };
 
 const handleClick = () => {
-    router.push({
-        name: "details",
-        query: { id: dataset.dataset.id },
-    });
+
+    // 团队知识库 trick surprise
+    const tenantId = router.currentRoute.value.params.teamId
+    console.log('handleClick tenantId', tenantId)
+    if (tenantId) {
+        router.push({
+            path: `/team/${tenantId}/details`,
+            query: { id: dataset.dataset.id },
+        });
+    } else {
+        router.push({
+            name: "details",
+            query: { id: dataset.dataset.id },
+        });
+    }
+
 };
 </script>
 
@@ -200,6 +213,7 @@ const handleClick = () => {
     display: flex;
     align-items: center;
     flex: 1;
+    height: 70px;
     overflow-x: hidden;
     padding: 8px;
     background: #F9FBFF;
@@ -216,11 +230,13 @@ const handleClick = () => {
         flex: 1;
         min-width: 0;
         font-size: 12px;
+        height: 40px;
 
         .file-name {
             color: #303133;
             font-weight: 500;
-            margin-bottom: 4px;
+            padding-top: 10px;
+            padding-bottom: 10px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -234,17 +250,17 @@ const handleClick = () => {
 
 .title {
     font-weight: 500;
-    font-size: 10px;
+    font-size: 14px;
     color: #455166;
     line-height: 20px;
     text-align: left;
     font-style: normal;
-    margin-bottom: 2px;
+    margin-bottom: 8px;
 }
 
 .context {
     font-weight: 400;
-    font-size: 10px;
+    font-size: 12px;
     color: #000000;
     line-height: 14px;
     text-align: left;

@@ -1,8 +1,9 @@
 import axios, { AxiosInstance } from "axios";
 import { accessUnitlogin, goUnifiedlogin } from "../utils/auth";
+import { ElMessage } from 'element-plus';
 
 const service: AxiosInstance = axios.create({
-  // 5 分钟，回归测试查询比较慢
+  // 1 分钟，回归测试查询比较慢
   timeout: 60 * 1000,
 });
 
@@ -45,21 +46,40 @@ service.interceptors.response.use(
     // code 为2xx 进入到这里
     if (typeof res.code === "undefined") return res;
 
+    // 越权访问
+    if (res.code == 403) {
+      ElMessage.error("权限异常");
+      return Promise.reject(new Error(res?.message || "权限异常"));
+    }
     // 这里是业务层错误码
-    if (res.code !== 200 && res.code !== 201) {
-      return Promise.reject(new Error(res.message || "Error"));
+    else if (res.code !== 200 && res.code !== 201) {
+      return Promise.reject(new Error(res?.message || "Error"));
     } else {
       return res;
     }
   },
   (error) => {
     // 超时异常处理
-    if (axios.isAxiosError(error) && error.code == "ECONNABORTED" && error.message.includes("timeout")) {
-      return Promise.reject(error);
-    } else if (error.response.status === 401) {
+    if (axios.isAxiosError(error) && error?.code == "ECONNABORTED" && error?.message?.includes("timeout")) {
+      return Promise.reject(new Error("请求超时"));
+    }
+    // 越权访问
+    else if (error?.response?.status === 403) {
+      ElMessage.error("权限异常");
+      return Promise.reject(new Error(error?.response?.data?.message || "权限异常"));
+    }
+    else if (error?.response?.status === 401) {
       accessUnitlogin();
-    } else {
-      return Promise.reject(error);
+      return;
+    } else if (error.code === "ERR_CANCELED") {
+      console.log("取消请求");
+      return Promise.reject(new Error("取消请求"));
+    } else if (error.code === "ECONNABORTED") {
+      console.log("请求异常断开");
+      return Promise.reject(new Error("请求异常断开"));
+    }
+    else {
+      return Promise.reject(error?.response?.data?.message || error);
     }
   }
 );

@@ -21,7 +21,7 @@
             align-items: center;
           ">
           <span style="font-weight: 600">Chunk {{ index + 1 }}</span>
-          <el-tag size="small" style="border: 'none'">{{ segment.content?.length || 0 }} 字符</el-tag>
+          <el-tag  size="default" style="border: 'none'">{{ segment.content?.length || 0 }} 字符</el-tag>
         </div>
         <div style="
             white-space: pre-wrap;

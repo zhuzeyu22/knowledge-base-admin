@@ -1,24 +1,28 @@
 <template>
-  <el-card @click="goToDetails">
+  <el-card class="knowledge-card" @click="goToDetails">
     <div class="knowledge-base-card">
-      <div class="knowledge-base-card-background"></div>
-      <div class="knowledge-base-card-name">{{ dataset.name }}</div>
-      <div class="knowledge-base-card-creator">
-        <el-icon class="icon"><User /></el-icon>
-        <!-- 这里展示公共知识库的来源团队 字段：team-->
-        <span>{{ dataset.team }}</span>
+      <div class="card-base-info">
+        <div class="knowledge-base-card-background"></div>
+        <div class="knowledge-base-card-name">{{ dataset.name }}</div>
+        <div class="knowledge-base-card-creator">
+          <!-- <img src="@/assets/user-default.png" alt="" class="user-img"> -->
+          <!-- <el-icon class="icon"><User /></el-icon> -->
+          <!-- 这里展示公共知识库的来源团队 字段：team-->
+          <span>@{{ dataset.team }}</span>
+        </div>
+        <div class="knowledge-base-card-tags">
+          <el-tag type="info" style="margin-right: 2px;">{{ dataset.documentNumber }} 文档</el-tag>
+          <el-tag type="info">{{ (dataset.word_count / 1000).toFixed(1) }} 千字符</el-tag>
+        </div>
       </div>
-      <div class="knowledge-base-card-tags">
-        <el-tag type="info" style="margin-right: 2px;">{{ dataset.documentNumber }} 文档</el-tag>
-        <el-tag type="info">{{ (dataset.word_count / 1000).toFixed(1) }} 千字符</el-tag>
-      </div>
+
       <div class="knowledge-base-card-description">
         {{ dataset.description }}
       </div>
 
-      <div class="knowledge-base-card-label" v-if="dataset.official == 'official'">
+      <!-- <div class="knowledge-base-card-label" v-if="dataset.official == 'official'">
         <img src="@\assets\official.png" alt="">
-      </div>
+      </div> -->
       <div class="knowledge-base-card-operate" @click.stop v-if="hasPermission">
         <el-dropdown trigger="click" placement="bottom-end">
           <el-icon style="cursor: pointer">
@@ -60,8 +64,8 @@ const router = useRouter();
 // 跳转到详情页
 const goToDetails = () => {
   router.push({
-    name: "details",
-    query: { 
+    path: "public/details",
+    query: {
       id: props.dataset.id,
     },
   });
@@ -88,7 +92,7 @@ const handleCanclePublic = () => {
     } catch (error) {
       ElMessage.error("取消公开失败")
     }
-  }) 
+  })
 };
 
 
@@ -125,15 +129,29 @@ const handleDeleteClick = () => {
 </script>
 
 <style scoped>
+.knowledge-card{
+  border-radius: 10px;
+}
+:deep(.el-card__body) {
+  position: relative;
+}
 .knowledge-base-card {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   position: relative;
   width: 100%;
   flex-shrink: 0;
-  height: 200px;
+  height: 240px;
   flex-grow: 1;
   align-items: center;
+}
+.card-base-info{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
 }
 
 .knowledge-base-card-background {
@@ -154,14 +172,24 @@ const handleDeleteClick = () => {
 }
 
 .knowledge-base-card-name {
-  font-size: 15px;
+  line-height: 22px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 16px;
   font-weight: bold;
-  margin-bottom: 4px;
+  text-align: center;
 }
 .knowledge-base-card-creator {
   display: flex;
   margin: 4px 0;
   font-size: 13px;
+}
+.user-img {
+  width: 16px;
+  margin-right:5px;
 }
 .knowledge-base-card-creator .icon {
     margin-right: 2px;
@@ -171,18 +199,26 @@ const handleDeleteClick = () => {
 }
 
 .knowledge-base-card-description {
-  font-size: 12px;
+  height: 60px;
+  margin-top: 5px;
+  font-size: 13px;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 3;
+  line-height: 20px;
 }
 
 .knowledge-base-card-label {
   position: absolute;
-  top: -22px;
+  top: -20px;
   left: -20px;
+  padding: 6px 10px;
+  background: var(--el-color-primary);
+  color: #fff;
+  font-size: 12px;
+  border-radius: 10px 0 10px 0;
 }
 
 .knowledge-base-card-operate {

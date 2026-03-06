@@ -10,7 +10,7 @@
                     </el-icon>
                     <el-dropdown v-if="hasPermission" class="more hover-item" placement="bottom-end">
                         <el-icon style="cursor: pointer">
-                            <MoreFilled style="width: 13px;"/>
+                            <MoreFilled style="width: 13px;" />
                         </el-icon>
                         <template #dropdown>
                             <el-dropdown-menu>
@@ -47,6 +47,7 @@ import { MAX_LEVEL, usePublicStore } from '@/store/public';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { computed, onMounted, ref } from 'vue';
 import { useUserStore } from "@/store/user";
+import router from "@/router";
 
 const userStore = useUserStore()
 const publicStore = usePublicStore()
@@ -83,7 +84,7 @@ async function remove(node: any, data: PublicFolderNode) {
     console.log('remove', node)
     console.log('remove', data)
     // 查询是否有子节点
-    if(node.expanded == false && data.children && data.children.length == 0){
+    if (node.expanded == false && data.children && data.children.length == 0) {
         await publicStore.getNodeChildren(data)
     }
 
@@ -102,7 +103,7 @@ async function remove(node: any, data: PublicFolderNode) {
             }).catch(err => {
                 ElMessage({
                     type: "warning",
-                    message: "删除失败",
+                    message: err?.message || "删除失败",
                 });
             })
         })
@@ -164,12 +165,19 @@ const handleNodeRenameConfirm = () => {
     })
 }
 
+const resetCurrentNode = () => {
+    publicStore.updateCurrentNode({})
+    publicTree.value.setCurrentKey(null)
+}
+
 defineExpose({
-    handleNodeCreateClick
+    handleNodeCreateClick,
+    resetCurrentNode,
 })
 
-const handleNodeClick = (data: PublicFolderNode, node:any, vnode:any) =>{
+const handleNodeClick = (data: PublicFolderNode, node: any, vnode: any) => {
     publicStore.updateCurrentNode(data)
+    router.push('/public')
 }
 
 </script>
@@ -181,26 +189,32 @@ const handleNodeClick = (data: PublicFolderNode, node:any, vnode:any) =>{
     width: 100%;
     // height: 100%;
 }
+
 :deep(.el-tree) {
     //节点高度
     --el-tree-node-content-height: 45px;
 }
+
 :deep(.el-tree-node__content) {
-    border-radius: 10px; 
+    border-radius: 10px;
     margin-bottom: 2px;
     padding: 0px !important;
 }
+
 //字体颜色
 :deep(.el-tree-node.is-current > .el-tree-node__content) {
-    color: var(--el-color-primary); 
+    color: var(--el-color-primary);
+
     .el-tree-node__expand-icon {
         color: var(--el-color-primary);
     }
 }
+
 :deep(.el-tree-node__children) {
     border-left: 1px solid #e4e7ed;
-    margin-left: 15px; 
+    margin-left: 15px;
 }
+
 .custom-tree-node {
     width: calc(100% - 30px);
     overflow: hidden;
